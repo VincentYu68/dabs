@@ -134,7 +134,7 @@ def initialize_port():
 
 if __name__ == "__main__":
 
-    import p1mx28 as mx28
+    import motors.p1mx28 as mx28
 
     PROTOCOL_VERSION = 1
     dxl_ids = [12, 18]
@@ -148,4 +148,4 @@ if __name__ == "__main__":
     reader = MultiReader(port_num, PROTOCOL_VERSION, dxl_ids, read_attrs)
     writer = MultiWriter(port_num, PROTOCOL_VERSION, dxl_ids, write_attrs)
     print(reader.read())
-    writer.write([1000, 0])
+    writer.write([0, 400])
