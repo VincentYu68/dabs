@@ -66,7 +66,7 @@ class MultiWriter:
         self.motor_ids = motor_ids
         self.attrs = attrs
 
-        self.sync_packets = [None] * len(attrs)
+        self.sync_packets = None
 
         # Note: In SDK version 3.6.0 the changeParam function is literally the same
         # as addParam, so this is sorta pointless. Keep this in case it's implemented
@@ -81,29 +81,38 @@ class MultiWriter:
         for motor_index, motor_id in enumerate(self.motor_ids):
             for attr_index, attr in enumerate(self.attrs):
                 data_location = (motor_index * len(self.attrs)) + attr_index
-                if not self.sync_packets[attr_index].addParam(motor_index, [0] * attr[1]):
+                if not self.sync_packets[attr_index].addParam(motor_id, [0] * attr[1]):
                     raise RuntimeError("Couldn't add parameter for motor %i, param %i",
                                        motor_id, self.attrs[i][0])
 
 
     def write(self, targets):
 
+        [packet.clearParam() for packet in self.sync_packets]
+
         for motor_index, motor_id in enumerate(self.motor_ids):
             for attr_index, attr in enumerate(self.attrs):
                 data_location = (motor_index * len(self.attrs)) + attr_index
-                if not self.sync_packets[attr_index].changeParam(motor_index,
-                                                                 targets[data_location].to_bytes(attr[1], "big")):
+
+                # TODO Seems that maybe big vs little endian doesn't matter? Certainly that's
+                # not true...
+                write_val = list(targets[data_location].to_bytes(attr[1], "little"))
+
+                if not self.sync_packets[attr_index].addParam(motor_id, write_val):
                     raise RuntimeError("Couldn't set value for motor %i, param %i",
-                                       motor_id, self.attrs[i][0])
+                                       motor_id, attr[0])
 
         for packet in self.sync_packets:
-            packet.txPacket()
+
+            dxl_comm_result = packet.txPacket()
+            if dxl_comm_result != COMM_SUCCESS:
+                raise RuntimeError("%s" % packetHandler.getTxRxResult(dxl_comm_result))
 
 if __name__ == "__main__":
 
     import motors.p1ax18 as ax18
 
-    PROTOCOL_VERSION = 2
+    PROTOCOL_VERSION = 1.0
     BAUD = 1000000
     dxl_ids = [12, 18]
 
@@ -116,7 +125,7 @@ if __name__ == "__main__":
     port_handler = PortHandler("/dev/ttyUSB0")
     if not port_handler.openPort():
         raise RuntimeError("Couldn't open port")
-    if not port_handler.setBaudRate(1000000):
+    if not port_handler.setBaudRate(BAUD):
         raise RuntimeError("Couldn't change baud rate")
 
     packet_handler = PacketHandler(PROTOCOL_VERSION)
