@@ -6,9 +6,6 @@ from dynamixel_sdk import *
 
 import itertools
 
-COMM_SUCCESS = 0
-COMM_TX_FAIL = -1001
-
 def check_comm_error(port_num):
 
     dxl_comm_result = dxl.getLastTxRxResult(port_num, PROTOCOL_VERSION)
@@ -28,56 +25,36 @@ class MultiReader():
         self.motor_ids = motor_ids
         self.attrs = attrs
 
-        self.param_list = list(itertools.product(self.motor_ids, self.attrs))
+        self.sync_packets = [None] * len(attrs)
+        self.construct_packets()
+
+    def construct_packets(self):
+        for i, attr in enumerate(self.attrs):
+            self.sync_packets[i] = GroupSyncRead(self.port_handler, self.packet_handler,
+                                                 *attr)
+            for motor_id in self.motor_ids:
+                if not self.sync_packets[i].addParam(motor_id):
+                    raise RuntimeError("Couldn't add parameter for motor %i, param %i",
+                                       motor_id, self.attrs[i][0])
 
     def read(self):
 
-        # bulk_read_packet = dxl.groupBulkRead(port_num, PROTOCOL_VERSION)
+        results = [None] * (len(self.motor_ids) * len(self.attrs))
 
-        # Add parameters to the bulk packetHandler
-
-        # for id, attr in read_list:
-        #     add_result = ctypes.c_ubyte(dxl.groupBulkReadAddParam(
-        #         bulk_read_packet, id, attr[0], attr[1])).value
-        #     if add_result != 1:
-        #         raise RuntimeError("Failed to add storage for motor " + str(id)
-        #                            + " address " + attr[0])
-
-        # dxl.groupBulkReadTxRxPacket(bulk_read_packet)
-        # check_comm_error(port_num)
-
-        results = [None] * len(self.param_list)
-
-        for index, (motor_id, attr) in enumerate(self.param_list):
-            # getdata_result = ctypes.c_ubyte(
-            #     dxl.groupBulkReadIsAvailable(bulk_read_packet, id,
-            #                                        attr[0], attr[1])).value
-            # if getdata_result != 1:
-            #     raise RuntimeWarning("Failed reading motor " + str(id),
-            #                          + " address " + attr[0])
-            # else:
-            #     results[index] = dxl.groupBulkReadGetData(bulk_read_packet,
-            #                                                     id, attr[0],
-            #                                                     attr[1])
-
-            if attr[1] == 1:
-                val, comm_result, dxl_error = self.packet_handler.read1ByteTxRx(self.port_handler,
-                                                                                motor_id, attr[0])
-            elif attr[1] == 2:
-                val, comm_result, dxl_error = self.packet_handler.read2ByteTxRx(self.port_handler,
-                                                                                motor_id, attr[0])
-            elif attr[2] == 4:
-                val, comm_result, dxl_error = self.packet_handler.read4ByteTxRx(self.port_handler,
-                                                                                motor_id, attr[0])
-            else:
-                raise RuntimeError("Invalid data size")
-
+        for packet in self.sync_packets:
+            comm_result = packet.txRxPacket()
             if comm_result != COMM_SUCCESS:
-                raise RuntimeError(packet_handler.getTxRxResult(comm_result))
-            elif dxl_error != 0:
-                raise RuntimeError(packet_handler.getRxPacketError(dxl_error))
-            else:
-                results[index] = val
+                raise RuntimeError(self.packet_handler.getTxRxResult(comm_result))
+
+        for motor_index, motor_id in enumerate(self.motor_ids):
+            for attr_index, attr in enumerate(self.attrs):
+                if not self.bulk_packet.isAvailable(motor_id, *attr):
+                    raise RuntimeError("Data unavailable for " + str((motor_id, attr)))
+
+                data_location = len(self.attrs) * motor_index + attr_index
+                results[data_location] = self.bulk_packet.getData(
+                    motor_id, *attr)
+
         return results
 
 class MultiWriter:
@@ -89,56 +66,51 @@ class MultiWriter:
         self.motor_ids = motor_ids
         self.attrs = attrs
 
-        self.param_list = list(itertools.product(self.motor_ids, self.attrs))
+        self.sync_packets = [None] * len(attrs)
+
+        # Note: In SDK version 3.6.0 the changeParam function is literally the same
+        # as addParam, so this is sorta pointless. Keep this in case it's implemented
+        # more efficiently in the future though
+        self.construct_packets()
+
+    def construct_packets(self):
+
+        self.sync_packets = [GroupSyncWrite(self.port_handler, self.packet_handler, *attr)
+                             for attr in self.attrs]
+
+        for motor_index, motor_id in enumerate(self.motor_ids):
+            for attr_index, attr in enumerate(self.attrs):
+                data_location = (motor_index * len(self.attrs)) + attr_index
+                if not self.sync_packets[attr_index].addParam(motor_index, [0] * attr[1]):
+                    raise RuntimeError("Couldn't add parameter for motor %i, param %i",
+                                       motor_id, self.attrs[i][0])
+
 
     def write(self, targets):
 
+        for motor_index, motor_id in enumerate(self.motor_ids):
+            for attr_index, attr in enumerate(self.attrs):
+                data_location = (motor_index * len(self.attrs)) + attr_index
+                if not self.sync_packets[attr_index].changeParam(motor_index,
+                                                                 targets[data_location].to_bytes(attr[1], "big")):
+                    raise RuntimeError("Couldn't set value for motor %i, param %i",
+                                       motor_id, self.attrs[i][0])
 
-        # bulk_write_packet = dxl.groupBulkWrite(port_num, PROTOCOL_VERSION)
-
-        for index, (motor_id, attr) in enumerate(self.param_list):
-            # add_result = ctypes.c_ubyte(
-            #     dxl.groupBulkWriteAddParam(bulk_write_packet, id,
-            #                                      attr[0],
-            #                                      attr[1],
-            #                                      targets[index], attr[1])).value
-            # if add_result != 1:
-            #     raise RuntimeError("Failed to add instruction for motor " + str(id))
-            if attr[1] == 1:
-                comm_result, dxl_error = self.packet_handler.write1ByteTxRx(self.port_handler,
-                                                                            motor_id, attr[0], targets[index])
-            elif attr[1] == 2:
-                comm_result, dxl_error = self.packet_handler.write2ByteTxRx(self.port_handler,
-                                                                            motor_id, attr[0], targets[index])
-            elif attr[2] == 4:
-                comm_result, dxl_error = self.packet_handler.write4ByteTxRx(self.port_handler,
-                                                                            motor_id, attr[0], targets[index])
-            else:
-                raise RuntimeError("Invalid data size")
-
-            if comm_result != COMM_SUCCESS:
-                raise RuntimeError(packet_handler.getTxRxResult(comm_result))
-            elif dxl_error != 0:
-                raise RuntimeError(packet_handler.getRxPacketError(dxl_error))
-
-        # dxl.groupBulkWriteTxPacket(bulk_write_packet)
-        # check_comm_error(port_num)
-
-        # Clear bulkwrite parameter storage
-        # dxl.groupBulkWriteClearParam(bulk_write_packet)
+        for packet in self.sync_packets:
+            packet.txPacket()
 
 if __name__ == "__main__":
 
-    import motors.p1mx28 as mx28
+    import motors.p1ax18 as ax18
 
-    PROTOCOL_VERSION = 1
+    PROTOCOL_VERSION = 2
     BAUD = 1000000
     dxl_ids = [12, 18]
 
-    read_attrs = [(mx28.ADDR_PRESENT_POSITION, mx28.LEN_PRESENT_POSITION),
-                  (mx28.ADDR_TORQUE_ENABLE, mx28.LEN_TORQUE_ENABLE)]
+    read_attrs = [(ax18.ADDR_PRESENT_POSITION, ax18.LEN_PRESENT_POSITION)]
 
-    write_attrs = [(mx28.ADDR_GOAL_POSITION, mx28.LEN_GOAL_POSITION)]
+    write_attrs = [(ax18.ADDR_GOAL_POSITION, ax18.LEN_GOAL_POSITION),
+                   (ax18.ADDR_TORQUE_ENABLE, ax18.LEN_TORQUE_ENABLE)]
 
 
     port_handler = PortHandler("/dev/ttyUSB0")
@@ -149,7 +121,7 @@ if __name__ == "__main__":
 
     packet_handler = PacketHandler(PROTOCOL_VERSION)
 
-    reader = MultiReader(port_handler, packet_handler, dxl_ids, read_attrs)
+    # reader = MultiReader(port_handler, packet_handler, dxl_ids, read_attrs)
     writer = MultiWriter(port_handler, packet_handler, dxl_ids, write_attrs)
-    print(reader.read())
-    writer.write([300, 500])
+    # print(reader.read())
+    writer.write([0, 1, 0, 1])
