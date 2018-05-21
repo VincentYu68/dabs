@@ -2,6 +2,8 @@
 
 import ctypes
 
+import motors.p2mx28 as mx28
+
 from dynamixel_sdk import *
 
 import itertools
@@ -16,43 +18,66 @@ def check_comm_error(port_num):
         raise RuntimeWarning(dxl.getRxPacketError(PROTOCOL_VERSION, dxl_error))
 
 
-class MultiReader():
+class IndirectMultiReader():
 
-    def __init__(self, port_handler, packet_handler, motor_ids, attrs):
+    def __init__(self, port_handler, packet_handler, motor_ids, attrs, indirect_root):
 
         self.port_handler = port_handler
         self.packet_handler = packet_handler
         self.motor_ids = motor_ids
+
         self.attrs = attrs
+        self.indirected_attrs = self.setup_indirects(indirect_root)
 
-        self.sync_packets = [None] * len(attrs)
-        self.construct_packets()
+        self.sync_packet = self.construct_packet()
 
-    def construct_packets(self):
-        for i, attr in enumerate(self.attrs):
-            self.sync_packets[i] = GroupSyncRead(self.port_handler, self.packet_handler,
-                                                 *attr)
-            for motor_id in self.motor_ids:
-                if not self.sync_packets[i].addParam(motor_id):
-                    raise RuntimeError("Couldn't add parameter for motor %i, param %i",
-                                       motor_id, self.attrs[i][0])
+    def setup_indirects(self, indirect_root):
+
+        indirected_attrs = [None]
+        curr_addr = 2 * indirect_root + 168
+
+        for attr_index, attr in enumerate(self.attrs):
+            indirected_attrs[attr_index] = (curr_addr, attr[1])
+            for offset in range(attr[1]):
+                for dxl_id in self.motor_ids:
+
+                    dxl_comm_result, dxl_error = self.packet_handler.write2ByteTxRx(self.port_handler,
+                                                                                    dxl_id, curr_addr, attr[0] + offset)
+
+                    if dxl_comm_result != COMM_SUCCESS:
+                        raise RuntimeError("%s" % self.packet_handler.getTxRxResult(dxl_comm_result))
+                    elif dxl_error != 0:
+                        raise RuntimeError("%s" % self.packet_handler.getRxPacketError(dxl_error))
+                curr_addr += 2
+
+    def construct_packet(self):
+
+        sync_packet = GroupSyncRead(self.port_handler, self.packet_handler,
+                                         self.indirected_attrs[0][0],
+                                         sum([attr[1] for attr in self.indirected_attrs]))
+
+        for motor_id in self.motor_ids:
+            if not self.sync_packets.addParam(motor_id):
+                raise RuntimeError("Couldn't add parameter for motor %i",
+                                   motor_id)
+
+        return sync_packet
 
     def read(self):
 
         results = [None] * (len(self.motor_ids) * len(self.attrs))
 
-        for packet in self.sync_packets:
-            comm_result = packet.txRxPacket()
-            if comm_result != COMM_SUCCESS:
-                raise RuntimeError(self.packet_handler.getTxRxResult(comm_result))
+        comm_result = self.sync_packet.txRxPacket()
+        if comm_result != COMM_SUCCESS:
+            raise RuntimeError(self.packet_handler.getTxRxResult(comm_result))
 
         for motor_index, motor_id in enumerate(self.motor_ids):
-            for attr_index, attr in enumerate(self.attrs):
-                if not self.bulk_packet.isAvailable(motor_id, *attr):
-                    raise RuntimeError("Data unavailable for " + str((motor_id, attr)))
+            for attr_index, attr in enumerate(self.indirected_attrs):
+                if not self.sync_packet.isAvailable(motor_id, *attr):
+                    raise RuntimeError("Data unavailable for " + str(motor_id) + ", attribute " + str(attr))
 
                 data_location = len(self.attrs) * motor_index + attr_index
-                results[data_location] = self.bulk_packet.getData(
+                results[data_location] = self.sync_packet.getData(
                     motor_id, *attr)
 
         return results
@@ -106,21 +131,18 @@ class MultiWriter:
 
             dxl_comm_result = packet.txPacket()
             if dxl_comm_result != COMM_SUCCESS:
-                raise RuntimeError("%s" % packetHandler.getTxRxResult(dxl_comm_result))
+                raise RuntimeError("%s" % self.packet_handler.getTxRxResult(dxl_comm_result))
 
 if __name__ == "__main__":
 
-    import motors.p1ax18 as ax18
-
-    PROTOCOL_VERSION = 1.0
+    PROTOCOL_VERSION = 2
     BAUD = 1000000
-    dxl_ids = [12, 18]
+    dxl_ids = [12]
 
-    read_attrs = [(ax18.ADDR_PRESENT_POSITION, ax18.LEN_PRESENT_POSITION)]
+    read_attrs = [(mx28.ADDR_PRESENT_POSITION, mx28.LEN_PRESENT_POSITION)]
 
-    write_attrs = [(ax18.ADDR_GOAL_POSITION, ax18.LEN_GOAL_POSITION),
-                   (ax18.ADDR_TORQUE_ENABLE, ax18.LEN_TORQUE_ENABLE)]
-
+    write_attrs = [(mx28.ADDR_TORQUE_ENABLE, mx28.LEN_TORQUE_ENABLE),
+    (mx28.ADDR_GOAL_POSITION, mx28.LEN_GOAL_POSITION)]
 
     port_handler = PortHandler("/dev/ttyUSB0")
     if not port_handler.openPort():
@@ -130,7 +152,17 @@ if __name__ == "__main__":
 
     packet_handler = PacketHandler(PROTOCOL_VERSION)
 
-    # reader = MultiReader(port_handler, packet_handler, dxl_ids, read_attrs)
-    writer = MultiWriter(port_handler, packet_handler, dxl_ids, write_attrs)
-    # print(reader.read())
-    writer.write([0, 1, 0, 1])
+
+    # TODO MX-28 Dependent
+    dxl_comm_result, dxl_error = packet_handler.write1ByteTxRx(self.port_handler, dxl_ids[0], mx28.ADDR_TORQUE_ENABLE, 0)
+    if dxl_comm_result != COMM_SUCCESS:
+        print("%s" % self.packet_handler.getTxRxResult(dxl_comm_result))
+    elif dxl_error != 0:
+        print("%s" % self.packet_handler.getRxPacketError(dxl_error))
+    else:
+        print("[ID:%03d] Dynamixel has been successfully connected" % dxl_id)
+
+    reader = IndirectMultiReader(port_handler, packet_handler, dxl_ids, read_attrs, 0)
+    # writer = MultiWriter(port_handler, packet_handler, dxl_ids, write_attrs)
+    print(reader.read())
+    # writer.write([1, 0])
