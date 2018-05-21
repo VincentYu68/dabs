@@ -2,7 +2,7 @@
 
 import ctypes
 
-import motors.p2mx28 as mx28
+import motors.p1mx28 as mx28
 
 from dynamixel_sdk import *
 
@@ -80,13 +80,15 @@ def zero_torques(port_handler, packet_handler, motor_ids):
     for dxl_id in self.motors_ids:
 
         # TODO Specific to MX28
-        dxl_comm_result, dxl_error = self.packet_handler.write1ByteTxRx(self.port_handler, dxl_id, mx28.ADDR_TORQUE_ENABLE, 0)
-        if dxl_comm_result != COMM_SUCCESS:
+        comm_result, error = self.packet_handler.write1ByteTxRx(
+            self.port_handler, dxl_id, mx28.ADDR_TORQUE_ENABLE, 0)
+
+        if comm_result != COMM_SUCCESS:
             raise RuntimeError("Comm error while trying to disable motor %i:\n%s"
-                               % dxl_id, self.packet_handler.getTxRxResult(dxl_comm_result))
-        elif dxl_error != 0:
+                               % dxl_id, self.packet_handler.getTxRxResult(comm_result))
+        elif error != 0:
             raise RuntimeError("Hardware error while trying to disable motor %i:\n%s"
-                               % dxl_id, self.packet_handler.getRxPacketError(dxl_error))
+                               % dxl_id, self.packet_handler.getRxPacketError(error))
 
 
 class BulkMultiReader():
@@ -169,14 +171,17 @@ class SyncMultiWriter:
                                      self.block_start, self.block_len)
 
         for motor_id in self.motor_ids:
-            if not self.packets[attr_index].addParam(motor_id,
-                                                     [0] * block_len):
+            if not packet.addParam(motor_id,
+                                   [0] * self.block_len):
                 raise RuntimeError("Couldn't add any storage for motor %i, param %i" % motor_id)
+
+        return packet
 
 
     def write(self, targets):
 
         self.packet.clearParam()
+
 
         for motor_index, motor_id in enumerate(self.motor_ids):
             motor_data = [0] * self.block_len
@@ -190,12 +195,13 @@ class SyncMultiWriter:
                 # byte list
                 # TODO Big or little endian?
                 motor_data[(attr[0] - self.block_start)
-                           :sum(attr) - self.block_start] = list(targets[attr_index].to_bytes(attr[1], "little"))
+                           :sum(attr) - self.block_start] = list(motor_targets[attr_index]
+                                                                 .to_bytes(attr[1], "little"))
 
             if not self.packet.addParam(motor_id, motor_data):
                 raise RuntimeError("Couldn't set value for motor %i" % motor_id)
 
-        dxl_comm_result = packet.txPacket()
+        dxl_comm_result = self.packet.txPacket()
         if dxl_comm_result != COMM_SUCCESS:
             raise RuntimeError("%s" % self.packet_handler.getTxRxResult(dxl_comm_result))
 
@@ -203,12 +209,13 @@ if __name__ == "__main__":
 
     PROTOCOL_VERSION = 1
     BAUD = 1000000
-    dxl_ids = [1]
+    dxl_ids = [1, 2]
 
-    read_attrs = [(mx28.ADDR_PRESENT_POSITION, mx28.LEN_PRESENT_POSITION)]
+    read_attrs = [(mx28.ADDR_PRESENT_POSITION, mx28.LEN_PRESENT_POSITION),
+                  (mx28.ADDR_TORQUE_ENABLE, mx28.LEN_TORQUE_ENABLE)]
 
-    write_attrs = [(mx28.ADDR_TORQUE_ENABLE, mx28.LEN_TORQUE_ENABLE),
-    (mx28.ADDR_GOAL_POSITION, mx28.LEN_GOAL_POSITION)]
+    write_attrs = [(mx28.ADDR_TORQUE_ENABLE, mx28.LEN_TORQUE_ENABLE)]
+    # (mx28.ADDR_GOAL_POSITION, mx28.LEN_GOAL_POSITION)]
 
     port_handler = PortHandler("/dev/ttyUSB0")
     if not port_handler.openPort():
@@ -220,6 +227,6 @@ if __name__ == "__main__":
 
 
     reader = BulkMultiReader(port_handler, packet_handler, dxl_ids, read_attrs, 0)
-    # writer = MultiWriter(port_handler, packet_handler, dxl_ids, write_attrs)
+    writer = SyncMultiWriter(port_handler, packet_handler, dxl_ids, write_attrs)
     print(reader.read())
-    # writer.write([1, 0])
+    writer.write([1, 1])
