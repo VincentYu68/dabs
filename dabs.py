@@ -6,19 +6,94 @@ import motors.p2mx28 as mx28
 
 from dynamixel_sdk import *
 
-import itertools
+def setup_indirects(self, port_handler, packet_handler, motor_ids, attrs, indirect_root):
+    """
+    Given appropriate port constructs, list of motor ids, attributes, and
+    an indirect index (from 0-55 on the mx28), set the indirect addresses
+    on each mx28 so that the (indirected) attributes form a contiguous
+    block of memory suitable for sync/bulk rw
 
-def check_comm_error(port_num):
+    TODO There are two blocks of indirect addresses/data, each with a capacity
+    of 28. This function ONLY sets up one contiguous block. It does not
+    attempt to detect points where it should jump blocks and do so, or even
+    fail when it should
 
-    dxl_comm_result = dxl.getLastTxRxResult(port_num, PROTOCOL_VERSION)
-    dxl_error = dxl.getLastRxPacketError(port_num, PROTOCOL_VERSION)
-    if dxl_comm_result != COMM_SUCCESS:
-        raise RuntimeWarning(dxl.getTxRxResult(PROTOCOL_VERSION, dxl_comm_result))
-    elif dxl_error != 0:
-        raise RuntimeWarning(dxl.getRxPacketError(PROTOCOL_VERSION, dxl_error))
+    WARNING/TODO: Apparently, indirect addresses cannot be set while motor torque
+    is enabled. Therefore, this function DISABLES TORQUE on all motors and
+    makes no attempt to restore it to those motors which were enabled
+
+    WARNING: This function is specifically designed for MX28 right now
+    This link should clear up all the "magic numbers"
+    http://emanual.robotis.com/docs/en/dxl/mx/mx-28/#control-table-data-address
+    """
+
+    # Array which will eventually store list of attributes in form
+    # [(indirect_attr_1_address, attr1_len), ...]
+    indirected_attrs = [None]
+
+    # There are two blocks of indirect addresses/data, so it takes
+    # a bit of logic to set the starting points right based on the indices
+    # TODO Validate data lengths to make sure we have enough space given
+    # the current attributes and indirect root
+    indirect_addr = None
+    data_addr = None
+    if indirect_root <= 27:
+        curr_addr = 2 * indirect_root + 168
+        data_addr = 224 + indirect_root
+    else:
+        curr_addr = 2 * (indirect_root - 27) + 578
+        data_addr = 634 + (indirect_root - 27)
+
+    zero_torques()
+
+    # Calculate and write appropriate addresses
+    for attr_index, attr in enumerate(attrs):
+
+        indirected_attrs[attr_index] = (data_addr, attr[1])
+        data_addr += attr[1]
+
+        for offset in range(attr[1]):
+            for dxl_id in motor_ids:
+
+                dxl_comm_result, dxl_error = packet_handler.write2ByteTxRx(port_handler,
+                                                                                dxl_id, indirect_addr, attr[0] + offset)
+
+                if dxl_comm_result != COMM_SUCCESS:
+                    raise RuntimeError("Communication error on setting motor %i's address %i:\n%s"
+                                       % dxl_id, attr[0],
+                                       packet_handler.getTxRxResult(
+                                           dxl_comm_result))
+                elif dxl_error != 0:
+                    raise RuntimeError("Hardware error on setting motor %i's address %i:\n%s" %
+                                       dxl_id, attr[0],
+                                       packet_handler.getRxPacketError
+                                       (dxl_error))
+
+            # Each address is more than one byte, as there are more than 256
+            indirect_addr += 2
+
+    return indirected_attrs
 
 
-class IndirectMultiReader():
+def zero_torques(port_handler, packet_handler, motor_ids):
+
+    for dxl_id in self.motors_ids:
+
+        # TODO Specific to MX28
+        dxl_comm_result, dxl_error = self.packet_handler.write1ByteTxRx(self.port_handler, dxl_id, mx28.ADDR_TORQUE_ENABLE, 0)
+        if dxl_comm_result != COMM_SUCCESS:
+            raise RuntimeError("Comm error while trying to disable motor %i:\n%s"
+                               % dxl_id, self.packet_handler.getTxRxResult(dxl_comm_result))
+        elif dxl_error != 0:
+            raise RuntimeError("Hardware error while trying to disable motor %i:\n%s"
+                               % dxl_id, self.packet_handler.getRxPacketError(dxl_error))
+
+
+class BulkMultiReader():
+
+    """
+    Read multiple attributes via BulkRead
+    """
 
     def __init__(self, port_handler, packet_handler, motor_ids, attrs, indirect_root):
 
@@ -27,62 +102,53 @@ class IndirectMultiReader():
         self.motor_ids = motor_ids
 
         self.attrs = attrs
-        self.indirected_attrs = self.setup_indirects(indirect_root)
 
-        self.sync_packet = self.construct_packet()
+        # Python compares tuples by entry going left to right, so the
+        # following logic works
+        self.block_start = max(self.attrs)[0]
+        self.block_end = sum(min(self.attrs))
+        self.block_len = self.block_end - self.block_start
 
-    def setup_indirects(self, indirect_root):
-
-        indirected_attrs = [None]
-        curr_addr = 2 * indirect_root + 168
-
-        for attr_index, attr in enumerate(self.attrs):
-            indirected_attrs[attr_index] = (curr_addr, attr[1])
-            for offset in range(attr[1]):
-                for dxl_id in self.motor_ids:
-
-                    dxl_comm_result, dxl_error = self.packet_handler.write2ByteTxRx(self.port_handler,
-                                                                                    dxl_id, curr_addr, attr[0] + offset)
-
-                    if dxl_comm_result != COMM_SUCCESS:
-                        raise RuntimeError("%s" % self.packet_handler.getTxRxResult(dxl_comm_result))
-                    elif dxl_error != 0:
-                        raise RuntimeError("%s" % self.packet_handler.getRxPacketError(dxl_error))
-                curr_addr += 2
+        self.packet = self.construct_packet()
 
     def construct_packet(self):
 
-        sync_packet = GroupSyncRead(self.port_handler, self.packet_handler,
-                                         self.indirected_attrs[0][0],
-                                         sum([attr[1] for attr in self.indirected_attrs]))
+        packet = GroupBulkRead(self.port_handler, self.packet_handler)
 
         for motor_id in self.motor_ids:
-            if not self.sync_packets.addParam(motor_id):
+            if not packet.addParam(motor_id, self.block_start, self.block_len):
                 raise RuntimeError("Couldn't add parameter for motor %i",
                                    motor_id)
 
-        return sync_packet
+        return packet
 
     def read(self):
 
         results = [None] * (len(self.motor_ids) * len(self.attrs))
 
-        comm_result = self.sync_packet.txRxPacket()
+        comm_result = self.packet.txRxPacket()
         if comm_result != COMM_SUCCESS:
             raise RuntimeError(self.packet_handler.getTxRxResult(comm_result))
 
         for motor_index, motor_id in enumerate(self.motor_ids):
-            for attr_index, attr in enumerate(self.indirected_attrs):
-                if not self.sync_packet.isAvailable(motor_id, *attr):
+            for attr_index, attr in enumerate(self.attrs):
+                if not self.packet.isAvailable(motor_id, *attr):
                     raise RuntimeError("Data unavailable for " + str(motor_id) + ", attribute " + str(attr))
 
                 data_location = len(self.attrs) * motor_index + attr_index
-                results[data_location] = self.sync_packet.getData(
+                results[data_location] = self.packet.getData(
                     motor_id, *attr)
 
         return results
 
-class MultiWriter:
+class SyncMultiWriter:
+
+    """
+    Write to the same contiguous block of memory across multiple motors
+
+    WARNING: Using this with non-contiguous attributes will write anything
+    that happens to be in between with 0
+    """
 
     def __init__(self, port_handler, packet_handler, motor_ids, attrs):
 
@@ -91,53 +157,53 @@ class MultiWriter:
         self.motor_ids = motor_ids
         self.attrs = attrs
 
-        self.sync_packets = None
+        self.block_start = max(self.attrs)[0]
+        self.block_end = sum(min(self.attrs))
+        self.block_len = self.block_end - self.block_start
 
-        # Note: In SDK version 3.6.0 the changeParam function is literally the same
-        # as addParam, so this is sorta pointless. Keep this in case it's implemented
-        # more efficiently in the future though
-        self.construct_packets()
+        self.packet = self.construct_packet()
 
-    def construct_packets(self):
+    def construct_packet(self):
 
-        self.sync_packets = [GroupSyncWrite(self.port_handler, self.packet_handler, *attr)
-                             for attr in self.attrs]
+        packet = GroupSyncWrite(self.port_handler, self.packet_handler,
+                                     self.block_start, self.block_len)
 
-        for motor_index, motor_id in enumerate(self.motor_ids):
-            for attr_index, attr in enumerate(self.attrs):
-                data_location = (motor_index * len(self.attrs)) + attr_index
-                if not self.sync_packets[attr_index].addParam(motor_id, [0] * attr[1]):
-                    raise RuntimeError("Couldn't add parameter for motor %i, param %i",
-                                       motor_id, self.attrs[i][0])
+        for motor_id in self.motor_ids:
+            if not self.packets[attr_index].addParam(motor_id,
+                                                     [0] * block_len):
+                raise RuntimeError("Couldn't add any storage for motor %i, param %i" % motor_id)
 
 
     def write(self, targets):
 
-        [packet.clearParam() for packet in self.sync_packets]
+        self.packet.clearParam()
 
         for motor_index, motor_id in enumerate(self.motor_ids):
-            for attr_index, attr in enumerate(self.attrs):
-                data_location = (motor_index * len(self.attrs)) + attr_index
+            motor_data = [0] * self.block_len
+            motor_targets = targets[motor_index * len(self.attrs)
+                                    :(motor_index + 1) * len(self.attrs)]
 
-                # TODO Seems that maybe big vs little endian doesn't matter? Certainly that's
-                # not true...
-                write_val = list(targets[data_location].to_bytes(attr[1], "little"))
+            for attr_index in range(len(self.attrs)):
+                attr = self.attrs[attr_index]
 
-                if not self.sync_packets[attr_index].addParam(motor_id, write_val):
-                    raise RuntimeError("Couldn't set value for motor %i, param %i",
-                                       motor_id, attr[0])
+                # Replace the relevant subrange in the data array with the
+                # byte list
+                # TODO Big or little endian?
+                motor_data[(attr[0] - self.block_start)
+                           :sum(attr) - self.block_start] = list(targets[attr_index].to_bytes(attr[1], "little"))
 
-        for packet in self.sync_packets:
+            if not self.packet.addParam(motor_id, motor_data):
+                raise RuntimeError("Couldn't set value for motor %i" % motor_id)
 
-            dxl_comm_result = packet.txPacket()
-            if dxl_comm_result != COMM_SUCCESS:
-                raise RuntimeError("%s" % self.packet_handler.getTxRxResult(dxl_comm_result))
+        dxl_comm_result = packet.txPacket()
+        if dxl_comm_result != COMM_SUCCESS:
+            raise RuntimeError("%s" % self.packet_handler.getTxRxResult(dxl_comm_result))
 
 if __name__ == "__main__":
 
-    PROTOCOL_VERSION = 2
+    PROTOCOL_VERSION = 1
     BAUD = 1000000
-    dxl_ids = [12]
+    dxl_ids = [1]
 
     read_attrs = [(mx28.ADDR_PRESENT_POSITION, mx28.LEN_PRESENT_POSITION)]
 
@@ -153,16 +219,7 @@ if __name__ == "__main__":
     packet_handler = PacketHandler(PROTOCOL_VERSION)
 
 
-    # TODO MX-28 Dependent
-    dxl_comm_result, dxl_error = packet_handler.write1ByteTxRx(self.port_handler, dxl_ids[0], mx28.ADDR_TORQUE_ENABLE, 0)
-    if dxl_comm_result != COMM_SUCCESS:
-        print("%s" % self.packet_handler.getTxRxResult(dxl_comm_result))
-    elif dxl_error != 0:
-        print("%s" % self.packet_handler.getRxPacketError(dxl_error))
-    else:
-        print("[ID:%03d] Dynamixel has been successfully connected" % dxl_id)
-
-    reader = IndirectMultiReader(port_handler, packet_handler, dxl_ids, read_attrs, 0)
+    reader = BulkMultiReader(port_handler, packet_handler, dxl_ids, read_attrs, 0)
     # writer = MultiWriter(port_handler, packet_handler, dxl_ids, write_attrs)
     print(reader.read())
     # writer.write([1, 0])
