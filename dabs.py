@@ -107,8 +107,8 @@ class BulkMultiReader():
 
         # Python compares tuples by entry going left to right, so the
         # following logic works
-        self.block_start = max(self.attrs)[0]
-        self.block_end = sum(min(self.attrs))
+        self.block_start = min(self.attrs)[0]
+        self.block_end = sum(max(self.attrs))
         self.block_len = self.block_end - self.block_start
 
         self.packet = self.construct_packet()
@@ -159,8 +159,8 @@ class SyncMultiWriter:
         self.motor_ids = motor_ids
         self.attrs = attrs
 
-        self.block_start = max(self.attrs)[0]
-        self.block_end = sum(min(self.attrs))
+        self.block_start = min(self.attrs)[0]
+        self.block_end = sum(max(self.attrs))
         self.block_len = self.block_end - self.block_start
 
         self.packet = self.construct_packet()
