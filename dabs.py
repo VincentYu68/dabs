@@ -97,7 +97,7 @@ class BulkMultiReader():
     Read multiple attributes via BulkRead
     """
 
-    def __init__(self, port_handler, packet_handler, motor_ids, attrs, indirect_root):
+    def __init__(self, port_handler, packet_handler, motor_ids, attrs):
 
         self.port_handler = port_handler
         self.packet_handler = packet_handler
@@ -226,7 +226,7 @@ if __name__ == "__main__":
     packet_handler = PacketHandler(PROTOCOL_VERSION)
 
 
-    reader = BulkMultiReader(port_handler, packet_handler, dxl_ids, read_attrs, 0)
+    reader = BulkMultiReader(port_handler, packet_handler, dxl_ids, read_attrs)
     writer = SyncMultiWriter(port_handler, packet_handler, dxl_ids, write_attrs)
     print(reader.read())
     writer.write([1, 1])
