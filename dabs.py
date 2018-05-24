@@ -6,7 +6,8 @@ import motors.p1mx28 as mx28
 
 from dynamixel_sdk import *
 
-def setup_indirects(self, port_handler, packet_handler, motor_ids, attrs, indirect_root):
+def setup_indirects(self, port_handler, packet_handler, motor_ids, attrs,
+                    indirect_root):
     """
     Given appropriate port constructs, list of motor ids, attributes, and
     an indirect index (from 0-55 on the mx28), set the indirect addresses
@@ -18,9 +19,9 @@ def setup_indirects(self, port_handler, packet_handler, motor_ids, attrs, indire
     attempt to detect points where it should jump blocks and do so, or even
     fail when it should
 
-    WARNING/TODO: Apparently, indirect addresses cannot be set while motor torque
-    is enabled. Therefore, this function DISABLES TORQUE on all motors and
-    makes no attempt to restore it to those motors which were enabled
+    WARNING/TODO: Apparently, indirect addresses cannot be set while motor
+    torque is enabled. Therefore, this function DISABLES TORQUE on all motors
+    and makes no attempt to restore it to those motors which were enabled
 
     WARNING: This function is specifically designed for MX28 right now
     This link should clear up all the "magic numbers"
@@ -55,8 +56,11 @@ def setup_indirects(self, port_handler, packet_handler, motor_ids, attrs, indire
         for offset in range(attr[1]):
             for dxl_id in motor_ids:
 
-                dxl_comm_result, dxl_error = packet_handler.write2ByteTxRx(port_handler,
-                                                                                dxl_id, indirect_addr, attr[0] + offset)
+                dxl_comm_result,
+                dxl_error = packet_handler.write2ByteTxRx(port_handler,
+                                                          dxl_id,
+                                                          indirect_addr,
+                                                          attr[0] + offset)
 
                 if dxl_comm_result != COMM_SUCCESS:
                     raise RuntimeError("Communication error on setting motor %i's address %i:\n%s"
@@ -85,10 +89,12 @@ def zero_torques(port_handler, packet_handler, motor_ids):
 
         if comm_result != COMM_SUCCESS:
             raise RuntimeError("Comm error while trying to disable motor %i:\n%s"
-                               % dxl_id, self.packet_handler.getTxRxResult(comm_result))
+                               % dxl_id,
+                               self.packet_handler.getTxRxResult(comm_result))
         elif error != 0:
             raise RuntimeError("Hardware error while trying to disable motor %i:\n%s"
-                               % dxl_id, self.packet_handler.getRxPacketError(error))
+                               % dxl_id,
+                               self.packet_handler.getRxPacketError(error))
 
 
 class BulkMultiReader():
@@ -135,7 +141,8 @@ class BulkMultiReader():
         for motor_index, motor_id in enumerate(self.motor_ids):
             for attr_index, attr in enumerate(self.attrs):
                 if not self.packet.isAvailable(motor_id, *attr):
-                    raise RuntimeError("Data unavailable for " + str(motor_id) + ", attribute " + str(attr))
+                    raise RuntimeError("Data unavailable for " + str(motor_id)
+                                       + ", attribute " + str(attr))
 
                 data_location = len(self.attrs) * motor_index + attr_index
                 results[data_location] = self.packet.getData(
@@ -199,11 +206,91 @@ class SyncMultiWriter:
                                                                  .to_bytes(attr[1], "little"))
 
             if not self.packet.addParam(motor_id, motor_data):
-                raise RuntimeError("Couldn't set value for motor %i" % motor_id)
+                raise RuntimeError("Couldn't set value for motor %i"
+                                   % motor_id)
 
         dxl_comm_result = self.packet.txPacket()
         if dxl_comm_result != COMM_SUCCESS:
-            raise RuntimeError("%s" % self.packet_handler.getTxRxResult(dxl_comm_result))
+            raise RuntimeError("%s"
+                               % self.packet_handler.getTxRxResult(dxl_comm_result))
+
+
+class MultiReader():
+
+    def __init__(self, port_handler, packet_handler, motor_ids, attrs):
+
+        self.port_handler = port_handler
+        self.packet_handler = packet_handler
+        self.motor_ids = motor_ids
+        self.attrs = attrs
+
+        self.identified_attrs = list(itertools.product(self.motor_ids,
+                                                       self.attrs))
+
+    def read(self):
+
+
+        results = [None] * len(self.identified_attrs)
+
+        for index, (id, attr) in enumerate(self.identified_attrs):
+
+            if attr[1] == 1:
+                val, comm, err = self.packet_handler.read1ByteTxRx(self.port_handler,
+                                                                   self.protocol_version,
+                                                                   id, attr[0])
+            elif attr[1] == 2:
+                val, comm, err = self.packet_handler.read2ByteTxRx(self.port_handler,
+                                                                   self.protocol_version,
+                                                                   id, attr[0])
+            elif attr[2] == 4:
+                val, comm, err = self.packet_handler.read4ByteTxRx(self.port_handler,
+                                                                   self.protocol_version,
+                                                                   id, attr[0])
+            else:
+                raise RuntimeError("Invalid data size")
+
+            if comm_result != COMM_SUCCESS:
+                raise RuntimeError("Comm error while trying to read motor %i, attribute %s"
+                                   % id, attr)
+            elif error != 0:
+                raise RuntimeError("Hardware error while trying to read motor %i, attribute %s"
+                                   % id, attr)
+
+            results[index] = val
+        return results
+
+class MultiWriter:
+
+    def __init__(self, port_handler, protocol_version, motor_ids, attrs):
+
+        self.port_handler = port_handler
+        self.packet_handler = packet_handler
+        self.motor_ids = motor_ids
+        self.attrs = attrs
+
+        self.identified_attrs = list(itertools.product(self.motor_ids, self.attrs))
+
+    def write(self, targets):
+
+        for index, (id, attr) in enumerate(self.identified_attrs):
+            if attr[1] == 1:
+                comm, err = self.packet_handler.write1ByteTxRx(self.port_handler, id,
+                                                               attr[0], targets[index])
+            elif attr[1] == 2:
+                comm, err = self.packet_handler.write2ByteTxRx(self.port_handler, id,
+                                                               attr[0], targets[index])
+            elif attr[2] == 4:
+                comm, err = self.packet_handler.write4ByteTxRx(self.port_handler, id,
+                                                               attr[0], targets[index])
+            else:
+                raise RuntimeError("Invalid data size")
+
+            if comm_result != COMM_SUCCESS:
+                raise RuntimeError("Comm error while trying to write motor %i, attribute %s"
+                                   % id, attr)
+            elif error != 0:
+                raise RuntimeError("Hardware error while trying to write motor %i, attribute %s"
+                                   % id, attr)
 
 if __name__ == "__main__":
 
