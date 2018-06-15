@@ -1,6 +1,7 @@
 # Import dxl stuff up here
 
 from dynamixel_sdk import *
+import itertools
 
 def setup_indirects(self, port_handler, packet_handler, motor_ids, attrs,
                     indirect_root):
@@ -255,10 +256,10 @@ class MultiReader():
             else:
                 raise RuntimeError("Invalid data size")
 
-            if comm_result != COMM_SUCCESS:
+            if comm != COMM_SUCCESS:
                 raise RuntimeError("Comm error on reading motor %i, " \
                                    + "attribute %s"% id, attr)
-            elif error != 0:
+            elif err != 0:
                 raise RuntimeError("Hardware error on reading motor %i, " \
                                    + "attribute %s" % id, attr)
 
@@ -295,10 +296,10 @@ class MultiWriter:
             else:
                 raise RuntimeError("Invalid data size")
 
-            if comm_result != COMM_SUCCESS:
+            if comm != COMM_SUCCESS:
                 raise RuntimeError("Comm error on writing motor %i," \
                                    + "attribute %s" % id, attr)
-            elif error != 0:
+            elif err != 0:
                 raise RuntimeError("Hardware error on writing motor %i, " \
                                    + "attribute %s" % id, attr)
 
