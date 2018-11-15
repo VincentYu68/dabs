@@ -334,7 +334,7 @@ if __name__ == "__main__":
     ###############
 
     # To take advantage of the indirect addressing, all you would need to do is
-    # something like "iattrs = setup_indirects(port, packet- dxl_ids, attrs, 0)"
+    # something like "iattrs = setup_indirects(port, packet, dxl_ids, attrs, 0)"
     # then you would be able to pass iattrs to the next two lines where
     # read_attrs and write_attrs are being passed now
 

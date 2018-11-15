@@ -25,7 +25,14 @@ if __name__ == "__main__":
         darwin.write_motor_goal(feedforward_goals[0])
     t2 = time.monotonic()
 
-    print(t2-t1)
+    print('10 multi write operation: ', t2-t1)
+
+    t1 = time.monotonic()
+    for i in range(10):
+        darwin.read_motor_positions()
+    t2 = time.monotonic()
+
+    print('10 multi read operation: ', t2 - t1)
 
 
 
