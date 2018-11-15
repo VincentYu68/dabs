@@ -35,7 +35,10 @@ class BasicDarwin:
 
         self.packet_handler = PacketHandler(PROTOCOL_VERSION)
 
-        self.motor_reader = BulkMultiReader(self.port_handler, self.packet_handler, self.dxl_ids, self.read_attrs)
+        self.read_iattrs = setup_indirects(self, self.port_handler, self.packet_handler, self.dxl_ids, self.read_attrs,
+                        0)
+
+        self.motor_reader = BulkMultiReader(self.port_handler, self.packet_handler, self.dxl_ids, self.read_iattrs)
         self.torque_enable_writer = MultiWriter(self.port_handler, self.packet_handler, self.dxl_ids,
                                                 self.write_attrs_torque_enable)
         self.pid_writer = MultiWriter(self.port_handler, self.packet_handler, self.dxl_ids, self.write_attrs_PID)
