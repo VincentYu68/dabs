@@ -50,14 +50,14 @@ class BasicDarwin:
 
     def write_torque_enable(self, enable):
         data = 1 if enable else 0
-        self.torque_enable_writer.write([data] * 20)
+        self.torque_enable_writer.write(np.array([data] * 20, dtype=np.int))
 
     def write_pid(self, p_gain, i_gain, d_gain):
-        self.pid_writer.write([p_gain, i_gain, d_gain] * 20)
+        self.pid_writer.write(np.array([p_gain, i_gain, d_gain] * 20, dtype=np.int))
 
     def write_motor_goal(self, goals):
         assert len(goals) == 20
-        self.motor_goal_writer.write(goals)
+        self.motor_goal_writer.write(goals.astype(int))
 
 
 
