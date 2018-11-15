@@ -3,6 +3,13 @@
 from dynamixel_sdk import *
 import itertools
 
+PROTOCOL_VERSION = 1
+
+if PROTOCOL_VERSION == 1:
+    import motors.p1mx28 as mx28
+else:
+    import motors.p2mx28 as mx28
+
 def setup_indirects(self, port_handler, packet_handler, motor_ids, attrs,
                     indirect_root):
     """
@@ -304,14 +311,6 @@ class MultiWriter:
                                    + "attribute %s" % id, attr)
 
 if __name__ == "__main__":
-
-    PROTOCOL_VERSION = 1
-
-    if PROTOCOL_VERSION == 1:
-        import motors.p1mx28 as mx28
-    else:
-        import motors.p2mx28 as mx28
-
     BAUD = 1000000
     dxl_ids = [1, 2]
 
