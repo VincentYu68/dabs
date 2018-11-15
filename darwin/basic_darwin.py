@@ -26,10 +26,10 @@ class BasicDarwin:
 
         self.write_attrs_goal = [(mx28.ADDR_GOAL_POSITION, mx28.LEN_GOAL_POSITION)]
 
-        self.motor_reader = BulkMultiReader(port_handler, packet_handler, dxl_ids, self.read_attrs)
-        self.torque_enable_writer = MultiWriter(port_handler, packet_handler, dxl_ids, self.write_attrs_torque_enable)
-        self.pid_writer = MultiWriter(port_handler, packet_handler, dxl_ids, self.write_attrs_PID)
-        self.motor_goal_writer = MultiWriter(port_handler, packet_handler, dxl_ids, self.write_attrs_goal)
+        self.motor_reader = BulkMultiReader(port_handler, packet_handler, self.dxl_ids, self.read_attrs)
+        self.torque_enable_writer = MultiWriter(port_handler, packet_handler, self.dxl_ids, self.write_attrs_torque_enable)
+        self.pid_writer = MultiWriter(port_handler, packet_handler, self.dxl_ids, self.write_attrs_PID)
+        self.motor_goal_writer = MultiWriter(port_handler, packet_handler, self.dxl_ids, self.write_attrs_goal)
 
     def connect(self):
         self.port_handler = PortHandler("/dev/ttyUSB0")
