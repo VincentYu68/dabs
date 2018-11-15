@@ -26,19 +26,21 @@ class BasicDarwin:
 
         self.write_attrs_goal = [(mx28.ADDR_GOAL_POSITION, mx28.LEN_GOAL_POSITION)]
 
-        self.motor_reader = BulkMultiReader(port_handler, packet_handler, self.dxl_ids, self.read_attrs)
-        self.torque_enable_writer = MultiWriter(port_handler, packet_handler, self.dxl_ids, self.write_attrs_torque_enable)
-        self.pid_writer = MultiWriter(port_handler, packet_handler, self.dxl_ids, self.write_attrs_PID)
-        self.motor_goal_writer = MultiWriter(port_handler, packet_handler, self.dxl_ids, self.write_attrs_goal)
-
     def connect(self):
         self.port_handler = PortHandler("/dev/ttyUSB0")
-        if not port_handler.openPort():
+        if not self.port_handler.openPort():
             raise RuntimeError("Couldn't open port")
-        if not port_handler.setBaudRate(BAUD):
+        if not self.port_handler.setBaudRate(self.BAUD):
             raise RuntimeError("Couldn't change baud rate")
 
         self.packet_handler = PacketHandler(PROTOCOL_VERSION)
+
+        self.motor_reader = BulkMultiReader(self.port_handler, self.packet_handler, self.dxl_ids, self.read_attrs)
+        self.torque_enable_writer = MultiWriter(self.port_handler, self.packet_handler, self.dxl_ids,
+                                                self.write_attrs_torque_enable)
+        self.pid_writer = MultiWriter(self.port_handler, self.packet_handler, self.dxl_ids, self.write_attrs_PID)
+        self.motor_goal_writer = MultiWriter(self.port_handler, self.packet_handler, self.dxl_ids,
+                                             self.write_attrs_goal)
 
     def disconnect(self):
         self.port_handler.closePort()
