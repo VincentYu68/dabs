@@ -13,12 +13,12 @@ if __name__ == "__main__":
 
     darwin.connect()
 
+    init_pose = darwin.read_motor_positions()
+    print(init_pose)
+
     darwin.write_torque_enable(True)
 
     darwin.write_pid(32, 0, 16)
-
-    init_pose = darwin.read_motor_positions()
-    print(init_pose)
 
     darwin.write_motor_goal(feedforward_goals[0])
 
