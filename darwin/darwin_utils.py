@@ -11,13 +11,13 @@ def RADIAN2VAL(rad):
 
 ### Conversion between darwin and simulation indices
 SIM2HW_JOINT_INDEX = [3,0,4,1,5,2,14,8,15,9,16,10,17,11,18,12,19,13,6,7]
-HW2SIM_JOINT_INDEX = np.argsort(SIM2HW_JOINT_INDEX).tolist()
+HW2SIM_JOINT_INDEX = np.argsort(SIM2HW_JOINT_INDEX).astype(int).tolist()
 
 def SIM2HW_INDEX(input):
-    return input[SIM2HW_JOINT_INDEX]
+    return (np.array(input)[SIM2HW_JOINT_INDEX]).tolist()
 
 def HW2SIM_INDEX(input):
-    return input[HW2SIM_JOINT_INDEX]
+    return (np.array(input)[HW2SIM_JOINT_INDEX]).tolist()
 
 
 ### Motor angle bounds in simulation and hardware
