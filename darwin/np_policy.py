@@ -109,7 +109,7 @@ class NP_Policy:
 
         # combine policy output and keyframe interpolation to get the target joint positions
         target_pose = self.ref_target + clamped_control * self.delta_angle_scale
-        target_pose = np.clip(target_pose, JOINT_LOW_BOUND, JOINT_UP_BOUND)
+        target_pose = np.clip(target_pose, SIM_JOINT_LOW_BOUND_RAD, SIM_JOINT_UP_BOUND_RAD)
 
         return target_pose
 
