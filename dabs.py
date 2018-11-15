@@ -42,7 +42,7 @@ def setup_indirects(self, port_handler, packet_handler, motor_ids, attrs,
         curr_addr = 2 * (indirect_root - 27) + 578
         data_addr = 634 + (indirect_root - 27)
 
-    zero_torques()
+    zero_torques(port_handler, packet_handler, motor_ids)
 
     # Calculate and set the indirect addresses appropriately
     for attr_index, attr in enumerate(attrs):
@@ -83,11 +83,11 @@ def setup_indirects(self, port_handler, packet_handler, motor_ids, attrs,
 
 def zero_torques(port_handler, packet_handler, motor_ids):
 
-    for dxl_id in self.motors_ids:
+    for dxl_id in motor_ids:
 
         # TODO Specific to MX28
-        comm_result, error = self.packet_handler.write1ByteTxRx(
-            self.port_handler, dxl_id, mx28.ADDR_TORQUE_ENABLE, 0)
+        comm_result, error = packet_handler.write1ByteTxRx(
+            port_handler, dxl_id, mx28.ADDR_TORQUE_ENABLE, 0)
 
         if comm_result != COMM_SUCCESS:
             raise RuntimeError("Comm error on trying to disable motor %i:\n%s"
@@ -96,7 +96,7 @@ def zero_torques(port_handler, packet_handler, motor_ids):
         elif error != 0:
             raise RuntimeError("Hardware error on disabling motor %i:\n%s"
                                % dxl_id,
-                               self.packet_handler.getRxPacketError(error))
+                               packet_handler.getRxPacketError(error))
 
 
 class BulkMultiReader():
