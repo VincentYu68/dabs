@@ -268,7 +268,7 @@ class MultiReader():
 
 class MultiWriter:
 
-    def __init__(self, port_handler, protocol_version, motor_ids, attrs):
+    def __init__(self, port_handler, packet_handler, motor_ids, attrs):
 
         self.port_handler = port_handler
         self.packet_handler = packet_handler
