@@ -59,7 +59,7 @@ class BasicDarwin:
 
     def write_motor_goal(self, goals):
         assert len(goals) == 20
-        self.motor_goal_writer.write(goals.astype(int))
+        self.motor_goal_writer.write([int(g) for g in goals])
 
 
 
