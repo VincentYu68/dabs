@@ -63,8 +63,7 @@ def setup_indirects(self, port_handler, packet_handler, motor_ids, attrs,
         for offset in range(attr[1]):
             for dxl_id in motor_ids:
 
-                dxl_comm_result,
-                dxl_error = packet_handler.write2ByteTxRx(port_handler,
+                dxl_comm_result, dxl_error = packet_handler.write2ByteTxRx(port_handler,
                                                           dxl_id,
                                                           indirect_addr,
                                                           attr[0] + offset)

@@ -35,14 +35,13 @@ class BasicDarwin:
 
         self.packet_handler = PacketHandler(PROTOCOL_VERSION)
 
-        self.read_iattrs = setup_indirects(self, self.port_handler, self.packet_handler, self.dxl_ids, self.read_attrs,
-                        0)
-
-        self.motor_reader = BulkMultiReader(self.port_handler, self.packet_handler, self.dxl_ids, self.read_iattrs)
+        self.motor_reader = BulkMultiReader(self.port_handler, self.packet_handler, self.dxl_ids, self.read_attrs)
         self.torque_enable_writer = MultiWriter(self.port_handler, self.packet_handler, self.dxl_ids,
                                                 self.write_attrs_torque_enable)
         self.pid_writer = MultiWriter(self.port_handler, self.packet_handler, self.dxl_ids, self.write_attrs_PID)
-        self.motor_goal_writer = MultiWriter(self.port_handler, self.packet_handler, self.dxl_ids,
+        #self.motor_goal_writer = MultiWriter(self.port_handler, self.packet_handler, self.dxl_ids,
+        #                                     self.write_attrs_goal)
+        self.motor_goal_writer = SyncMultiWriter(self.port_handler, self.packet_handler, self.dxl_ids,
                                              self.write_attrs_goal)
 
     def disconnect(self):
