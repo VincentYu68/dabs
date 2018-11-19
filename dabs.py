@@ -314,7 +314,8 @@ if __name__ == "__main__":
     dxl_ids = [1, 2]
 
     read_attrs = [(mx28.ADDR_PRESENT_POSITION, mx28.LEN_PRESENT_POSITION),
-                  (mx28.ADDR_TORQUE_ENABLE, mx28.LEN_TORQUE_ENABLE)]
+                  (mx28.ADDR_TORQUE_ENABLE, mx28.LEN_TORQUE_ENABLE),
+                  (mx28.ADDR_BAUD_RATE, mx28.LEN_BAUD_RATE)]
 
     write_attrs = [(mx28.ADDR_TORQUE_ENABLE, mx28.LEN_TORQUE_ENABLE)]
     # (mx28.ADDR_GOAL_POSITION, mx28.LEN_GOAL_POSITION)]
