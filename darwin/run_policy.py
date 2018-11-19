@@ -47,6 +47,7 @@ if __name__ == "__main__":
     current_step = 0
     initial_time = time.monotonic()
     prev_time = time.monotonic()
+    all_poses = []
     while current_step < 500:
         if time.monotonic() - prev_time >= 0.05:  # control every 50 ms
             #tdif = time.monotonic() - prev_time
@@ -59,6 +60,10 @@ if __name__ == "__main__":
             prev_motor_pose = np.copy(motor_pose)
 
             current_step += 1
+            all_poses.append(motor_pose)
+
+    all_poses = np.array(all_poses)
+    np.savetxt('data/saved_motion.txt', all_poses)
 
     darwin.disconnect()
 
