@@ -47,23 +47,29 @@ if __name__ == "__main__":
     current_step = 0
     initial_time = time.monotonic()
     prev_time = time.monotonic()
-    all_poses = []
-    while current_step < 500:
+    all_inputs = []
+    all_time = []
+    while current_step < 200:
         if time.monotonic() - prev_time >= 0.05:  # control every 50 ms
             #tdif = time.monotonic() - prev_time
             prev_time = time.monotonic() - ((time.monotonic() - prev_time) - 0.05)
             motor_pose = np.array(darwin.read_motor_positions())
             #est_vel = (motor_pose - prev_motor_pose) / tdif
-            act = policy.act(VAL2RADIAN(np.concatenate([HW2SIM_INDEX(motor_pose), HW2SIM_INDEX(prev_motor_pose)])), time.monotonic() - initial_time)
+            obs_input = VAL2RADIAN(np.concatenate([HW2SIM_INDEX(motor_pose), HW2SIM_INDEX(prev_motor_pose)]))
+            time = time.monotonic() - initial_time
+            act = policy.act(obs_input, time)
             darwin.write_motor_goal(RADIAN2VAL(SIM2HW_INDEX(act)))
 
             prev_motor_pose = np.copy(motor_pose)
 
             current_step += 1
-            all_poses.append(motor_pose)
+            all_inputs.append(obs_input)
+            all_time.append(time)
 
-    all_poses = np.array(all_poses)
-    np.savetxt('data/saved_motion.txt', all_poses)
+    all_inputs = np.array(all_inputs)
+    all_time = np.array(all_time)
+    np.savetxt('data/saved_obs.txt', all_inputs)
+    np.savetxt('data/saved_time.txt', all_time)
 
     darwin.disconnect()
 
