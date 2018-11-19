@@ -18,7 +18,7 @@ class BasicDarwin:
 
         self.read_attrs = [(mx28.ADDR_PRESENT_POSITION, mx28.LEN_PRESENT_POSITION)]
 
-        self.baud_attrs = [(mx28.ADDR_BAUD_RATE, mx28.LEN_BAUD_RATE)]
+        self.delay_attrs = [(mx28.ADDR_RETURN_DELAY_TIME, mx28.LEN_RETURN_DELAY_TIME)]
 
         self.write_attrs_torque_enable = [(mx28.ADDR_TORQUE_ENABLE, mx28.LEN_TORQUE_ENABLE)]
 
@@ -46,8 +46,8 @@ class BasicDarwin:
         self.motor_goal_writer = SyncMultiWriter(self.port_handler, self.packet_handler, self.dxl_ids,
                                              self.write_attrs_goal)
 
-        self.baudrate_reader = BulkMultiReader(self.port_handler, self.packet_handler, self.dxl_ids, self.baud_attrs)
-        self.baudrate_writer = MultiWriter(self.port_handler, self.packet_handler, self.dxl_ids, self.baud_attrs)
+        self.delay_reader = BulkMultiReader(self.port_handler, self.packet_handler, self.dxl_ids, self.delay_attrs)
+        self.delay_writer = MultiWriter(self.port_handler, self.packet_handler, self.dxl_ids, self.delay_attrs)
 
     def disconnect(self):
         self.port_handler.closePort()
@@ -66,12 +66,12 @@ class BasicDarwin:
         assert len(goals) == 20
         self.motor_goal_writer.write([int(g) for g in goals])
 
-    def read_motor_baud_rate(self):
-        return self.baudrate_reader.read()
+    def read_motor_delay(self):
+        return self.delay_reader.read()
 
-    def write_motor_baud_rate(self, baud):
-        assert len(baud) == 20
-        self.baudrate_writer.write([int(g) for g in baud])
+    def write_motor_delay(self, delay):
+        assert len(delay) == 20
+        self.delay_writer.write([int(g) for g in delay])
 
 
 
