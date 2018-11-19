@@ -38,6 +38,16 @@ if __name__ == "__main__":
 
     print('10 multi read operation: ', t2 - t1)
 
+    times = []
+    for i in range(50):
+        t1 = time.monotonic()
+        darwin.read_motor_positions()
+        darwin.write_motor_goal(feedforward_goals[0])
+        t2 = time.monotonic()
+        times.append(t2-t1)
 
+    print('List of all time intervals ', times)
+    print('Average time interval: ', np.mean(times))
+    print('Std time interval: ', np.std(times))
 
     darwin.disconnect()
