@@ -49,6 +49,8 @@ class BasicDarwin:
         self.delay_reader = BulkMultiReader(self.port_handler, self.packet_handler, self.dxl_ids, self.delay_attrs)
         self.delay_writer = MultiWriter(self.port_handler, self.packet_handler, self.dxl_ids, self.delay_attrs)
 
+        self.write_motor_delay([0] * 20)
+
     def disconnect(self):
         self.port_handler.closePort()
 

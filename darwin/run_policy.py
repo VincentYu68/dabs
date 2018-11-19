@@ -49,12 +49,14 @@ if __name__ == "__main__":
     prev_time = time.monotonic()
     while current_step < 500:
         if time.monotonic() - prev_time >= 0.05:  # control every 50 ms
-            tdif = time.monotonic() - prev_time
+            #tdif = time.monotonic() - prev_time
             prev_time = time.monotonic() - ((time.monotonic() - prev_time) - 0.05)
             motor_pose = np.array(darwin.read_motor_positions())
-            est_vel = (motor_pose - prev_motor_pose) / tdif
-            act = policy.act(VAL2RADIAN(np.concatenate([HW2SIM_INDEX(motor_pose), HW2SIM_INDEX(est_vel)])), time.monotonic() - initial_time)
+            #est_vel = (motor_pose - prev_motor_pose) / tdif
+            act = policy.act(VAL2RADIAN(np.concatenate([HW2SIM_INDEX(motor_pose), HW2SIM_INDEX(prev_motor_pose)])), time.monotonic() - initial_time)
             darwin.write_motor_goal(RADIAN2VAL(SIM2HW_INDEX(act)))
+
+            prev_motor_pose = np.copy(motor_pose)
 
             current_step += 1
 
