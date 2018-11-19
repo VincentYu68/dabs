@@ -7,7 +7,7 @@ from dabs import *
 import time
 
 if __name__ == "__main__":
-    filename = 'darwin_squatstand_policy.pkl'
+    filename = 'darwin_standsquat_policy_conseq_obs_warmstart.pkl'
 
     pose_squat_val = np.array([2509, 2297, 1714, 1508, 1816, 2376,
                                2047, 2171,
@@ -26,7 +26,7 @@ if __name__ == "__main__":
                   [3.0, pose_squat],
                   [3.3, pose_stand],
                   [3.6, pose_squat], ]
-    policy = NP_Policy(interp_sch, 'data/darwin_squatstand_policy.pkl', discrete_action=True,
+    policy = NP_Policy(interp_sch, 'data/'+filename, discrete_action=True,
                        action_bins=np.array([11] * 20), delta_angle_scale=0.3)
 
     darwin = BasicDarwin()
