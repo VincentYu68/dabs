@@ -13,6 +13,9 @@ if __name__ == "__main__":
 
     darwin.connect()
 
+    baud = darwin.read_motor_baud_rate()
+    print('Baud rate: ', baud)
+
     init_pose = darwin.read_motor_positions()
     print(init_pose)
 
