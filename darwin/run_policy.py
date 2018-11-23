@@ -58,7 +58,7 @@ if __name__ == "__main__":
             prev_time = time.monotonic() - ((time.monotonic() - prev_time) - 0.05)
             motor_pose = np.array(darwin.read_motor_positions())
             #est_vel = (motor_pose - prev_motor_pose) / tdif
-            obs_input = VAL2RADIAN(np.concatenate([HW2SIM_INDEX(motor_pose), HW2SIM_INDEX(prev_motor_pose)]))
+            obs_input = VAL2RADIAN(np.concatenate([HW2SIM_INDEX(prev_motor_pose), HW2SIM_INDEX(motor_pose)]))
             ct = time.monotonic() - initial_time
             act = policy.act(obs_input, ct)
             darwin.write_motor_goal(RADIAN2VAL(SIM2HW_INDEX(act)))
