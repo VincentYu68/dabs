@@ -9,6 +9,8 @@ import time
 if __name__ == "__main__":
     filename = 'darwin_standsquat_policy_conseq_obs_warmstart.pkl'
 
+    savename = 'fixed'
+
     pose_squat_val = np.array([2509, 2297, 1714, 1508, 1816, 2376,
                                2047, 2171,
                                2032, 2039, 2795, 568, 1231, 2040, 2041, 2060, 1281, 3525, 2855, 2073])
@@ -49,6 +51,7 @@ if __name__ == "__main__":
     prev_time = time.monotonic()
     all_inputs = []
     all_time = []
+    all_actions = []
     while current_step < 200:
         if time.monotonic() - prev_time >= 0.05:  # control every 50 ms
             #tdif = time.monotonic() - prev_time
@@ -63,13 +66,16 @@ if __name__ == "__main__":
             prev_motor_pose = np.copy(motor_pose)
 
             current_step += 1
+            all_actions.append(act)
             all_inputs.append(obs_input)
             all_time.append(ct)
 
     all_inputs = np.array(all_inputs)
     all_time = np.array(all_time)
-    np.savetxt('data/saved_obs.txt', all_inputs)
-    np.savetxt('data/saved_time.txt', all_time)
+    all_actions = np.array(all_actions)
+    np.savetxt('data/'+savename+'_saved_obs.txt', all_inputs)
+    np.savetxt('data/'+savename+'_saved_time.txt', all_time)
+    np.savetxt('data/'+savename+'_saved_action.txt', all_actions)
 
     darwin.disconnect()
 

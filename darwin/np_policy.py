@@ -210,7 +210,7 @@ if __name__ == "__main__":
                    [3.0, pose_squat],
                    [3.3, pose_stand],
                    [3.6, pose_squat], ]
-    policy = NP_Policy(interp_sch, 'darwin/data/darwin_squatstand_policy.pkl', discrete_action=True,
+    policy = NP_Policy(interp_sch, 'data/darwin_standsquat_policy_conseq_obs_warmstart.pkl', discrete_action=True,
               action_bins=np.array([11] * 20), delta_angle_scale=0.3)
     ############################################################################
     # End of setup for policy
