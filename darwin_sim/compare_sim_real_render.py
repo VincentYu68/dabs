@@ -7,8 +7,8 @@ from darwin_sim.darwin_env_plain import *
 import time
 
 if __name__ == "__main__":
-    poses1 = np.loadtxt('data/ref_sim_saved_obs.txt')
-    poses2 = np.loadtxt('data/fixed_saved_obs.txt')
+    poses1 = np.loadtxt('data/sim_saved_obs.txt')
+    poses2 = np.loadtxt('data/fixed_ref_saved_obs.txt')
 
     loop_size = np.min([len(poses1), len(poses2)])
 

@@ -1,15 +1,16 @@
 import numpy as np
 from darwin.darwin_utils import *
 from darwin.basic_darwin import *
-from darwin.np_policy import *
 import joblib
 from dabs import *
 import time
 
 if __name__ == "__main__":
-    filename = 'darwin_standsquat_policy_conseq_obs_warmstart.pkl'
+    savename = 'all_float'
 
-    savename = 'fixed'
+    total_rollouts = 20
+    rollout_length = 200
+
 
     pose_squat_val = np.array([2509, 2297, 1714, 1508, 1816, 2376,
                                2047, 2171,

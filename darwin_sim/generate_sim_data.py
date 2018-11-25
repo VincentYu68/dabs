@@ -15,14 +15,14 @@ import time
 
 if __name__ == "__main__":
     policy_path = 'data/darwin_standsquat_policy_conseq_obs_warmstart.pkl'
-    fixed_root = True
+    fixed_root = False
     action_path = 'data/fixed_saved_action.txt'
     run_policy = True
 
     # initialize policy
     pose_squat_val = np.array([2509, 2297, 1714, 1508, 1816, 2376,
                                2047, 2171,
-                               2032, 2039, 2795, 568, 1231, 2040, 2041, 2060, 1281, 3525, 2855, 2073])
+                               2032, 2039, 2795, 648, 1231, 2040, 2041, 2060, 1281, 3448, 2855, 2073])
     pose_stand_val = np.array([1500, 2048, 2048, 2500, 2048, 2048,
                                2048, 2048,
                                2048, 2048, 2048, 2048, 2048, 2048, 2048, 2048, 2048, 2048, 2048, 2048])
@@ -37,13 +37,15 @@ if __name__ == "__main__":
                   [3.3, pose_stand],
                   [3.6, pose_squat], ]
     policy = NP_Policy(interp_sch, policy_path, discrete_action=True,
-                       action_bins=np.array([11] * 20), delta_angle_scale=0.3)
+                       action_bins=np.array([11] * 20), delta_angle_scale=0.0)
 
     # load actions
     hw_actions = np.loadtxt(action_path)
 
     darwinenv = DarwinPlain()
     darwinenv.toggle_fix_root(fixed_root)
+
+    darwinenv.simenv.env.interp_sch = interp_sch
 
     darwinenv.reset()
     darwinenv.set_pose(policy.get_initial_state())
@@ -73,6 +75,7 @@ if __name__ == "__main__":
         savename = 'fixed_' + savename
     else:
         savename = 'ground_' + savename
+    savename = 'sim_saved_obs.txt'
     np.savetxt('data/' + savename, sim_poses)
 
 
