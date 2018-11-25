@@ -20,13 +20,17 @@ if __name__ == "__main__":
     init_pose = darwin.read_motor_positions()
     print(init_pose)
 
+    squat_pose = SIM2HW_INDEX(np.array([2509, 2297, 1714, 1508, 1816, 2376,
+                                    2047, 2171,
+                                    2032, 2039, 2795, 648, 1231, 2040,   2041, 2060, 1281, 3448, 2855, 2073]))
+
     darwin.write_torque_enable(True)
 
     darwin.write_pid(32, 0, 16)
 
     t1=time.monotonic()
     for i in range(10):
-        darwin.write_motor_goal(feedforward_goals[0])
+        darwin.write_motor_goal(squat_pose)
     t2 = time.monotonic()
 
     print('10 multi write operation: ', t2-t1)
@@ -42,7 +46,7 @@ if __name__ == "__main__":
     for i in range(50):
         t1 = time.monotonic()
         darwin.read_motor_positions()
-        darwin.write_motor_goal(feedforward_goals[0])
+        darwin.write_motor_goal(squat_pose)
         t2 = time.monotonic()
         times.append(t2-t1)
 
