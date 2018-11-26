@@ -15,7 +15,7 @@ import time
 
 if __name__ == "__main__":
     policy_path = 'data/darwin_standsquat_policy_conseq_obs_warmstart.pkl'
-    fixed_root = False
+    fixed_root = True
     action_path = 'data/fixed_saved_action.txt'
     run_policy = True
 
@@ -30,12 +30,22 @@ if __name__ == "__main__":
     pose_stand = VAL2RADIAN(pose_stand_val)
 
     # keyframe scheduling for squat stand task
-    interp_sch = [[0.0, pose_stand],
-                  [1.5, pose_squat],
-                  [2.5, pose_stand],
-                  [3.0, pose_squat],
-                  [3.3, pose_stand],
-                  [3.6, pose_squat], ]
+    interp_sch = [[0.0, pose_squat],
+                  [3.0, pose_stand],
+                  [4.0, pose_stand], ]
+                  #[3.0, pose_squat],
+                  #[3.3, pose_stand],
+                  #[3.6, pose_squat], ]
+
+    rig_keyframe = np.loadtxt('data/rig_data/rig_keyframe.txt')
+    interp_sch = []
+    interp_time = 0.0
+    for i in range(10):
+        for k in range(1, len(rig_keyframe)):
+            interp_sch.append([interp_time, rig_keyframe[k]])
+            interp_time += 0.25
+    interp_sch.append([interp_time, rig_keyframe[0]])
+
     policy = NP_Policy(interp_sch, policy_path, discrete_action=True,
                        action_bins=np.array([11] * 20), delta_angle_scale=0.0)
 
@@ -52,10 +62,9 @@ if __name__ == "__main__":
 
     sim_poses = []
     prev_obs = darwinenv.get_motor_pose()
-    for i in range(200):
+    for i in range(400):
         current_obs = darwinenv.get_motor_pose()
-        # WARNING: the order of current obs and prev obs is flipped, need to fix later, but use this for now as the hw data is also flpped
-        input_obs = np.concatenate([current_obs, prev_obs])
+        input_obs = np.concatenate([prev_obs, current_obs])
         if run_policy:
             darwinenv.step(policy.act(input_obs, darwinenv.time))
         else:
@@ -63,6 +72,7 @@ if __name__ == "__main__":
         darwinenv.render()
         time.sleep(0.05)
         sim_poses.append(input_obs)
+        prev_obs = current_obs
 
     sim_poses = np.array(sim_poses)
 
@@ -75,7 +85,7 @@ if __name__ == "__main__":
         savename = 'fixed_' + savename
     else:
         savename = 'ground_' + savename
-    savename = 'sim_saved_obs.txt'
+    savename = 'sim_saved_obs_walk.txt'
     np.savetxt('data/' + savename, sim_poses)
 
 

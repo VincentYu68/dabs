@@ -34,6 +34,10 @@ class DarwinPlain:
         self.fixed_root = False
         self.reset()
 
+        self.pose_mirror_matrix = np.zeros((self.robot.num_dofs()-6, self.robot.num_dofs()-6))
+        for i, perm in enumerate(self.simenv.env.act_perm):
+            self.pose_mirror_matrix[i][int(np.abs(perm))] = np.sign(perm)
+
         self.time = 0
 
     def render(self):

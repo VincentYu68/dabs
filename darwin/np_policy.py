@@ -204,12 +204,10 @@ if __name__ == "__main__":
     pose_stand = VAL2RADIAN(pose_stand_val)
 
     # keyframe scheduling for squat stand task
-    interp_sch = [[0.0, pose_stand],
-                   [1.5, pose_squat],
-                   [2.5, pose_stand],
-                   [3.0, pose_squat],
-                   [3.3, pose_stand],
-                   [3.6, pose_squat], ]
+    interp_sch = [[0.0, pose_squat],
+                   [3.0, pose_stand],
+                   [4.0, pose_stand],
+                   ]
     policy = NP_Policy(interp_sch, 'data/darwin_standsquat_policy_conseq_obs_warmstart.pkl', discrete_action=True,
               action_bins=np.array([11] * 20), delta_angle_scale=0.3)
     ############################################################################
