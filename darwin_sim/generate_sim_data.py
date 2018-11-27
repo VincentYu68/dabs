@@ -14,10 +14,10 @@ from darwin.np_policy import *
 import time
 
 if __name__ == "__main__":
-    policy_path = 'data/darwin_standsquat_policy_conseq_obs_warmstart.pkl'
-    fixed_root = True
-    action_path = 'data/fixed_saved_action.txt'
-    run_policy = True
+    policy_path = 'data/squatstand_selfcol.pkl'
+    fixed_root = False
+    action_path = 'data/hw_data/ground_saved_action.txt'
+    run_policy = False
 
     # initialize policy
     pose_squat_val = np.array([2509, 2297, 1714, 1508, 1816, 2376,
@@ -37,17 +37,17 @@ if __name__ == "__main__":
                   #[3.3, pose_stand],
                   #[3.6, pose_squat], ]
 
-    rig_keyframe = np.loadtxt('data/rig_data/rig_keyframe.txt')
+    '''rig_keyframe = np.loadtxt('data/rig_data/rig_keyframe.txt')
     interp_sch = []
     interp_time = 0.0
     for i in range(10):
         for k in range(1, len(rig_keyframe)):
             interp_sch.append([interp_time, rig_keyframe[k]])
             interp_time += 0.25
-    interp_sch.append([interp_time, rig_keyframe[0]])
+    interp_sch.append([interp_time, rig_keyframe[0]])'''
 
     policy = NP_Policy(interp_sch, policy_path, discrete_action=True,
-                       action_bins=np.array([11] * 20), delta_angle_scale=0.0)
+                       action_bins=np.array([11] * 20), delta_angle_scale=0.3)
 
     # load actions
     hw_actions = np.loadtxt(action_path)
@@ -60,23 +60,33 @@ if __name__ == "__main__":
     darwinenv.reset()
     darwinenv.set_pose(policy.get_initial_state())
 
+    hw_poses = np.loadtxt('data/hw_data/ground_saved_obs.txt')
+    darwinenv.set_pose(hw_poses[0][0:20])
+
     sim_poses = []
+    sim_actions = []
+    sim_times = []
     prev_obs = darwinenv.get_motor_pose()
-    for i in range(400):
+    for i in range(200):
         current_obs = darwinenv.get_motor_pose()
         input_obs = np.concatenate([prev_obs, current_obs])
         if run_policy:
-            darwinenv.step(policy.act(input_obs, darwinenv.time))
+            act = policy.act(input_obs, darwinenv.time)
         else:
-            darwinenv.step(hw_actions[i])
+            act = hw_actions[i]
+        darwinenv.step(act)
+        sim_actions.append(act)
+        sim_times.append(darwinenv.time)
         darwinenv.render()
         time.sleep(0.05)
         sim_poses.append(input_obs)
         prev_obs = current_obs
 
     sim_poses = np.array(sim_poses)
+    sim_actions = np.array(sim_actions)
+    sim_times = np.array(sim_times)
 
-    savename = 'sim_saved_obs.txt'
+    savename = 'sim_saved'
     if run_policy:
         savename = 'pol_' + savename
     else:
@@ -85,7 +95,9 @@ if __name__ == "__main__":
         savename = 'fixed_' + savename
     else:
         savename = 'ground_' + savename
-    savename = 'sim_saved_obs_walk.txt'
-    np.savetxt('data/' + savename, sim_poses)
+    #savename = 'sim_saved_obs_walk.txt'
+    np.savetxt('data/sim_data/' + savename + '_obs.txt', sim_poses)
+    np.savetxt('data/sim_data/' + savename + '_action.txt', sim_actions)
+    np.savetxt('data/sim_data/' + savename + '_time.txt', sim_times)
 
 

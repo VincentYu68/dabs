@@ -89,6 +89,7 @@ class NP_Policy:
     def act(self, o, t):
         # get network output action
         new_action = self.net.get_output(o)
+
         if self.discrete_action:
             new_action = new_action * 1.0 / np.floor(self.net.nvec/2.0) - 1.0
 

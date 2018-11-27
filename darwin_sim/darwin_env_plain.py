@@ -73,7 +73,7 @@ class DarwinPlain:
 
         tau = np.zeros(26)
         for i in range(self.simenv.env.frame_skip):
-
+            #self.robot.bodynode('MP_ANKLE2_L').add_ext_force(np.array([-20, 0, 0]), np.array([0.0, 0.0, 0.0]))
             tau[6:] = self.simenv.env.PID()
             self.robot.set_forces(tau)
             self.dart_world.step()
