@@ -5,11 +5,12 @@ from darwin.np_policy import *
 import joblib
 from dabs import *
 import time
+import os, errno
 
 if __name__ == "__main__":
-    filename = 'darwin_standsquat_policy_conseq_obs_warmstart.pkl'
+    filename = 'squatstand_selfcol.pkl'
 
-    savename = 'fixed'
+    savename = 'ground'
 
     pose_squat_val = np.array([2509, 2297, 1714, 1508, 1816, 2376,
                                2047, 2171,
@@ -73,9 +74,17 @@ if __name__ == "__main__":
     all_inputs = np.array(all_inputs)
     all_time = np.array(all_time)
     all_actions = np.array(all_actions)
-    np.savetxt('data/'+savename+'_saved_obs.txt', all_inputs)
-    np.savetxt('data/'+savename+'_saved_time.txt', all_time)
-    np.savetxt('data/'+savename+'_saved_action.txt', all_actions)
+
+    try:
+        os.makedirs('data/hw_data')
+    except OSError as e:
+        if e.errno != errno.EEXIST:
+            raise
+
+
+    np.savetxt('data/hw_data/'+savename+'_saved_obs.txt', all_inputs)
+    np.savetxt('data/hw_data/'+savename+'_saved_time.txt', all_time)
+    np.savetxt('data/hw_data/'+savename+'_saved_action.txt', all_actions)
 
     darwin.disconnect()
 
