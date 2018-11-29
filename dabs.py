@@ -214,6 +214,7 @@ class SyncMultiWriter:
                                             list(motor_targets[attr_index]
                                                  .to_bytes(attr[1], "little"))
 
+
             if not self.packet.addParam(motor_id, motor_data):
                 raise RuntimeError("Couldn't set value for motor %i"
                                    % motor_id)

@@ -15,7 +15,7 @@ import time
 
 if __name__ == "__main__":
     policy_path = 'data/squatstand_selfcol.pkl'
-    fixed_root = False
+    fixed_root = True
     action_path = 'data/hw_data/ground_saved_action.txt'
     run_policy = False
 

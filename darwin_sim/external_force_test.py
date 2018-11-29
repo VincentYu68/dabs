@@ -15,13 +15,17 @@ import time
 
 if __name__ == "__main__":
     darwinenv = DarwinPlain()
-    darwinenv.toggle_fix_root(True)
+    darwinenv.toggle_fix_root(False)
 
     interp_sch = [[0.0, np.zeros(20)],
                   [10.0, np.zeros(20)]]
     darwinenv.simenv.env.interp_sch = interp_sch
 
     darwinenv.reset()
+    q = darwinenv.robot.q
+    q[1] = 0.3
+    q[5] = -0.3
+    darwinenv.robot.q = q
 
     sim_poses = []
     prev_obs = darwinenv.get_motor_pose()

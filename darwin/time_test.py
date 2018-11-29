@@ -47,6 +47,7 @@ if __name__ == "__main__":
         t1 = time.monotonic()
         darwin.read_motor_positions()
         darwin.write_motor_goal(squat_pose)
+        darwin.read_motor_voltages()
         t2 = time.monotonic()
         times.append(t2-t1)
 

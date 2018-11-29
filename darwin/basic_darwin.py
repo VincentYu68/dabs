@@ -18,6 +18,8 @@ class BasicDarwin:
 
         self.read_attrs = [(mx28.ADDR_PRESENT_POSITION, mx28.LEN_PRESENT_POSITION)]
 
+        self.voltage_attrs = [(mx28.ADDR_PRESENT_VOLTAGE, mx28.LEN_PRESENT_VOLTAGE)]
+
         self.delay_attrs = [(mx28.ADDR_RETURN_DELAY_TIME, mx28.LEN_RETURN_DELAY_TIME)]
 
         self.write_attrs_torque_enable = [(mx28.ADDR_TORQUE_ENABLE, mx28.LEN_TORQUE_ENABLE)]
@@ -49,6 +51,8 @@ class BasicDarwin:
         self.delay_reader = BulkMultiReader(self.port_handler, self.packet_handler, self.dxl_ids, self.delay_attrs)
         self.delay_writer = MultiWriter(self.port_handler, self.packet_handler, self.dxl_ids, self.delay_attrs)
 
+        self.voltage_reader = BulkMultiReader(self.port_handler, self.packet_handler, self.dxl_ids, self.voltage_attrs)
+
         self.write_motor_delay([0] * 20)
 
     def disconnect(self):
@@ -56,6 +60,9 @@ class BasicDarwin:
 
     def read_motor_positions(self):
         return self.motor_reader.read()
+
+    def read_motor_voltages(self):
+        return self.voltage_reader.read()
 
     def write_torque_enable(self, enable):
         data = 1 if enable else 0

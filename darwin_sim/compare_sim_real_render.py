@@ -14,11 +14,11 @@ from darwin.np_policy import *
 
 if __name__ == "__main__":
     poses1 = np.loadtxt('data/sim_data/ground_traj_sim_saved_obs.txt')
-    poses2 = np.loadtxt('data/sim_data/fixed_traj_sim_saved_obs.txt')
+    poses2 = np.loadtxt('data/hw_data/ground_saved_obs.txt')
     #poses2 = np.loadtxt('data/hw_data/ground_saved_obs.txt')
 
     actions1 = np.loadtxt('data/sim_data/ground_traj_sim_saved_action.txt')
-    actions2 = np.loadtxt('data/sim_data/fixed_traj_sim_saved_action.txt')
+    actions2 = np.loadtxt('data/hw_data/ground_saved_action.txt')
     #actions2 = np.loadtxt('data/hw_data/ground_saved_action.txt')
 
     # initialize policy
