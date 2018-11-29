@@ -304,11 +304,9 @@ class MultiWriter:
                 raise RuntimeError("Invalid data size")
 
             if comm != COMM_SUCCESS:
-                raise RuntimeError("Comm error on writing motor %i," \
-                                   + "attribute %s" % id, attr)
+                raise RuntimeError("Comm error on writing motor %i, attribute %s" % (id, attr))
             elif err != 0:
-                raise RuntimeError("Hardware error on writing motor %i, " \
-                                   + "attribute %s" % id, attr)
+                raise RuntimeError("Hardware error on writing motor %i, attribute %s, with error %i" % (id, attr, err))
 
 if __name__ == "__main__":
     BAUD = 1000000
