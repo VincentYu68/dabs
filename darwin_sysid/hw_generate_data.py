@@ -68,6 +68,7 @@ if __name__ == "__main__":
                 next_pose = np.clip(next_pose + np.random.uniform(-20, 20, 20), HW_JOINT_LOW_BOUND_VAL, HW_JOINT_UP_BOUND_VAL)
                 action_data.append(VAL2RADIAN(HW2SIM_INDEX(next_pose)))
                 darwin.write_motor_goal(next_pose)
+                current_step += 1
 
         np.savetxt('data/sysid_data/double_pose/result_pose_'+str(i)+'.txt', pose_data)
         np.savetxt('data/sysid_data/double_pose/result_action_' + str(i) + '.txt', action_data)

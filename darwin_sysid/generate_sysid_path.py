@@ -23,6 +23,8 @@ if __name__ == "__main__":
 
     while len(single_poses) < num_single_pose:
         rand_pose_coef = np.random.random(20)
+        rand_pose_coef[0] = np.clip(rand_pose_coef[0], 0.3, 0.7)
+        rand_pose_coef[3] = np.clip(rand_pose_coef[3], 0.3, 0.7)
         rand_pose = SIM_JOINT_LOW_BOUND_RAD * rand_pose_coef + SIM_JOINT_UP_BOUND_RAD * (1-rand_pose_coef)
 
         darwinenv.set_pose(rand_pose)
@@ -31,9 +33,13 @@ if __name__ == "__main__":
 
     while len(double_poses) < num_double_pose:
         rand_pose_coef1 = np.random.random(20)
+        rand_pose_coef1[0] = np.clip(rand_pose_coef1[0], 0.3, 0.7)
+        rand_pose_coef1[3] = np.clip(rand_pose_coef1[3], 0.3, 0.7)
         rand_pose1 = SIM_JOINT_LOW_BOUND_RAD * rand_pose_coef1 + SIM_JOINT_UP_BOUND_RAD * (1 - rand_pose_coef1)
 
         rand_pose_coef2 = np.random.random(20)
+        rand_pose_coef2[0] = np.clip(rand_pose_coef2[0], 0.3, 0.7)
+        rand_pose_coef2[3] = np.clip(rand_pose_coef2[3], 0.3, 0.7)
         rand_pose2 = SIM_JOINT_LOW_BOUND_RAD * rand_pose_coef2 + SIM_JOINT_UP_BOUND_RAD * (1 - rand_pose_coef2)
 
         self_collided = False
