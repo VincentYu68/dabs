@@ -20,6 +20,8 @@ class BasicDarwin:
 
         self.voltage_attrs = [(mx28.ADDR_PRESENT_VOLTAGE, mx28.LEN_PRESENT_VOLTAGE)]
 
+        self.torque_limit_attrs = [(mx28.ADDR_TORQUE_LIMIT, mx28.LEN_TORQUE_LIMIT)]
+
         self.delay_attrs = [(mx28.ADDR_RETURN_DELAY_TIME, mx28.LEN_RETURN_DELAY_TIME)]
 
         self.write_attrs_torque_enable = [(mx28.ADDR_TORQUE_ENABLE, mx28.LEN_TORQUE_ENABLE)]
@@ -51,6 +53,9 @@ class BasicDarwin:
         self.delay_reader = BulkMultiReader(self.port_handler, self.packet_handler, self.dxl_ids, self.delay_attrs)
         self.delay_writer = MultiWriter(self.port_handler, self.packet_handler, self.dxl_ids, self.delay_attrs)
 
+        self.torque_limit_writer = SyncMultiWriter(self.port_handler, self.packet_handler, self.dxl_ids,
+                                                 self.torque_limit_attrs)
+
         self.voltage_reader = BulkMultiReader(self.port_handler, self.packet_handler, self.dxl_ids, self.voltage_attrs)
 
         self.write_motor_delay([0] * 20)
@@ -67,6 +72,9 @@ class BasicDarwin:
     def write_torque_enable(self, enable):
         data = 1 if enable else 0
         self.torque_enable_writer.write(np.array([data] * 20, dtype=np.int))
+
+    def write_torque_limit(self, limit):
+        self.torque_limit_writer.write(np.array(limit, dtype=np.int))
 
     def write_pid(self, p_gain, i_gain, d_gain):
         self.pid_writer.write(np.array([p_gain, i_gain, d_gain] * 20, dtype=np.int))

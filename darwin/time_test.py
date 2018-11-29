@@ -35,6 +35,11 @@ if __name__ == "__main__":
 
     print('10 multi write operation: ', t2-t1)
 
+    time.sleep(5)
+    darwin.write_torque_limit([0] * 20)
+    time.sleep(5)
+    darwin.write_torque_limit([1023] * 20)
+
     t1 = time.monotonic()
     for i in range(10):
         darwin.read_motor_positions()
