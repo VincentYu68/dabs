@@ -21,6 +21,9 @@ if __name__ == "__main__":
 
     darwin.write_torque_enable(True)
 
+    print('Start in 5 seconds ...')
+    time.sleep(5)
+
     for i in range(len(single_poses)):
         darwin.write_pid(32, 0, 16)
         pose = RADIAN2VAL(SIM2HW_INDEX(single_poses[i]))
@@ -39,6 +42,8 @@ if __name__ == "__main__":
                 pose_data.append(motor_pose_sim)
         np.savetxt('data/sysid_data/single_pose/result_'+str(i)+'.txt', pose_data)
 
+    print('Finished single poses.')
+
     darwin.write_pid(32, 0, 16)
     for i in range(len(double_poses)):
         pose1 = RADIAN2VAL(SIM2HW_INDEX(double_poses[i][0:20]))
@@ -56,7 +61,7 @@ if __name__ == "__main__":
                 prev_time = time.monotonic() - ((time.monotonic() - prev_time) - 0.05)
 
                 motor_pose = np.array(darwin.read_motor_positions())
-                motor_pose_sim = VAL2RADIAN(HW2SIM_INDEX(prev_motor_pose))
+                motor_pose_sim = VAL2RADIAN(HW2SIM_INDEX(motor_pose))
                 pose_data.append(motor_pose_sim)
 
                 next_pose = pose1 * (1-current_step*1.0/(num_steps_per_trial-1)) + pose2 * (current_step*1.0/(num_steps_per_trial-1))
@@ -64,6 +69,9 @@ if __name__ == "__main__":
                 action_data.append(VAL2RADIAN(HW2SIM_INDEX(next_pose)))
                 darwin.write_motor_goal(next_pose)
 
-        np.savetxt('data/sysid_data/double_pose/result_'+str(i)+'.txt', pose_data)
+        np.savetxt('data/sysid_data/double_pose/result_pose_'+str(i)+'.txt', pose_data)
+        np.savetxt('data/sysid_data/double_pose/result_action_' + str(i) + '.txt', action_data)
+
+    print('Finished double poses.')
 
     darwin.disconnect()
