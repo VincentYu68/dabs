@@ -74,7 +74,7 @@ class BasicDarwin:
         self.torque_enable_writer.write(np.array([data] * 20, dtype=np.int))
 
     def write_torque_limit(self, limit):
-        self.torque_limit_writer.write(np.array(limit, dtype=np.int))
+        self.torque_limit_writer.write([int(g) for g in limit])
 
     def write_pid(self, p_gain, i_gain, d_gain):
         self.pid_writer.write(np.array([p_gain, i_gain, d_gain] * 20, dtype=np.int))
