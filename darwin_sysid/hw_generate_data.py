@@ -65,7 +65,7 @@ if __name__ == "__main__":
                 pose_data.append(motor_pose_sim)
 
                 next_pose = pose1 * (1-current_step*1.0/(num_steps_per_trial-1)) + pose2 * (current_step*1.0/(num_steps_per_trial-1))
-                next_pose = np.clip(next_pose + np.random.uniform(-20, 20, 20), SIM_JOINT_LOW_BOUND_RAD, SIM_JOINT_UP_BOUND_RAD)
+                next_pose = np.clip(next_pose + np.random.uniform(-20, 20, 20), HW_JOINT_LOW_BOUND_VAL, HW_JOINT_UP_BOUND_VAL)
                 action_data.append(VAL2RADIAN(HW2SIM_INDEX(next_pose)))
                 darwin.write_motor_goal(next_pose)
 
