@@ -96,3 +96,10 @@ class DarwinPlain:
 
         self.time = 0
 
+    def check_self_collision(self):
+        self.dart_world.check_collision()
+        contacts = self.dart_world.collision_result.contacts
+        for contact in contacts:
+            if contact.bodynode1.skel == contact.bodynode2.skel.id and contact.bodynode2.skel.id > 0:
+                return True
+        return False
