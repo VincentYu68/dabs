@@ -95,7 +95,7 @@ class BasicDarwin:
         self.delay_writer.write([int(g) for g in delay])
 
     def read_gyro(self):
-        return self.gyro_reader.read()
+        return np.array(self.gyro_reader.read())
 
 
 
