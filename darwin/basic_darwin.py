@@ -32,6 +32,8 @@ class BasicDarwin:
 
         self.write_attrs_goal = [(mx28.ADDR_GOAL_POSITION, mx28.LEN_GOAL_POSITION)]
 
+
+
     def connect(self):
         self.port_handler = PortHandler("/dev/ttyUSB0")
         if not self.port_handler.openPort():
@@ -57,6 +59,8 @@ class BasicDarwin:
                                                  self.torque_limit_attrs)
 
         self.voltage_reader = BulkMultiReader(self.port_handler, self.packet_handler, self.dxl_ids, self.voltage_attrs)
+
+        self.gyro_reader = BulkMultiReader(port_handler, packet_handler, [200], [(38, 2), (40, 2), (42, 2)])
 
         self.write_motor_delay([0] * 20)
 
@@ -90,6 +94,8 @@ class BasicDarwin:
         assert len(delay) == 20
         self.delay_writer.write([int(g) for g in delay])
 
+    def read_gyro(self):
+        return self.gyro_reader.read()
 
 
 

@@ -9,6 +9,13 @@ def VAL2RADIAN(val):
 def RADIAN2VAL(rad):
     return rad * 180 / np.pi / 0.088 + 2048
 
+# gyro
+def VAL2RPS(val):
+    return (val-512)/512.0*500/180*np.pi
+
+def RPS2VAL(rps):
+    return [int(v) for v in (rps/np.pi*180.0/500*512+512)]
+
 ### Conversion between darwin and simulation indices
 SIM2HW_JOINT_INDEX = [3,0,4,1,5,2,14,8,15,9,16,10,17,11,18,12,19,13,6,7]
 HW2SIM_JOINT_INDEX = np.argsort(SIM2HW_JOINT_INDEX).astype(int).tolist()
@@ -40,5 +47,6 @@ HW_JOINT_LOW_BOUND_VAL = SIM2HW_INDEX(SIM_JOINT_LOW_BOUND_VAL)
 HW_JOINT_UP_BOUND_VAL = SIM2HW_INDEX(SIM_JOINT_UP_BOUND_VAL)
 HW_JOINT_LOW_BOUND_RAD = SIM2HW_INDEX(SIM_JOINT_LOW_BOUND_RAD)
 HW_JOINT_UP_BOUND_RAD = SIM2HW_INDEX(SIM_JOINT_UP_BOUND_RAD)
+
 
 ###############################################################################

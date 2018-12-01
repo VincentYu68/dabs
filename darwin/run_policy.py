@@ -53,6 +53,7 @@ if __name__ == "__main__":
     all_inputs = []
     all_time = []
     all_actions = []
+    all_gyros = []
     while current_step < 200:
         if time.monotonic() - prev_time >= 0.05:  # control every 50 ms
             #tdif = time.monotonic() - prev_time
@@ -64,12 +65,15 @@ if __name__ == "__main__":
             act = policy.act(obs_input, ct)
             darwin.write_motor_goal(RADIAN2VAL(SIM2HW_INDEX(act)))
 
+            gyro = darwin.read_gyro()
+
             prev_motor_pose = np.copy(motor_pose)
 
             current_step += 1
             all_actions.append(act)
             all_inputs.append(obs_input)
             all_time.append(ct)
+            all_gyros.append(VAL2RPS(gyro))
 
     all_inputs = np.array(all_inputs)
     all_time = np.array(all_time)
@@ -85,6 +89,7 @@ if __name__ == "__main__":
     np.savetxt('data/hw_data/'+savename+'_saved_obs.txt', all_inputs)
     np.savetxt('data/hw_data/'+savename+'_saved_time.txt', all_time)
     np.savetxt('data/hw_data/'+savename+'_saved_action.txt', all_actions)
+    np.savetxt('data/hw_data/' + savename + '_saved_gyro.txt', all_gyros)
 
     darwin.disconnect()
 

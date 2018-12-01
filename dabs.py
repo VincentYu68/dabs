@@ -385,3 +385,7 @@ if __name__ == "__main__":
     writer = MultiWriter(port_handler, packet_handler, dxl_ids, write_attrs)
     print(reader.read())
     writer.write([1, 1])
+
+    gyro_reader = BulkMultiReader(port_handler, packet_handler, [200], [(38, 2), (40, 2), (42, 2)])
+
+    print(gyro_reader.read())
