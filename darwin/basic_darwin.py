@@ -60,7 +60,7 @@ class BasicDarwin:
 
         self.voltage_reader = BulkMultiReader(self.port_handler, self.packet_handler, self.dxl_ids, self.voltage_attrs)
 
-        self.gyro_reader = BulkMultiReader(port_handler, packet_handler, [200], [(38, 2), (40, 2), (42, 2)])
+        self.gyro_reader = BulkMultiReader(self.port_handler, self.packet_handler, [200], [(38, 2), (40, 2), (42, 2)])
 
         self.write_motor_delay([0] * 20)
 
