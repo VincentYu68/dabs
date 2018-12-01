@@ -8,7 +8,7 @@ import time
 import os, errno
 
 if __name__ == "__main__":
-    filename = 'squatstand_selfcol.pkl'
+    filename = 'squatstand_notl.pkl'
 
     savename = 'ground'
 

@@ -78,6 +78,10 @@ class DarwinPlain:
             self.robot.set_forces(tau)
             self.dart_world.step()
 
+    def passive_step(self): # advance simualtion without control
+        for i in range(self.simenv.env.frame_skip):
+            self.dart_world.step()
+
     def get_motor_pose(self):
         return self.robot.q[6:]
 
