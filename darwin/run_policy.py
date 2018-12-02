@@ -36,8 +36,8 @@ if __name__ == "__main__":
 
     if walk_motion:
         rig_keyframe = np.loadtxt('data/rig_data/rig_keyframe.txt')
-        interp_sch = []
-        interp_time = 0.0
+        interp_sch = [[0.0, rig_keyframe[0]]]
+        interp_time = 0.5
         for i in range(10):
             for k in range(1, len(rig_keyframe)):
                 interp_sch.append([interp_time, rig_keyframe[k]])
