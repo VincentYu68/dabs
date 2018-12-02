@@ -8,9 +8,13 @@ import time
 import os, errno
 
 if __name__ == "__main__":
-    filename = 'standsquatstand_notl.pkl'
+    filename = 'walk_notl.pkl'
 
-    savename = 'ground_stsqst'
+    savename = 'ground'
+
+    walk_motion = True
+    if walk_motion:
+        savename += '_walk'
 
     pose_squat_val = np.array([2509, 2297, 1714, 1508, 1816, 2376,
                                2047, 2171,
@@ -29,6 +33,17 @@ if __name__ == "__main__":
            [3.0, pose_squat],
            [3.3, pose_stand],
            [3.6, pose_squat], ]
+
+    if walk_motion:
+        rig_keyframe = np.loadtxt('data/rig_data/rig_keyframe.txt')
+        interp_sch = []
+        interp_time = 0.0
+        for i in range(10):
+            for k in range(1, len(rig_keyframe)):
+                interp_sch.append([interp_time, rig_keyframe[k]])
+                interp_time += 0.25
+        interp_sch.append([interp_time, rig_keyframe[0]])
+
     policy = NP_Policy(interp_sch, 'data/'+filename, discrete_action=True,
                        action_bins=np.array([11] * 20), delta_angle_scale=0.3)
 
