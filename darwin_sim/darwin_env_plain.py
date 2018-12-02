@@ -107,3 +107,6 @@ class DarwinPlain:
             if contact.bodynode1.skel == contact.bodynode2.skel.id and contact.bodynode2.skel.id > 0:
                 return True
         return False
+
+    def get_imu_reading(self):
+        return self.simenv.env.get_imu_data()

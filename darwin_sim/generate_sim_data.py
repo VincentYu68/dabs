@@ -14,7 +14,7 @@ from darwin.np_policy import *
 import time
 
 if __name__ == "__main__":
-    policy_path = 'data/squatstand_selfcol.pkl'
+    policy_path = 'data/squatstand_notl.pkl'
     fixed_root = False
     action_path = 'data/hw_data/ground_saved_action.txt'
     run_policy = False
@@ -66,6 +66,7 @@ if __name__ == "__main__":
     sim_poses = []
     sim_actions = []
     sim_times = []
+    sim_gyro = []
     prev_obs = darwinenv.get_motor_pose()
     for i in range(200):
         current_obs = darwinenv.get_motor_pose()
@@ -81,10 +82,13 @@ if __name__ == "__main__":
         time.sleep(0.05)
         sim_poses.append(input_obs)
         prev_obs = current_obs
+        imu_data = darwinenv.get_imu_reading()
+        sim_gyro.append(imu_data[-3:])
 
     sim_poses = np.array(sim_poses)
     sim_actions = np.array(sim_actions)
     sim_times = np.array(sim_times)
+    sim_gyro = np.array(sim_gyro)
 
     savename = 'sim_saved'
     if run_policy:
@@ -99,5 +103,6 @@ if __name__ == "__main__":
     np.savetxt('data/sim_data/' + savename + '_obs.txt', sim_poses)
     np.savetxt('data/sim_data/' + savename + '_action.txt', sim_actions)
     np.savetxt('data/sim_data/' + savename + '_time.txt', sim_times)
+    np.savetxt('data/sim_data/' + savename + '_gyro.txt', sim_gyro)
 
 
