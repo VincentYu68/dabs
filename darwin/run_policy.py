@@ -8,7 +8,7 @@ import time
 import os, errno
 
 if __name__ == "__main__":
-    filename = 'walk_notl.pkl'
+    filename = 'standsquatstand_notl.pkl'
 
     savename = 'ground'
 
@@ -16,7 +16,7 @@ if __name__ == "__main__":
     if walk_motion:
         savename += '_walk'
 
-    singlefoot_motion = True
+    singlefoot_motion = False
     if singlefoot_motion:
         savename += '_singlefoot'
 
