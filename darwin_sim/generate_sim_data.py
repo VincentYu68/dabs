@@ -15,9 +15,9 @@ import time
 
 if __name__ == "__main__":
     policy_path = 'data/squatstand_notl.pkl'
-    fixed_root = False
+    fixed_root = True
     action_path = 'data/hw_data/ground_saved_action.txt'
-    run_policy = False
+    run_policy = True
 
     # initialize policy
     pose_squat_val = np.array([2509, 2297, 1714, 1508, 1816, 2376,
@@ -30,15 +30,17 @@ if __name__ == "__main__":
     pose_stand = VAL2RADIAN(pose_stand_val)
 
     # keyframe scheduling for squat stand task
-    interp_sch = [[0.0, pose_squat],
-                  [3.0, pose_stand],
-                  [4.0, pose_stand], ]
-                  #[3.0, pose_squat],
-                  #[3.3, pose_stand],
-                  #[3.6, pose_squat], ]
+    interp_sch = [[0.0, pose_stand],
+                       [2.0, pose_squat],
+                       [4.0, pose_stand],
+                       [6.0, pose_stand],
+                       ]
 
-    '''rig_keyframe = np.loadtxt('data/rig_data/rig_keyframe.txt')
-    interp_sch = []
+    rig_keyframe = np.loadtxt('data/rig_data/rig_keyframe2.txt')
+    interp_sch = [[0.0, rig_keyframe[0]],
+                  [2.0, rig_keyframe[1]],
+                  [6.0, rig_keyframe[1]]]
+    '''interp_sch = []
     interp_time = 0.0
     for i in range(10):
         for k in range(1, len(rig_keyframe)):

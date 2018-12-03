@@ -12,9 +12,13 @@ if __name__ == "__main__":
 
     savename = 'ground'
 
-    walk_motion = True
+    walk_motion = False
     if walk_motion:
         savename += '_walk'
+
+    singlefoot_motion = True
+    if singlefoot_motion:
+        savename += '_singlefoot'
 
     pose_squat_val = np.array([2509, 2297, 1714, 1508, 1816, 2376,
                                2047, 2171,
@@ -43,6 +47,12 @@ if __name__ == "__main__":
                 interp_sch.append([interp_time, rig_keyframe[k]])
                 interp_time += 0.25
         interp_sch.append([interp_time, rig_keyframe[0]])
+
+    if singlefoot_motion:
+        rig_keyframe = np.loadtxt('data/rig_data/rig_keyframe2.txt')
+        interp_sch = [[0.0, rig_keyframe[0]],
+                      [2.0, rig_keyframe[1]],
+                      [6.0, rig_keyframe[1]]]
 
     policy = NP_Policy(interp_sch, 'data/'+filename, discrete_action=True,
                        action_bins=np.array([11] * 20), delta_angle_scale=0.3)

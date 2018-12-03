@@ -30,8 +30,8 @@ if __name__ == "__main__":
         if e.errno != errno.EEXIST:
             raise
 
-    if os.path.exists(save_path + '/rig_keyframe.txt'):
-        preset_poses += np.loadtxt(save_path + '/rig_keyframe.txt').tolist()
+    if os.path.exists(save_path + '/rig_keyframe2.txt'):
+        preset_poses += np.loadtxt(save_path + '/rig_keyframe2.txt').tolist()
 
     saved_poses = []
 
@@ -92,7 +92,7 @@ if __name__ == "__main__":
 
                     # save the motion
                     if darwinenv.simenv.env._get_viewer().key_being_pressed == b's':
-                        np.savetxt(save_path+'/rig_keyframe.txt', np.array(saved_poses))
+                        np.savetxt(save_path+'/rig_keyframe2.txt', np.array(saved_poses))
 
 
                     if darwinenv.simenv.env._get_viewer().key_being_pressed == b't':
