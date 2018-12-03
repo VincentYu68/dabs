@@ -32,11 +32,10 @@ if __name__ == "__main__":
 
     # keyframe scheduling for squat stand task
     interp_sch = [[0.0, pose_stand],
-           [1.5, pose_squat],
-           [2.5, pose_stand],
-           [3.0, pose_squat],
-           [3.3, pose_stand],
-           [3.6, pose_squat], ]
+                       [2.0, pose_squat],
+                       [4.0, pose_stand],
+                       [6.0, pose_stand],
+                       ]
 
     if walk_motion:
         rig_keyframe = np.loadtxt('data/rig_data/rig_keyframe.txt')
