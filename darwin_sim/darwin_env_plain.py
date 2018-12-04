@@ -92,7 +92,10 @@ class DarwinPlain:
             q[5] = 0
 
         self.robot.q = q
-        self.robot.dq = self.robot.dq * 0
+
+        dq = self.robot.dq * 0
+        dq[0] += 2
+        self.robot.dq = dq
 
         q[4] = 0.4
         #q[5] = 0.35

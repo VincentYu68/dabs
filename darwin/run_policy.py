@@ -8,17 +8,19 @@ import time
 import os, errno
 
 if __name__ == "__main__":
-    filename = 'standsquatstand_notl.pkl'
+    filename = 'crawl_notl.pkl'
 
     savename = 'ground'
 
     walk_motion = False
-    if walk_motion:
-        savename += '_walk'
-
     singlefoot_motion = False
-    if singlefoot_motion:
-        savename += '_singlefoot'
+    crawl_motion = True
+
+    savename += '_walk' if walk_motion else ''
+    savename += '_singlefoot' if singlefoot_motion else ''
+    savename += '_crawl' if crawl_motion else ''
+
+    gyro_input = 1
 
     pose_squat_val = np.array([2509, 2297, 1714, 1508, 1816, 2376,
                                2047, 2171,
@@ -83,13 +85,14 @@ if __name__ == "__main__":
             #tdif = time.monotonic() - prev_time
             prev_time = time.monotonic() - ((time.monotonic() - prev_time) - 0.05)
             motor_pose = np.array(darwin.read_motor_positions())
+            gyro = darwin.read_gyro()
             #est_vel = (motor_pose - prev_motor_pose) / tdif
             obs_input = VAL2RADIAN(np.concatenate([HW2SIM_INDEX(prev_motor_pose), HW2SIM_INDEX(motor_pose)]))
+            if gyro_input > 0:
+                obs_input = np.concatenate([obs_input, VAL2RPS(gyro)])
             ct = time.monotonic() - initial_time
             act = policy.act(obs_input, ct)
             darwin.write_motor_goal(RADIAN2VAL(SIM2HW_INDEX(act)))
-
-            gyro = darwin.read_gyro()
 
             prev_motor_pose = np.copy(motor_pose)
 

@@ -14,8 +14,8 @@ from darwin.np_policy import *
 import time
 
 if __name__ == "__main__":
-    policy_path = 'data/squatstand_notl.pkl'
-    fixed_root = True
+    policy_path = 'data/standsquatstand_notl.pkl'
+    fixed_root = False
     action_path = 'data/hw_data/ground_saved_action.txt'
     run_policy = True
 
@@ -36,10 +36,11 @@ if __name__ == "__main__":
                        [6.0, pose_stand],
                        ]
 
-    rig_keyframe = np.loadtxt('data/rig_data/rig_keyframe2.txt')
+    '''rig_keyframe = np.loadtxt('data/rig_data/rig_keyframe2.txt')
     interp_sch = [[0.0, rig_keyframe[0]],
                   [2.0, rig_keyframe[1]],
-                  [6.0, rig_keyframe[1]]]
+                  [6.0, rig_keyframe[1]]]'''
+
     '''interp_sch = []
     interp_time = 0.0
     for i in range(10):
