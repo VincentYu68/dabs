@@ -60,11 +60,11 @@ class NP_Net:
 class NP_Policy:
     # interp_sch makes the feed-forward motion
     # interp_sch contains the timing and pose id throughout the trajectory
-    def __init__(self, interp_sch, param_file, discrete_action, action_bins, delta_angle_scale):
+    def __init__(self, interp_sch, param_file, discrete_action, action_bins, delta_angle_scale, action_filter_size):
         self.interp_sch = interp_sch
         self.obs_cache = []
         self.action_cache = []
-        self.action_filter_size = 5
+        self.action_filter_size = action_filter_size
         self.net = NP_Net()
         self.net.load_from_file(param_file)
         self.discrete_action = discrete_action

@@ -49,7 +49,7 @@ if __name__ == "__main__":
         for i in range(10):
             for k in range(1, len(rig_keyframe)):
                 interp_sch.append([interp_time, rig_keyframe[k]])
-                interp_time += 0.25
+                interp_time += 0.5
         interp_sch.append([interp_time, rig_keyframe[0]])
 
     if singlefoot_motion:
@@ -59,7 +59,7 @@ if __name__ == "__main__":
                       [6.0, rig_keyframe[1]]]
 
     policy = NP_Policy(interp_sch, 'data/'+filename, discrete_action=True,
-                       action_bins=np.array([11] * 20), delta_angle_scale=0.3)
+                       action_bins=np.array([11] * 20), delta_angle_scale=0.3, action_filter_size=10)
 
     darwin = BasicDarwin()
 
