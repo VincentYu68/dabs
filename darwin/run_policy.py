@@ -39,8 +39,11 @@ if __name__ == "__main__":
                        [6.0, pose_stand],
                        ]
 
-    if walk_motion:
-        rig_keyframe = np.loadtxt('data/rig_data/rig_keyframe.txt')
+    if walk_motion or crawl_motion:
+        if walk_motion:
+            rig_keyframe = np.loadtxt('data/rig_data/rig_keyframe.txt')
+        else:
+            rig_keyframe = np.loadtxt('data/rig_data/rig_keyframe_crawl.txt')
         interp_sch = [[0.0, rig_keyframe[0]]]
         interp_time = 0.5
         for i in range(10):
