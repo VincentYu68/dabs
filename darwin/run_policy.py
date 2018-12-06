@@ -8,7 +8,7 @@ import time
 import os, errno
 
 if __name__ == "__main__":
-    filename = 'standsquatstand_1gyro_notl.pkl'
+    filename = 'squatstand_notol2.pkl'
 
     savename = 'ground'
 
@@ -20,7 +20,7 @@ if __name__ == "__main__":
     savename += '_singlefoot' if singlefoot_motion else ''
     savename += '_crawl' if crawl_motion else ''
 
-    gyro_input = 1
+    gyro_input = 0
 
     pose_squat_val = np.array([2509, 2297, 1714, 1508, 1816, 2376,
                                2047, 2171,
@@ -59,7 +59,7 @@ if __name__ == "__main__":
                       [6.0, rig_keyframe[1]]]
 
     policy = NP_Policy(interp_sch, 'data/'+filename, discrete_action=True,
-                       action_bins=np.array([11] * 20), delta_angle_scale=0.3, action_filter_size=10)
+                       action_bins=np.array([11] * 20), delta_angle_scale=0.3, action_filter_size=5)
 
     darwin = BasicDarwin()
 

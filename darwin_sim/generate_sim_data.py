@@ -36,7 +36,7 @@ if __name__ == "__main__":
                        [6.0, pose_stand],
                        ]
 
-    rig_keyframe = np.loadtxt('data/rig_data/rig_keyframe_crawl.txt')
+    rig_keyframe = np.loadtxt('data/rig_data/rig_keyframe.txt')
     interp_sch = [[0.0, rig_keyframe[0]],
                   [2.0, rig_keyframe[1]],
                   [6.0, rig_keyframe[1]]]

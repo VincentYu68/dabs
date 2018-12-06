@@ -15,7 +15,7 @@ import time
 
 if __name__ == "__main__":
     darwinenv = DarwinPlain()
-    darwinenv.simenv.env.param_manager.set_simulator_parameters(np.array([8.09742548e-01, 5.68336535e-04, 1.56823488e-01, 6.15487388e-02]))
+    #darwinenv.simenv.env.param_manager.set_simulator_parameters(np.array([8.09742548e-01, 5.68336535e-04, 1.56823488e-01, 6.15487388e-02]))
     darwinenv.toggle_fix_root(False)
 
     interp_sch = [[0.0, np.zeros(20)],
@@ -25,7 +25,7 @@ if __name__ == "__main__":
     darwinenv.reset()
     q = darwinenv.robot.q
     q[1] = 0.3
-    q[5] = -0.3
+    q[5] = -0.33
     darwinenv.robot.q = q
 
     sim_poses = []
