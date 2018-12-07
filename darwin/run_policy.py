@@ -8,7 +8,7 @@ import time
 import os, errno
 
 if __name__ == "__main__":
-    filename = 'squatstand_notol2.pkl'
+    filename = 'sqstsqst.pkl'
 
     savename = 'ground'
 
@@ -34,10 +34,13 @@ if __name__ == "__main__":
 
     # keyframe scheduling for squat stand task
     interp_sch = [[0.0, pose_stand],
-                       [2.0, pose_squat],
-                       [4.0, pose_stand],
-                       [6.0, pose_stand],
-                       ]
+                           [2.0, pose_squat],
+                           [4.0, pose_stand],
+                           [5.0, pose_stand],
+                           [5.5, pose_squat],
+                           [6.0, pose_stand],
+                           [8.0, pose_stand],
+                           ]
 
     if walk_motion or crawl_motion:
         if walk_motion:
