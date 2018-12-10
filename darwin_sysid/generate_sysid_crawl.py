@@ -35,7 +35,7 @@ if __name__ == "__main__":
     num_unconstrained_pose = 10
     num_constrained_pose = 10
     sim_length = 100
-    trial_num = 5  # repeat time for each new pose
+    trial_num = 3  # repeat time for each new pose
 
     unconstrained_poses = []
     constrained_poses = []
@@ -54,8 +54,7 @@ if __name__ == "__main__":
         rand_pose_coef = np.random.random(20)
         rand_pose_coef[0] = np.clip(rand_pose_coef[0], 0.3, 0.7)
         rand_pose_coef[3] = np.clip(rand_pose_coef[3], 0.3, 0.7)
-        rand_pose = SIM_JOINT_LOW_BOUND_RAD * rand_pose_coef + SIM_JOINT_UP_BOUND_RAD * (1-rand_pose_coef)
-
+        rand_pose = SIM_JOINT_LOW_BOUND_RAD * rand_pose_coef + SIM_JOINT_UP_BOUND_RAD * (1 - rand_pose_coef)
         rand_pose = 0.5 * (rand_pose + unconstrained_poses[-1])
 
         valid = True
@@ -72,7 +71,7 @@ if __name__ == "__main__":
             if not valid:
                 break
 
-        if valid and len(darwinenv.contacts) >= 3:
+        if valid and len(darwinenv.contacts) >= 4:
             darwinenv.set_pose(unconstrained_poses[-1])
             darwinenv.set_root_dof(prev_root)
             for i in range(sim_length):
@@ -84,6 +83,10 @@ if __name__ == "__main__":
                     time.sleep(0.01)
             unconstrained_poses.append(rand_pose)
             prev_root = darwinenv.get_root_dof()
+            print('Collected ', len(unconstrained_poses), ' unconstrained poses')
+    if num_unconstrained_pose > 0:
+        np.savetxt('data/sysid_data/unconstrained_poses.txt', unconstrained_poses)
+        np.savetxt('data/sysid_data/unconstrained_actions.txt', unconst_actions)
     print("Unconstrained crawl pose generated")
 
     ############################################
@@ -124,9 +127,8 @@ if __name__ == "__main__":
         darwinenv.set_pose(constrained_poses[-1])
         darwinenv.set_root_dof(prev_root)
         darwinenv.toggle_contact_constraint(True)
-        for i in range(sim_length):
-            perc = np.min([((int(i / 10) + 1) * 15) / sim_length, 1.0])
-            darwinenv.step(rand_pose * perc + (1 - perc) * constrained_poses[-1])
+        for i in range(int(sim_length/5)):
+            darwinenv.step(rand_pose)
         darwinenv.toggle_contact_constraint(False)
         rand_pose = darwinenv.get_motor_pose()
 
@@ -145,7 +147,7 @@ if __name__ == "__main__":
             if not valid:
                 break
 
-        if valid and len(darwinenv.contacts) >= 3:
+        if valid and len(darwinenv.contacts) >= 4:
             contact_match = True
             current_contacts = {}
             for contact in darwinenv.contacts:
@@ -182,10 +184,9 @@ if __name__ == "__main__":
                         time.sleep(0.01)
                 constrained_poses.append(rand_pose)
                 prev_root = darwinenv.get_root_dof()
+                print('Collected ', len(constrained_poses), ' constrained poses')
+    if num_constrained_pose > 0:
+        np.savetxt('data/sysid_data/constrained_poses.txt', constrained_poses)
+        np.savetxt('data/sysid_data/constrained_actions.txt', const_actions)
     print("Constrained crawl pose generated")
-
-    np.savetxt('data/sysid_data/unconstrained_poses.txt', unconstrained_poses)
-    np.savetxt('data/sysid_data/constrained_poses.txt', constrained_poses)
-    np.savetxt('data/sysid_data/unconstrained_actions.txt', unconst_actions)
-    np.savetxt('data/sysid_data/constrained_actions.txt', const_actions)
 
