@@ -53,6 +53,14 @@ class DarwinPlain:
         q[6:] = pose
         self.dup_robot.q = q
 
+    def get_root_dof(self):
+        return np.array(self.robot.q[0:6])
+
+    def set_root_dof(self, rootdof):
+        q = self.robot.q
+        q[0:6] = rootdof
+        self.robot.q = q
+
     # whether fix root in the air
     def toggle_fix_root(self, is_fix):
         self.fixed_root = is_fix
@@ -105,11 +113,36 @@ class DarwinPlain:
 
     def check_self_collision(self):
         self.dart_world.check_collision()
-        contacts = self.dart_world.collision_result.contacts
-        for contact in contacts:
-            if contact.bodynode1.skel == contact.bodynode2.skel.id and contact.bodynode2.skel.id > 0:
+        self.contacts = self.dart_world.collision_result.contacts
+        for contact in self.contacts:
+            if contact.bodynode1.skel == contact.bodynode2.skel and contact.bodynode2.skel.id > 0:
                 return True
         return False
+
+    def check_collision(self, permitted_body_names):
+        self.dart_world.check_collision()
+        self.contacts = self.dart_world.collision_result.contacts
+        for contact in self.contacts:
+            if contact.bodynode1.name not in permitted_body_names and contact.bodynode2.name not in permitted_body_names:
+                return True
+        return False
+
+    def create_contact_constraint(self):
+        self.check_self_collision()
+        self.contact_constraints = []
+        for contact in self.contacts:
+            C = contact.point
+            bc = BallJointConstraint(contact.bodynode1, contact.bodynode2, C)
+            self.contact_constraints.append(bc)
+
+    def toggle_contact_constraint(self, is_enforced):
+        self.contact_constraint_enforced = is_enforced
+
+        if is_enforced:
+            for bc in self.contact_constraints:
+                bc.add_to_world(self.dart_world)
+        else:
+            self.dart_world.remove_all_constraints()
 
     def get_imu_reading(self):
         return self.simenv.env.get_imu_data()

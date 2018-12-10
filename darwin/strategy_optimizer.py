@@ -1,4 +1,4 @@
-import cma, sys, gym, joblib
+import cma, sys, joblib
 import numpy as np
 from darwin.darwin_utils import *
 import time
@@ -13,7 +13,6 @@ class StrategyOptimizer:
         self.rollout_num = 0
 
         self.solution_history = []
-        self.sample_num_history = []
         self.best_f = 100000
         self.best_x = None
 
@@ -24,7 +23,6 @@ class StrategyOptimizer:
         self.best_f = 100000
         self.best_x = None
         self.solution_history = []
-        self.sample_num_history = []
 
     def fitness(self, x):
         app = np.copy(x)
@@ -64,10 +62,6 @@ class StrategyOptimizer:
         print('Sampled perf: ', np.mean(avg_perf))
         return -np.mean(avg_perf)
 
-    def cames_callback(self, es):
-        self.solution_history.append(self.best_x)
-        self.sample_num_history.append(self.sample_num)
-        return self.sample_num
 
 
     def optimize(self, maxiter = 20):
@@ -75,8 +69,7 @@ class StrategyOptimizer:
         init_std = 0.5
         bound = [0.0, 1.0]
 
-        xopt, es = cma.fmin2(self.fitness, init_guess, init_std, options={'bounds': bound, 'maxiter': maxiter}
-                             , callback=self.cames_callback)
+        xopt, es = cma.fmin2(self.fitness, init_guess, init_std, options={'bounds': bound, 'maxiter': maxiter})
 
         print('optimized: ', repr(xopt))
         print('Total rollout: ', self.rollout_num)

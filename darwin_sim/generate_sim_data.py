@@ -15,7 +15,7 @@ import time
 
 if __name__ == "__main__":
     policy_path = 'data/standsquatstand_notl.pkl'
-    fixed_root = True
+    fixed_root = False
     action_path = 'data/hw_data/ground_saved_action.txt'
     run_policy = True
 
@@ -36,7 +36,7 @@ if __name__ == "__main__":
                        [6.0, pose_stand],
                        ]
 
-    rig_keyframe = np.loadtxt('data/rig_data/rig_keyframe.txt')
+    rig_keyframe = np.loadtxt('data/rig_data/rig_keyframe_crawl.txt')
     interp_sch = [[0.0, rig_keyframe[0]],
                   [2.0, rig_keyframe[1]],
                   [6.0, rig_keyframe[1]]]

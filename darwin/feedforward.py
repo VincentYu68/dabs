@@ -5,7 +5,7 @@ from dabs import *
 import time
 
 if __name__ == "__main__":
-    filename = 'feedforward_target_hwindex.txt'
+    filename = 'data/sysid_data/unconstrained_actions.txt'
 
     feedforward_goals = np.loadtxt('data/'+filename)
 

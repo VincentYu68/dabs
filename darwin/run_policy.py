@@ -37,8 +37,8 @@ if __name__ == "__main__":
                            [2.0, pose_squat],
                            [4.0, pose_stand],
                            [5.0, pose_stand],
-                           [6.0, pose_squat],
-                           [7.0, pose_stand],
+                           [5.5, pose_squat],
+                           [6.0, pose_stand],
                            [8.0, pose_stand],
                            ]
 
