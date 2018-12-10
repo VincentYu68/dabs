@@ -20,7 +20,7 @@ if __name__ == "__main__":
 
     darwin.write_pid(32, 0, 16)
 
-    darwin.write_motor_goal(SIM2HW_INDEX(VAL2RADIAN(feedforward_goals[0])))
+    darwin.write_motor_goal(SIM2HW_INDEX(RADIAN2VAL(feedforward_goals[0])))
 
     time.sleep(5)
 
@@ -29,7 +29,7 @@ if __name__ == "__main__":
     while current_step < len(feedforward_goals):
         if time.monotonic() - prev_time >= 0.05: # control every 50 ms
             prev_time = time.monotonic() - ((time.monotonic() - prev_time) - 0.05)
-            darwin.write_motor_goal(SIM2HW_INDEX(VAL2RADIAN(feedforward_goals[current_step])))
+            darwin.write_motor_goal(SIM2HW_INDEX(RADIAN2VAL(feedforward_goals[current_step])))
             current_step += 1
 
     darwin.disconnect()
