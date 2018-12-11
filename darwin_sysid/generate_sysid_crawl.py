@@ -32,8 +32,8 @@ if __name__ == "__main__":
         darwinenv.step(CRAWL_POSE)
     init_root = darwinenv.get_root_dof()
 
-    num_unconstrained_pose = 0
-    num_constrained_pose = 10
+    num_unconstrained_pose = 10
+    num_constrained_pose = 0
     sim_length = 100
     trial_num = 3  # repeat time for each new pose
 
