@@ -32,7 +32,7 @@ if __name__ == "__main__":
         darwinenv.step(CRAWL_POSE)
     init_root = darwinenv.get_root_dof()
 
-    num_unconstrained_pose = 10
+    num_unconstrained_pose = 0
     num_constrained_pose = 10
     sim_length = 100
     trial_num = 3  # repeat time for each new pose
@@ -125,7 +125,7 @@ if __name__ == "__main__":
         # use contact constraints to make the guessed pose closer to a valid pose
         darwinenv.reset()
         darwinenv.set_pose(constrained_poses[-1])
-        darwinenv.set_root_dof(prev_root)
+        darwinenv.set_root_dof(prev_root + np.array([0, 0, 0, 0, 0, 0.1]))
         darwinenv.toggle_contact_constraint(True)
         for i in range(int(sim_length/5)):
             darwinenv.step(rand_pose)
