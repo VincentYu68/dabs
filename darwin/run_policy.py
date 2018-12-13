@@ -8,7 +8,7 @@ import time
 import os, errno
 
 if __name__ == "__main__":
-    filename = 'sqstsqst_newkpkd.pkl'
+    filename = 'sqstsqst_newkpkd_lowfric.pkl'
 
     savename = 'ground'
 
