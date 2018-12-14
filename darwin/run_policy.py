@@ -38,8 +38,9 @@ if __name__ == "__main__":
                            [4.0, pose_stand],
                            [5.0, pose_stand],
                            [5.5, pose_squat],
-                           [6.0, pose_stand],
+                           [7.5, pose_squat],
                            [8.0, pose_stand],
+                           [10.0, pose_stand],
                            ]
 
     if walk_motion or crawl_motion:
@@ -70,7 +71,7 @@ if __name__ == "__main__":
 
     darwin.write_torque_enable(True)
 
-    darwin.write_pid(32, 0, 16)
+    darwin.write_pid(32, 0, 8)
 
     motor_pose = darwin.read_motor_positions()
 
@@ -86,9 +87,11 @@ if __name__ == "__main__":
     all_time = []
     all_actions = []
     all_gyros = []
+    all_orientations = []
+    cur_orientation = np.zeros(3)
     while current_step < 200:
         if time.monotonic() - prev_time >= 0.05:  # control every 50 ms
-            #tdif = time.monotonic() - prev_time
+            tdif = time.monotonic() - prev_time
             prev_time = time.monotonic() - ((time.monotonic() - prev_time) - 0.05)
             motor_pose = np.array(darwin.read_motor_positions())
             gyro = darwin.read_gyro()
@@ -96,6 +99,8 @@ if __name__ == "__main__":
             obs_input = VAL2RADIAN(np.concatenate([HW2SIM_INDEX(prev_motor_pose), HW2SIM_INDEX(motor_pose)]))
             if gyro_input > 0:
                 obs_input = np.concatenate([obs_input, VAL2RPS(gyro)])
+            cur_orientation += VAL2RPS(gyro) * tdif
+
             ct = time.monotonic() - initial_time
             act = policy.act(obs_input, ct)
             darwin.write_motor_goal(RADIAN2VAL(SIM2HW_INDEX(act)))
@@ -107,10 +112,12 @@ if __name__ == "__main__":
             all_inputs.append(obs_input)
             all_time.append(ct)
             all_gyros.append(VAL2RPS(gyro))
+            all_orientations.append(cur_orientation)
 
     all_inputs = np.array(all_inputs)
     all_time = np.array(all_time)
     all_actions = np.array(all_actions)
+    all_orientations = np.array(all_orientations)
 
     try:
         os.makedirs('data/hw_data')
@@ -123,6 +130,7 @@ if __name__ == "__main__":
     np.savetxt('data/hw_data/'+savename+'_saved_time.txt', all_time)
     np.savetxt('data/hw_data/'+savename+'_saved_action.txt', all_actions)
     np.savetxt('data/hw_data/' + savename + '_saved_gyro.txt', all_gyros)
+    np.savetxt('data/hw_data/' + savename + '_saved_orientation.txt', all_orientations)
 
     darwin.disconnect()
 

@@ -17,7 +17,7 @@ if __name__ == "__main__":
     policy_path = 'data/standsquatstand_notl.pkl'
     fixed_root = False
     action_path = 'data/hw_data/ground_saved_action.txt'
-    run_policy = True
+    run_policy = False
 
     # initialize policy
     pose_squat_val = np.array([2509, 2297, 1714, 1508, 1816, 2376,
@@ -31,12 +31,15 @@ if __name__ == "__main__":
 
     # keyframe scheduling for squat stand task
     interp_sch = [[0.0, pose_stand],
-                       [2.0, pose_squat],
-                       [4.0, pose_stand],
-                       [6.0, pose_stand],
-                       ]
+                  [2.0, pose_squat],
+                  [4.0, pose_stand],
+                  [5.0, pose_stand],
+                  [5.5, pose_squat],
+                  [6.0, pose_stand],
+                  [8.0, pose_stand],
+                  ]
 
-    rig_keyframe = np.loadtxt('data/rig_data/rig_keyframe_crawl.txt')
+    '''rig_keyframe = np.loadtxt('data/rig_data/rig_keyframe_crawl.txt')
     interp_sch = [[0.0, rig_keyframe[0]],
                   [2.0, rig_keyframe[1]],
                   [6.0, rig_keyframe[1]]]
@@ -47,10 +50,10 @@ if __name__ == "__main__":
         for k in range(1, len(rig_keyframe)):
             interp_sch.append([interp_time, rig_keyframe[k]])
             interp_time += 0.5
-    interp_sch.append([interp_time, rig_keyframe[0]])
+    interp_sch.append([interp_time, rig_keyframe[0]])'''
 
     policy = NP_Policy(interp_sch, policy_path, discrete_action=True,
-                       action_bins=np.array([11] * 20), delta_angle_scale=0.0, action_filter_size=10)
+                       action_bins=np.array([11] * 20), delta_angle_scale=0.0, action_filter_size=5)
 
     # load actions
     hw_actions = np.loadtxt(action_path)
@@ -63,13 +66,14 @@ if __name__ == "__main__":
     darwinenv.reset()
     darwinenv.set_pose(policy.get_initial_state())
 
-    hw_poses = np.loadtxt('data/hw_data/ground_saved_obs.txt')
-    darwinenv.set_pose(hw_poses[0][0:20])
+    #hw_poses = np.loadtxt('data/hw_data/ground_saved_obs.txt')
+    #darwinenv.set_pose(hw_poses[0][0:20])
 
     sim_poses = []
     sim_actions = []
     sim_times = []
     sim_gyro = []
+    sim_orientation = []
     prev_obs = darwinenv.get_motor_pose()
     for i in range(200):
         current_obs = darwinenv.get_motor_pose()
@@ -86,12 +90,15 @@ if __name__ == "__main__":
         sim_poses.append(input_obs)
         prev_obs = current_obs
         imu_data = darwinenv.get_imu_reading()
-        sim_gyro.append(imu_data[-3:])
+        darwinenv.integrate_imu_reading()
+        sim_gyro.append(imu_data)
+        sim_orientation.append(darwinenv.get_integrated_imu())
 
     sim_poses = np.array(sim_poses)
     sim_actions = np.array(sim_actions)
     sim_times = np.array(sim_times)
     sim_gyro = np.array(sim_gyro)
+    sim_orientation = np.array(sim_orientation)
 
     savename = 'sim_saved'
     if run_policy:
@@ -107,5 +114,6 @@ if __name__ == "__main__":
     np.savetxt('data/sim_data/' + savename + '_action.txt', sim_actions)
     np.savetxt('data/sim_data/' + savename + '_time.txt', sim_times)
     np.savetxt('data/sim_data/' + savename + '_gyro.txt', sim_gyro)
+    np.savetxt('data/sim_data/' + savename + '_orientation.txt', sim_orientation)
 
 

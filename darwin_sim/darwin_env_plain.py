@@ -144,5 +144,11 @@ class DarwinPlain:
         else:
             self.dart_world.remove_all_constraints()
 
+    def integrate_imu_reading(self):
+        self.simenv.env.integrate_imu_data()
+
+    def get_integrated_imu(self):
+        return np.array(self.simenv.env.accumulated_imu_info)
+
     def get_imu_reading(self):
         return self.simenv.env.get_imu_data()

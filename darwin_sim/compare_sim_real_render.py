@@ -21,24 +21,6 @@ if __name__ == "__main__":
     actions2 = np.loadtxt('data/hw_data/ground_saved_action.txt')
     #actions2 = np.loadtxt('data/hw_data/ground_saved_action.txt')
 
-    # initialize policy
-    pose_squat_val = np.array([2509, 2297, 1714, 1508, 1816, 2376,
-                               2047, 2171,
-                               2032, 2039, 2795, 648, 1231, 2040, 2041, 2060, 1281, 3448, 2855, 2073])
-    pose_stand_val = np.array([1500, 2048, 2048, 2500, 2048, 2048,
-                               2048, 2048,
-                               2048, 2048, 2048, 2048, 2048, 2048, 2048, 2048, 2048, 2048, 2048, 2048])
-    pose_squat = VAL2RADIAN(pose_squat_val)
-    pose_stand = VAL2RADIAN(pose_stand_val)
-
-    # keyframe scheduling for squat stand task
-    interp_sch = [[0.0, pose_squat],
-                  [3.0, pose_stand],
-                  [4.0, pose_stand], ]
-    policy_path = 'data/squatstand_selfcol.pkl'
-    policy = NP_Policy(interp_sch, policy_path, discrete_action=True,
-                       action_bins=np.array([11] * 20), delta_angle_scale=0.3)
-
     loop_size = np.min([len(poses1), len(poses2)])
 
     darwinenv = DarwinPlain()
