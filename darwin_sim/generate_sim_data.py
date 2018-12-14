@@ -14,15 +14,15 @@ from darwin.np_policy import *
 import time
 
 if __name__ == "__main__":
-    policy_path = 'data/standsquatstand_notl.pkl'
-    fixed_root = False
+    policy_path = 'data/sqstsqst_newkpkd_lowfric.pkl'
+    fixed_root = True
     action_path = 'data/hw_data/ground_saved_action.txt'
-    run_policy = False
+    run_policy = True
 
     # initialize policy
     pose_squat_val = np.array([2509, 2297, 1714, 1508, 1816, 2376,
                                2047, 2171,
-                               2032, 2039, 2795, 648, 1231, 2040, 2041, 2060, 1281, 3448, 2855, 2073])
+                               2032, 2039, 2795, 648, 1231, 2040, 2041, 2060, 1281, 3448, 2800, 2073])
     pose_stand_val = np.array([1500, 2048, 2048, 2500, 2048, 2048,
                                2048, 2048,
                                2048, 2048, 2048, 2048, 2048, 2048, 2048, 2048, 2048, 2048, 2048, 2048])
@@ -30,14 +30,15 @@ if __name__ == "__main__":
     pose_stand = VAL2RADIAN(pose_stand_val)
 
     # keyframe scheduling for squat stand task
-    interp_sch = [[0.0, pose_stand],
-                  [2.0, pose_squat],
-                  [4.0, pose_stand],
-                  [5.0, pose_stand],
-                  [5.5, pose_squat],
-                  [6.0, pose_stand],
-                  [8.0, pose_stand],
-                  ]
+    interp_sch = [[0.0, pose_squat],
+                           [1.5, pose_stand],
+                           [2.0, pose_stand],
+                           [2.5, pose_squat],
+                           [4.5, pose_squat],
+                           [5.0, pose_stand],
+                           [6.0, pose_stand],
+                           [9.0, pose_squat],
+                           ]
 
     '''rig_keyframe = np.loadtxt('data/rig_data/rig_keyframe_crawl.txt')
     interp_sch = [[0.0, rig_keyframe[0]],
@@ -53,7 +54,7 @@ if __name__ == "__main__":
     interp_sch.append([interp_time, rig_keyframe[0]])'''
 
     policy = NP_Policy(interp_sch, policy_path, discrete_action=True,
-                       action_bins=np.array([11] * 20), delta_angle_scale=0.0, action_filter_size=5)
+                       action_bins=np.array([11] * 20), delta_angle_scale=0.3, action_filter_size=5)
 
     # load actions
     hw_actions = np.loadtxt(action_path)
