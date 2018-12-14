@@ -39,6 +39,12 @@ if __name__ == "__main__":
         if cmd == 'exit':
             break
 
+        try:
+            cmd = int(cmd)
+        except ValueError:
+            print('Format incorrect!')
+            continue
+
         if type(cmd) is int and cmd <= 20 and cmd >= 1:
             current_jt_id = cmd
             max_val = SIM_JOINT_UP_BOUND_RAD[current_jt_id-1]
