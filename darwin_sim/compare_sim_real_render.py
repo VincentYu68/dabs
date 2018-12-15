@@ -13,13 +13,13 @@ from darwin.np_policy import *
 
 
 if __name__ == "__main__":
-    poses1 = np.loadtxt('data/sim_data/fixed_pol_sim_saved_obs.txt')
+    poses1 = np.loadtxt('data/sim_data/ground_pol_sim_saved_obs.txt')
     poses2 = np.loadtxt('data/hw_data/ground_saved_obs.txt')
-    #poses2 = np.loadtxt('data/hw_data/ground_saved_obs.txt')
+    #poses1 = np.loadtxt('data/hw_data/fixed_saved_obs.txt')
 
-    actions1 = np.loadtxt('data/sim_data/fixed_pol_sim_saved_action.txt')
+    actions1 = np.loadtxt('data/sim_data/ground_pol_sim_saved_action.txt')
     actions2 = np.loadtxt('data/hw_data/ground_saved_action.txt')
-    #actions2 = np.loadtxt('data/hw_data/ground_saved_action.txt')
+    #actions1 = np.loadtxt('data/hw_data/fixed_saved_action.txt')
 
     loop_size = np.min([len(poses1), len(poses2)])
 
