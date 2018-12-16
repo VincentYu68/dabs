@@ -49,4 +49,14 @@ HW_JOINT_LOW_BOUND_RAD = SIM2HW_INDEX(SIM_JOINT_LOW_BOUND_RAD)
 HW_JOINT_UP_BOUND_RAD = SIM2HW_INDEX(SIM_JOINT_UP_BOUND_RAD)
 
 
+###################### predefined poses #######################################
+pose_squat_val = np.array([2509, 2297, 1714, 1508, 1816, 2376,
+                               2047, 2171,
+                               2032, 2039, 2795, 648, 1241, 2040,   2041, 2060, 1281, 3448, 2855, 2073])
+pose_stand_val = np.array([1500, 2048, 2048, 2500, 2048, 2048,
+                           2048, 2048,
+                           2048, 2048, 2048, 2048, 2048, 2048, 2048, 2048, 2048, 2048, 2048, 2048])
+pose_squat = VAL2RADIAN(pose_squat_val)
+pose_stand = VAL2RADIAN(pose_stand_val)
+
 ###############################################################################

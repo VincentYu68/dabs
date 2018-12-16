@@ -8,7 +8,7 @@ import time
 import os, errno
 
 if __name__ == "__main__":
-    filename = 'sqstsq_weakknee.pkl'
+    filename = 'sqstsq_weakknee_randcom.pkl'
 
     savename = 'ground'
 
@@ -100,7 +100,7 @@ if __name__ == "__main__":
             cur_orientation += VAL2RPS(gyro) * tdif
 
             ct = time.monotonic() - initial_time
-            act = policy.act(obs_input, ct)
+            act = policy.act(obs_input, ct - 0.05)
             darwin.write_motor_goal(RADIAN2VAL(SIM2HW_INDEX(act)))
 
             prev_motor_pose = np.copy(motor_pose)
@@ -108,7 +108,7 @@ if __name__ == "__main__":
             current_step += 1
             all_actions.append(act)
             all_inputs.append(obs_input)
-            all_time.append(ct)
+            all_time.append(ct - 0.05)
             all_gyros.append(VAL2RPS(gyro))
             all_orientations.append(np.copy(cur_orientation))
 
