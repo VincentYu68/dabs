@@ -14,7 +14,7 @@ from darwin.np_policy import *
 import time
 
 if __name__ == "__main__":
-    policy_path = 'data/sqstsq_weakknee_domainrand040.pkl'
+    policy_path = 'data/sqstsq_weakknee_com025_limvel.pkl'
     fixed_root = False
     action_path = 'data/hw_data/ground_saved_action.txt'
     run_policy = True

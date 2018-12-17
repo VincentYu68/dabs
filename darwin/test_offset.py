@@ -84,10 +84,16 @@ if __name__ == "__main__":
                         if cmd_sub_sub == 'up':
                             break
 
-                        if cmd_sub_sub == '+':
-                            current_pose[perturb_dofs] += 10
+                        if cmd_sub_sub[0] == '+':
+                            rep = 1
+                            if len(cmd_sub_sub) > 1:
+                                rep = int(cmd_sub_sub[1:])
+                            current_pose[perturb_dofs] += 10 * rep
                         if cmd_sub_sub == '-':
-                            current_pose[perturb_dofs] -= 10
+                            rep = 1
+                            if len(cmd_sub_sub) > 1:
+                                rep = int(cmd_sub_sub[1:])
+                            current_pose[perturb_dofs] -= 10 * rep
                         darwin.write_motor_goal(current_pose)
                 else:
                     print('Format incorrect!')
