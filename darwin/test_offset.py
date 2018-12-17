@@ -86,7 +86,8 @@ if __name__ == "__main__":
                             "Use \'+\' or \'-\' to control the dofs\nInput \'up\' to go to upper-level menu\n")
                         if cmd_sub_sub == 'up':
                             break
-
+                        if len(cmd_sub_sub) == 0:
+                            continue
                         if cmd_sub_sub[0] == '+':
                             rep = 1
                             if len(cmd_sub_sub) > 1:
