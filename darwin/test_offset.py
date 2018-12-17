@@ -73,8 +73,8 @@ if __name__ == "__main__":
 
                 if cmd_sub <= 3 and cmd_sub >= 1:
                     if cmd_sub == 1:
-                        plus_dofs = [0,4]
-                        minus_dofs = [1,5]
+                        plus_dofs = [0,5]
+                        minus_dofs = [1,4]
                     elif cmd_sub == 2:
                         plus_dofs = [10]
                         minus_dofs = [11]
@@ -93,7 +93,7 @@ if __name__ == "__main__":
                                 rep = int(cmd_sub_sub[1:])
                             current_pose[plus_dofs] += 10 * rep
                             current_pose[minus_dofs] -= 10 * rep
-                        if cmd_sub_sub == '-':
+                        if cmd_sub_sub[0] == '-':
                             rep = 1
                             if len(cmd_sub_sub) > 1:
                                 rep = int(cmd_sub_sub[1:])
