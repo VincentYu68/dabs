@@ -8,9 +8,9 @@ import time
 import os, errno
 
 if __name__ == "__main__":
-    filename = 'sqstsq_weakknee_com025.pkl'
+    filename = 'sqstsq_weakknee_com025_limvel.pkl'
 
-    savename = 'ground'
+    savename = 'ground'+filename.split('.')[0]
 
     walk_motion = False
     singlefoot_motion = False
