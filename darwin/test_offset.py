@@ -73,11 +73,14 @@ if __name__ == "__main__":
 
                 if cmd_sub <= 3 and cmd_sub >= 1:
                     if cmd_sub == 1:
-                        perturb_dofs = [0,1,4,5]
+                        plus_dofs = [0,4]
+                        minus_dofs = [1,5]
                     elif cmd_sub == 2:
-                        perturb_dofs = [10, 11]
+                        plus_dofs = [10]
+                        minus_dofs = [11]
                     elif cmd_sub == 3:
-                        perturb_dofs = [14, 15]
+                        plus_dofs = [14]
+                        minus_dofs = [15]
                     while True:
                         cmd_sub_sub = input(
                             "Use \'+\' or \'-\' to control the dofs\nInput \'up\' to go to upper-level menu\n")
@@ -88,12 +91,14 @@ if __name__ == "__main__":
                             rep = 1
                             if len(cmd_sub_sub) > 1:
                                 rep = int(cmd_sub_sub[1:])
-                            current_pose[perturb_dofs] += 10 * rep
+                            current_pose[plus_dofs] += 10 * rep
+                            current_pose[minus_dofs] -= 10 * rep
                         if cmd_sub_sub == '-':
                             rep = 1
                             if len(cmd_sub_sub) > 1:
                                 rep = int(cmd_sub_sub[1:])
-                            current_pose[perturb_dofs] -= 10 * rep
+                            current_pose[plus_dofs] -= 10 * rep
+                            current_pose[minus_dofs] += 10 * rep
                         darwin.write_motor_goal(current_pose)
                 else:
                     print('Format incorrect!')
