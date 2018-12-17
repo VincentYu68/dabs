@@ -40,6 +40,9 @@ class DarwinPlain:
 
         self.time = 0
 
+        self.max_so_far = None
+        self.max_id = None
+
     def render(self):
         self.simenv.render()
 
@@ -80,11 +83,23 @@ class DarwinPlain:
         self.simenv.env.target[6:] = np.clip(self.simenv.env.target[6:], SIM_JOINT_LOW_BOUND_RAD, SIM_JOINT_UP_BOUND_RAD)
 
         tau = np.zeros(26)
+
         for i in range(self.simenv.env.frame_skip):
             #self.robot.bodynode('MP_ANKLE2_L').add_ext_force(np.array([-20, 0, 0]), np.array([0.0, 0.0, 0.0]))
             tau[6:] = self.simenv.env.PID()
+            tau[(np.abs(self.robot.dq) > 2.0) * (np.sign(self.robot.dq) == np.sign(tau))] = 0
             self.robot.set_forces(tau)
             self.dart_world.step()
+            if self.time > 0.1:
+                if self.max_so_far is None:
+                    self.max_so_far = np.max(np.abs(np.array(self.robot.dq)[6:]))
+                    self.max_id = np.argmax(np.abs(np.array(self.robot.dq)[6:]))
+                    print(self.max_so_far, self.max_id)
+                else:
+                    if np.max(np.abs(np.array(self.robot.dq)[6:])) > self.max_so_far:
+                        self.max_so_far = np.max(np.abs(np.array(self.robot.dq)[6:]))
+                        self.max_id = np.argmax(np.abs(np.array(self.robot.dq)[6:]))
+                        print(self.max_so_far, self.max_id)
 
     def passive_step(self): # advance simualtion without control
         for i in range(self.simenv.env.frame_skip):

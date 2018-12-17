@@ -14,15 +14,15 @@ from darwin.np_policy import *
 
 if __name__ == "__main__":
     poses1 = np.loadtxt('data/sim_data/ground_pol_sim_saved_obs.txt')
-    poses2 = np.loadtxt('data/hw_data/ground_saved_obs.txt')
+    poses2 = np.loadtxt('data/hw_data/ground2_saved_obs.txt')
     #poses1 = np.loadtxt('data/hw_data/fixed_saved_obs.txt')
 
     actions1 = np.loadtxt('data/sim_data/ground_pol_sim_saved_action.txt')
-    actions2 = np.loadtxt('data/hw_data/ground_saved_action.txt')
+    actions2 = np.loadtxt('data/hw_data/ground2_saved_action.txt')
     #actions1 = np.loadtxt('data/hw_data/fixed_saved_action.txt')
 
     times1 = np.loadtxt('data/sim_data/ground_pol_sim_saved_time.txt')
-    times2 = np.loadtxt('data/hw_data/ground_saved_time.txt')
+    times2 = np.loadtxt('data/hw_data/ground2_saved_time.txt')
 
     loop_size = np.min([len(poses1), len(poses2)])
 
@@ -82,7 +82,6 @@ if __name__ == "__main__":
                         current_step = loop_size-1
 
                     if darwinenv.simenv.env._get_viewer().key_being_pressed == b'p':
-
                         for i in range(11):
                             if current_step - 10 + i < 0:
                                 continue
@@ -93,6 +92,14 @@ if __name__ == "__main__":
                             act2 = policy.act(poses2[current_step - 10 + i], times2[current_step - 10 + i])
                         print('time1: ', times1[current_step]-darwinenv.simenv.env.dt)
                         print('time2: ', times2[current_step])
+
+                        if current_step > 1:
+                            vel1 = (poses1[current_step][0:20] - poses1[current_step][20:]) / (
+                                    times1[current_step] - times1[current_step - 1])
+                            vel2 = (poses2[current_step][0:20] - poses2[current_step][20:]) / (
+                                    times2[current_step] - times2[current_step - 1])
+                            print('velocity 1: ', vel1)
+                            print('velocity 2: ', vel2)
 
 
                     plt.clf()

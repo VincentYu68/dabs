@@ -14,7 +14,7 @@ from darwin.np_policy import *
 import time
 
 if __name__ == "__main__":
-    policy_path = 'data/sqstsq_weakknee.pkl'
+    policy_path = 'data/sqstsq_weakknee_modcom.pkl'
     fixed_root = False
     action_path = 'data/hw_data/ground_saved_action.txt'
     run_policy = True
@@ -30,7 +30,7 @@ if __name__ == "__main__":
                            [7.0, pose_squat],
                            ]
 
-    '''rig_keyframe = np.loadtxt('data/rig_data/rig_keyframe_crawl.txt')
+    rig_keyframe = np.loadtxt('data/rig_data/rig_keyframe_crawl.txt')
     interp_sch = [[0.0, rig_keyframe[0]],
                   [2.0, rig_keyframe[1]],
                   [6.0, rig_keyframe[1]]]
@@ -41,10 +41,10 @@ if __name__ == "__main__":
         for k in range(1, len(rig_keyframe)):
             interp_sch.append([interp_time, rig_keyframe[k]])
             interp_time += 0.5
-    interp_sch.append([interp_time, rig_keyframe[0]])'''
+    interp_sch.append([interp_time, rig_keyframe[0]])
 
     policy = NP_Policy(interp_sch, policy_path, discrete_action=True,
-                       action_bins=np.array([11] * 20), delta_angle_scale=0.3, action_filter_size=5)
+                       action_bins=np.array([11] * 20), delta_angle_scale=0.0, action_filter_size=5)
 
     # load actions
     hw_actions = np.loadtxt(action_path)
