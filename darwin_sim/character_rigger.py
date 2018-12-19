@@ -30,8 +30,8 @@ if __name__ == "__main__":
         if e.errno != errno.EEXIST:
             raise
 
-    if os.path.exists(save_path + '/rig_keyframe_crawl.txt'):
-        preset_poses += np.loadtxt(save_path + '/rig_keyframe_crawl.txt').tolist()
+    if os.path.exists(save_path + '/rig_keyframe_cartwheel.txt'):
+        preset_poses += np.loadtxt(save_path + '/rig_keyframe_cartwheel.txt').tolist()
 
     saved_poses = []
 
@@ -53,6 +53,7 @@ if __name__ == "__main__":
         if darwinenv.simenv.env._get_viewer() is not None:
             if hasattr(darwinenv.simenv.env._get_viewer(), 'key_being_pressed'):
                 if darwinenv.simenv.env._get_viewer().key_being_pressed is not None:
+                    current_pose = np.clip(current_pose, SIM_JOINT_LOW_BOUND_RAD, SIM_JOINT_UP_BOUND_RAD)
                     if darwinenv.simenv.env._get_viewer().key_being_pressed == b'-':
                         current_dof -= 1
                     if darwinenv.simenv.env._get_viewer().key_being_pressed == b'+':
@@ -62,6 +63,7 @@ if __name__ == "__main__":
                     if darwinenv.simenv.env._get_viewer().key_being_pressed == b'>':
                         current_pose[current_dof] += 0.008 * 10
 
+
                     if current_dof < 0:
                         current_dof = 19
                     if current_dof > 19:
@@ -69,6 +71,10 @@ if __name__ == "__main__":
                     com = darwinenv.robot.dofs[current_dof+6].joint.position_in_world_frame()
                     darwinenv.simenv.env.dart_world.skeletons[2].q = [0, 0, 0, com[0], com[1], com[2]]
                     current_pose = np.clip(current_pose, SIM_JOINT_LOW_BOUND_RAD, SIM_JOINT_UP_BOUND_RAD)
+
+                    if darwinenv.simenv.env._get_viewer().key_being_pressed == b'C': # show com
+                        com = darwinenv.robot.C
+                        darwinenv.simenv.env.dart_world.skeletons[2].q = [0, 0, 0, com[0], com[1], com[2]]
 
 
                     if darwinenv.simenv.env._get_viewer().key_being_pressed == b'a':
@@ -92,7 +98,7 @@ if __name__ == "__main__":
 
                     # save the motion
                     if darwinenv.simenv.env._get_viewer().key_being_pressed == b's':
-                        np.savetxt(save_path+'/rig_keyframe_crawl.txt', np.array(saved_poses))
+                        np.savetxt(save_path+'/rig_keyframe_cartwheel.txt', np.array(saved_poses))
 
 
                     if darwinenv.simenv.env._get_viewer().key_being_pressed == b't':
