@@ -108,6 +108,9 @@ class DarwinPlain:
     def get_motor_pose(self):
         return self.robot.q[6:]
 
+    def get_motor_velocity(self):
+        return self.robot.dq[6:]
+
     def reset(self):
         self.simenv.reset()
         q = self.robot.q

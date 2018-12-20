@@ -18,6 +18,8 @@ class BasicDarwin:
 
         self.read_attrs = [(mx28.ADDR_PRESENT_POSITION, mx28.LEN_PRESENT_POSITION)]
 
+        self.read_velocity_attrs = [(mx28.ADDR_PRESENT_VELOCITY, mx28.LEN_PRESENT_VELOCITY)]
+
         self.voltage_attrs = [(mx28.ADDR_PRESENT_VOLTAGE, mx28.LEN_PRESENT_VOLTAGE)]
 
         self.torque_limit_attrs = [(mx28.ADDR_TORQUE_LIMIT, mx28.LEN_TORQUE_LIMIT)]
@@ -44,6 +46,7 @@ class BasicDarwin:
         self.packet_handler = PacketHandler(PROTOCOL_VERSION)
 
         self.motor_reader = BulkMultiReader(self.port_handler, self.packet_handler, self.dxl_ids, self.read_attrs)
+        self.motor_velocity_reader = BulkMultiReader(self.port_handler, self.packet_handler, self.dxl_ids, self.read_velocity_attrs)
         self.torque_enable_writer = MultiWriter(self.port_handler, self.packet_handler, self.dxl_ids,
                                                 self.write_attrs_torque_enable)
         self.pid_writer = MultiWriter(self.port_handler, self.packet_handler, self.dxl_ids, self.write_attrs_PID)
@@ -69,6 +72,9 @@ class BasicDarwin:
 
     def read_motor_positions(self):
         return self.motor_reader.read()
+
+    def read_motor_velocities(self):
+        return self.motor_velocity_reader.read()
 
     def read_motor_voltages(self):
         return self.voltage_reader.read()

@@ -15,9 +15,9 @@ import time
 
 if __name__ == "__main__":
     policy_path = 'data/sqstsq_weakknee_com025_limvel_smallts.pkl'
-    fixed_root = False
-    action_path = 'data/hw_data/ground_saved_action.txt'
-    run_policy = True
+    fixed_root = True
+    action_path = 'data/sysid_data/velocity_test.txt'
+    run_policy = False
 
     # initialize policy
 
@@ -61,13 +61,18 @@ if __name__ == "__main__":
     #darwinenv.set_pose(hw_poses[0][0:20])
 
     sim_poses = []
+    sim_vels = []
     sim_actions = []
     sim_times = []
     sim_gyro = []
     sim_orientation = []
     prev_obs = darwinenv.get_motor_pose()
-    for i in range(200):
+    total_steps = 200
+    if not run_policy:
+        total_steps = len(hw_actions)
+    for i in range(total_steps):
         current_obs = darwinenv.get_motor_pose()
+        current_vel = darwinenv.get_motor_velocity()
         input_obs = np.concatenate([prev_obs, current_obs])
         if run_policy:
             act = policy.act(input_obs, darwinenv.time)
@@ -80,6 +85,7 @@ if __name__ == "__main__":
         darwinenv.render()
         time.sleep(0.05)
         sim_poses.append(input_obs)
+        sim_vels.append(current_vel)
         prev_obs = current_obs
         imu_data = darwinenv.get_imu_reading()
         darwinenv.integrate_imu_reading()
@@ -87,6 +93,7 @@ if __name__ == "__main__":
         sim_orientation.append(darwinenv.get_integrated_imu())
 
     sim_poses = np.array(sim_poses)
+    sim_vels = np.array(sim_vels)
     sim_actions = np.array(sim_actions)
     sim_times = np.array(sim_times)
     sim_gyro = np.array(sim_gyro)
@@ -102,8 +109,13 @@ if __name__ == "__main__":
     else:
         savename = 'ground_' + savename
     #savename = 'sim_saved_obs_walk.txt'
-    savename += policy_path.split('/')[1].split('.')[0]
+
+    if run_policy:
+        savename += policy_path.split('/')[-1].split('.')[0]
+    else:
+        savename += action_path.split('/')[-1].split('.')[0]
     np.savetxt('data/sim_data/' + savename + '_obs.txt', sim_poses)
+    np.savetxt('data/sim_data/' + savename + '_vels.txt', sim_vels)
     np.savetxt('data/sim_data/' + savename + '_action.txt', sim_actions)
     np.savetxt('data/sim_data/' + savename + '_time.txt', sim_times)
     np.savetxt('data/sim_data/' + savename + '_gyro.txt', sim_gyro)
