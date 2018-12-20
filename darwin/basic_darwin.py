@@ -18,7 +18,7 @@ class BasicDarwin:
 
         self.read_attrs = [(mx28.ADDR_PRESENT_POSITION, mx28.LEN_PRESENT_POSITION)]
 
-        self.read_velocity_attrs = [(mx28.ADDR_PRESENT_VELOCITY, mx28.LEN_PRESENT_VELOCITY)]
+        self.read_velocity_attrs = [(mx28.ADDR_PRESENT_SPEED, mx28.LEN_PRESENT_SPEED)]
 
         self.voltage_attrs = [(mx28.ADDR_PRESENT_VOLTAGE, mx28.LEN_PRESENT_VOLTAGE)]
 
