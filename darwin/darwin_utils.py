@@ -9,6 +9,13 @@ def VAL2RADIAN(val):
 def RADIAN2VAL(rad):
     return rad * 180 / np.pi / 0.088 + 2048
 
+# speed
+def SPEED_HW2SIM(val):  # from value to radians per sec
+    rpm = np.zeros_like(val)
+    rpm[val >= 1024] = -(val[val >= 1024] - 1024) * 0.1111
+    rpm[val < 1024] = val[val < 1024] * 0.1111
+    return rpm / 60.0 * np.pi * 2
+
 # gyro
 def VAL2RPS(val):
     return (val-512)/512.0*500/180*np.pi

@@ -49,9 +49,9 @@ if __name__ == "__main__":
             ct = time.monotonic() - initial_time
             cur_orientation += VAL2RPS(gyro) * tdif
 
-            all_actions.append(act)
-            all_inputs.append(np.concatenate([motor_pose, motor_pose]))  # to match the dimension in the normal policy
-            all_velocities.append(motor_velocity)
+            all_actions.append(feedforward_goals[current_step])
+            all_inputs.append(VAL2RADIAN(np.concatenate([HW2SIM_INDEX(motor_pose), HW2SIM_INDEX(motor_pose)])))  # to match the dimension in the normal policy
+            all_velocities.append(SPEED_HW2SIM(HW2SIM_INDEX(motor_velocity)))
             all_time.append(ct - 0.05)
             all_gyros.append(VAL2RPS(gyro))
             all_orientations.append(np.copy(cur_orientation))

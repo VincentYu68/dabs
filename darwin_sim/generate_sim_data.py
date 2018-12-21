@@ -58,7 +58,7 @@ if __name__ == "__main__":
     darwinenv.set_pose(policy.get_initial_state())
 
     #hw_poses = np.loadtxt('data/hw_data/ground_saved_obs.txt')
-    #darwinenv.set_pose(hw_poses[0][0:20])
+    darwinenv.set_pose(hw_actions[0])
 
     sim_poses = []
     sim_vels = []
