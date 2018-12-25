@@ -20,6 +20,8 @@ if __name__ == "__main__":
     savename += '_singlefoot' if singlefoot_motion else ''
     savename += '_crawl' if crawl_motion else ''
 
+    obs_app = [0.05945156, 0.73512937, 0.76391359, 0.41831418]
+
     gyro_input = 0
 
     pose_squat_val = np.array([2509, 2297, 1714, 1508, 1816, 2376,
@@ -97,6 +99,8 @@ if __name__ == "__main__":
             obs_input = VAL2RADIAN(np.concatenate([HW2SIM_INDEX(prev_motor_pose), HW2SIM_INDEX(motor_pose)]))
             if gyro_input > 0:
                 obs_input = np.concatenate([obs_input, VAL2RPS(gyro)])
+            if len(obs_app) > 0:
+                obs_input = np.concatenate([obs_input, obs_app])
             cur_orientation += VAL2RPS(gyro) * tdif
 
             ct = time.monotonic() - initial_time
