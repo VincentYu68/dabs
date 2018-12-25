@@ -8,7 +8,7 @@ import time
 import os, errno
 
 if __name__ == "__main__":
-    filename = 'sqstsq_weakknee_com025_limvel_smallts.pkl'
+    filename = 'sqstsq_limvel_UP4d.pkl'
 
     savename = 'ground'+filename.split('.')[0]
 
