@@ -14,7 +14,7 @@ from darwin.np_policy import *
 import time
 
 if __name__ == "__main__":
-    policy_path = 'data/sqstsq_weakknee_com025_limvel_smallts.pkl'
+    policy_path = 'data/sqstsq_weakknee_limvel2.pkl'
     fixed_root = True
     action_path = 'data/sysid_data/velocity_test.txt'
     run_policy = False
@@ -58,7 +58,8 @@ if __name__ == "__main__":
     darwinenv.set_pose(policy.get_initial_state())
 
     #hw_poses = np.loadtxt('data/hw_data/ground_saved_obs.txt')
-    darwinenv.set_pose(hw_actions[0])
+    if not run_policy:
+        darwinenv.set_pose(hw_actions[0])
 
     sim_poses = []
     sim_vels = []

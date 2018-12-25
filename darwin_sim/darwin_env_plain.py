@@ -87,7 +87,7 @@ class DarwinPlain:
         for i in range(self.simenv.env.frame_skip):
             #self.robot.bodynode('MP_ANKLE2_L').add_ext_force(np.array([-20, 0, 0]), np.array([0.0, 0.0, 0.0]))
             tau[6:] = self.simenv.env.PID()
-            tau[(np.abs(self.robot.dq) > 2.0) * (np.sign(self.robot.dq) == np.sign(tau))] = 0
+            #tau[(np.abs(self.robot.dq) > 2.0) * (np.sign(self.robot.dq) == np.sign(tau))] = 0
             self.robot.set_forces(tau)
             self.dart_world.step()
             if self.time > 0.1:
