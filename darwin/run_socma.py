@@ -68,7 +68,7 @@ if __name__ == "__main__":
 
     darwin.write_pid(32, 0, 16)
 
-    optimizer = StrategyOptimizer(darwin, policy, 4, 2)
+    optimizer = StrategyOptimizer(darwin, policy, 4, 1)
 
     optimizer.optimize()
 
