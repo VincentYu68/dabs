@@ -10,6 +10,8 @@ from darwin.darwin_utils import *
 if __name__ == "__main__":
     save_path = 'data/rig_data'
 
+    rig_name = 'rig_keyframe_lift'
+
     preset_poses = [VAL2RADIAN(np.array([2509, 2297, 1714, 1508, 1816, 2376,
                                     2047, 2171,
                                     2032, 2039, 2795, 648, 1231, 2040, 2041, 2060, 1281, 3448, 2855, 2073])),
@@ -30,8 +32,8 @@ if __name__ == "__main__":
         if e.errno != errno.EEXIST:
             raise
 
-    if os.path.exists(save_path + '/rig_keyframe_cartwheel.txt'):
-        preset_poses += np.loadtxt(save_path + '/rig_keyframe_cartwheel.txt').tolist()
+    if os.path.exists(save_path + '/'+rig_name+'.txt'):
+        preset_poses += np.loadtxt(save_path + '/'+rig_name+'.txt').tolist()
 
     saved_poses = []
 
@@ -98,7 +100,7 @@ if __name__ == "__main__":
 
                     # save the motion
                     if darwinenv.simenv.env._get_viewer().key_being_pressed == b's':
-                        np.savetxt(save_path+'/rig_keyframe_cartwheel.txt', np.array(saved_poses))
+                        np.savetxt(save_path+'/'+rig_name+'.txt', np.array(saved_poses))
 
 
                     if darwinenv.simenv.env._get_viewer().key_being_pressed == b't':

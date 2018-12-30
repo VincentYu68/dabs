@@ -8,13 +8,15 @@ import time
 import os, errno
 
 if __name__ == "__main__":
-    filename = 'sqstsq_limvel_UP4d.pkl'
+    #filename = 'sqstsq_limvel_UP4d.pkl'
+    filename = 'lift_limvel_robust.pkl'
 
     savename = 'ground'+filename.split('.')[0]
 
     walk_motion = False
     singlefoot_motion = False
     crawl_motion = False
+    lift_motion = True
 
     savename += '_walk' if walk_motion else ''
     savename += '_singlefoot' if singlefoot_motion else ''
@@ -43,9 +45,11 @@ if __name__ == "__main__":
                            [7.0, pose_squat],
                            ]
 
-    if walk_motion or crawl_motion:
+    if walk_motion or crawl_motion or lift_motion:
         if walk_motion:
             rig_keyframe = np.loadtxt('data/rig_data/rig_keyframe.txt')
+        elif lift_motion:
+            rig_keyframe = np.loadtxt('data/rig_data/rig_keyframe_lift.txt')
         else:
             rig_keyframe = np.loadtxt('data/rig_data/rig_keyframe_crawl.txt')
         interp_sch = [[0.0, rig_keyframe[0]]]
@@ -56,11 +60,21 @@ if __name__ == "__main__":
                 interp_time += 0.5
         interp_sch.append([interp_time, rig_keyframe[0]])
 
+        if lift_motion:
+            interp_sch = [[0.0, rig_keyframe[0]],
+                               [1.0, rig_keyframe[1]],
+                               [2.0, rig_keyframe[2]],
+                               [3.0, rig_keyframe[3]],
+                               [4.0, rig_keyframe[4]],
+                               ]
+
     if singlefoot_motion:
         rig_keyframe = np.loadtxt('data/rig_data/rig_keyframe2.txt')
         interp_sch = [[0.0, rig_keyframe[0]],
                       [2.0, rig_keyframe[1]],
                       [6.0, rig_keyframe[1]]]
+
+
 
     policy = NP_Policy(interp_sch, 'data/'+filename, discrete_action=True,
                        action_bins=np.array([11] * 20), delta_angle_scale=0.3, action_filter_size=5)
