@@ -98,7 +98,7 @@ class NP_Net_MirrorSym:
         self.obrms_std = np.sqrt(np.clip(obrms_runningsumsq / obrms_count - (self.obrms_mean**2), 1e-2, 1000000))
 
         for i in range(10): # assume maximum layer size of 10
-            if pol_scope+'/pol/fc'+str(i)+'/kernel:0' in params:
+            if pol_scope+'/pol/genff'+str(i)+'/w:0' in params:
                 W = params[pol_scope+'/pol_net/genff'+str(i)+'/w:0']
                 b = params[pol_scope+'/pol_net/genff'+str(i)+'/b:0']
                 self.nn_params.append([W, b])
