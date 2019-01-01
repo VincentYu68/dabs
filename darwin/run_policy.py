@@ -9,22 +9,32 @@ import os, errno
 
 if __name__ == "__main__":
     #filename = 'sqstsq_limvel_UP4d.pkl'
-    filename = 'lift_limvel_robust.pkl'
+    filename = 'walk_tl10_vrew10_limvel.pkl'
 
     savename = 'ground'+filename.split('.')[0]
 
     walk_motion = False
     singlefoot_motion = False
     crawl_motion = False
-    lift_motion = True
+    lift_motion = False
+
+    direct_walk = True
 
     savename += '_walk' if walk_motion else ''
     savename += '_singlefoot' if singlefoot_motion else ''
     savename += '_crawl' if crawl_motion else ''
 
-    obs_app = [0.05945156, 0.73512937, 0.76391359, 0.41831418]
+    savename += '_direct_walk' if direct_walk else ''
 
-    gyro_input = 0
+    obs_app = []#[0.05945156, 0.73512937, 0.76391359, 0.41831418]
+
+    control_timestep = 0.05  # time interval between control signals
+    if direct_walk:
+        control_timestep = 0.033333
+
+    gyro_input = 1
+    gyro_accum_input = True
+
 
     pose_squat_val = np.array([2509, 2297, 1714, 1508, 1816, 2376,
                                2047, 2171,
@@ -75,9 +85,17 @@ if __name__ == "__main__":
                       [6.0, rig_keyframe[1]]]
 
 
+    if direct_walk:
+        interp_sch = None
 
-    policy = NP_Policy(interp_sch, 'data/'+filename, discrete_action=True,
+    if not direct_walk:
+        policy = NP_Policy(interp_sch, 'data/'+filename, discrete_action=True,
                        action_bins=np.array([11] * 20), delta_angle_scale=0.3, action_filter_size=5)
+    else:
+        obs_perm, act_perm = make_mirror_perm_indices(gyro_input, gyro_accum_input, False, len(obs_app))
+        policy = NP_Policy(None, 'data/' + filename, discrete_action=True,
+                           action_bins=np.array([11] * 20), delta_angle_scale=0.3, action_filter_size=5,
+                           obs_perm=obs_perm, act_perm=act_perm)
 
     darwin = BasicDarwin()
 
@@ -89,7 +107,10 @@ if __name__ == "__main__":
 
     motor_pose = darwin.read_motor_positions()
 
-    darwin.write_motor_goal(RADIAN2VAL(SIM2HW_INDEX(policy.get_initial_state())))
+    if not direct_walk:
+        darwin.write_motor_goal(RADIAN2VAL(SIM2HW_INDEX(policy.get_initial_state())))
+    else:
+        darwin.write_motor_goal(RADIAN2VAL(np.zeros(20)))
 
     time.sleep(5)
 
@@ -104,21 +125,23 @@ if __name__ == "__main__":
     all_orientations = []
     cur_orientation = np.zeros(3)
     while current_step < 200:
-        if time.monotonic() - prev_time >= 0.05:  # control every 50 ms
+        if time.monotonic() - prev_time >= control_timestep:  # control every 50 ms
             tdif = time.monotonic() - prev_time
-            prev_time = time.monotonic() - ((time.monotonic() - prev_time) - 0.05)
+            prev_time = time.monotonic() - ((time.monotonic() - prev_time) - control_timestep)
             motor_pose = np.array(darwin.read_motor_positions())
             gyro = darwin.read_gyro()
+            cur_orientation += VAL2RPS(gyro) * tdif
             #est_vel = (motor_pose - prev_motor_pose) / tdif
             obs_input = VAL2RADIAN(np.concatenate([HW2SIM_INDEX(prev_motor_pose), HW2SIM_INDEX(motor_pose)]))
             if gyro_input > 0:
                 obs_input = np.concatenate([obs_input, VAL2RPS(gyro)])
+            if gyro_accum_input:
+                obs_input = np.concatenate([obs_input, cur_orientation])
             if len(obs_app) > 0:
                 obs_input = np.concatenate([obs_input, obs_app])
-            cur_orientation += VAL2RPS(gyro) * tdif
 
             ct = time.monotonic() - initial_time
-            act = policy.act(obs_input, ct - 0.05)
+            act = policy.act(obs_input, ct - control_timestep)
             darwin.write_motor_goal(RADIAN2VAL(SIM2HW_INDEX(act)))
 
             prev_motor_pose = np.copy(motor_pose)
@@ -126,7 +149,7 @@ if __name__ == "__main__":
             current_step += 1
             all_actions.append(act)
             all_inputs.append(obs_input)
-            all_time.append(ct - 0.05)
+            all_time.append(ct - control_timestep)
             all_gyros.append(VAL2RPS(gyro))
             all_orientations.append(np.copy(cur_orientation))
 

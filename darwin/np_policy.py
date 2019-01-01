@@ -55,17 +55,94 @@ class NP_Net:
             discrete_out = np.array([np.argmax(prob) for prob in splitted_out])
             return discrete_out
 
+# Class for a neural network model with mirror symmetry in numpy
+class NP_Net_MirrorSym:
+    def __init__(self, nvec = None, observation_permutation=None,action_permutation=None):
+        self.obrms_mean = None    # for observation running mean std
+        self.obrms_std = None     # for observation running mean std
+        self.nn_params = []       # stores the neural net parameters in the form of [[W0, b0], [W1, b1], ... [Wn, bn]]
+        self.nvec = nvec          # None if continuous action, otherwise discrete action in the form of
+                                  # [numbins, numbins, ... numbins]
+
+        obs_perm_mat = np.zeros((len(observation_permutation), len(observation_permutation)), dtype=np.float32)
+        self.obs_perm_mat = obs_perm_mat
+        for i, perm in enumerate(observation_permutation):
+            obs_perm_mat[i][int(np.abs(perm))] = np.sign(perm)
+
+        if nvec is None:
+            act_perm_mat = np.zeros((len(action_permutation), len(action_permutation)), dtype=np.float32)
+            self.act_perm_mat = act_perm_mat
+            for i, perm in enumerate(action_permutation):
+                self.act_perm_mat[i][int(np.abs(perm))] = np.sign(perm)
+        else:
+            total_dim = int(np.sum(nvec))
+            dim_index = np.concatenate([[0], np.cumsum(nvec)])
+            act_perm_mat = np.zeros((total_dim, total_dim), dtype=np.float32)
+            self.act_perm_mat = act_perm_mat
+            for i, perm in enumerate(action_permutation):
+                perm_mat = np.identity(nvec[i])
+                if np.sign(perm) < 0:
+                    perm_mat = np.flipud(perm_mat)
+                self.act_perm_mat[dim_index[i]:dim_index[i] + nvec[i],
+                dim_index[int(np.abs(perm))]:dim_index[int(np.abs(perm))] + nvec[int(np.abs(perm))]] = perm_mat
+
+    def load_from_file(self, fname):
+        params = joblib.load(fname)
+
+        pol_scope = list(params.keys())[0][0:list(params.keys())[0].find('/')]
+        obrms_runningsumsq = params[pol_scope+'/obfilter/runningsumsq:0']
+        obrms_count = params[pol_scope+'/obfilter/count:0']
+        obrms_runningsum = params[pol_scope+'/obfilter/runningsum:0']
+
+        self.obrms_mean = obrms_runningsum / obrms_count
+        self.obrms_std = np.sqrt(np.clip(obrms_runningsumsq / obrms_count - (self.obrms_mean**2), 1e-2, 1000000))
+
+        for i in range(10): # assume maximum layer size of 10
+            if pol_scope+'/pol/fc'+str(i)+'/kernel:0' in params:
+                W = params[pol_scope+'/pol_net/genff'+str(i)+'/w:0']
+                b = params[pol_scope+'/pol_net/genff'+str(i)+'/b:0']
+                self.nn_params.append([W, b])
+        W_final = params[pol_scope + '/pol_net/genff_out/w:0']
+        b_final = params[pol_scope + '/pol_net/genff_out/b:0']
+        self.nn_params.append([W_final, b_final])
+
+    def get_output(self, input, activation = np.tanh):
+        assert self.obrms_mean is not None
+
+        last_out = np.clip((input - self.obrms_mean) / self.obrms_std, -5.0, 5.0)
+
+        for i in range(len(self.nn_params)-1):
+            last_out = activation(np.dot(self.nn_params[i][0].T, last_out) + self.nn_params[i][1])
+        out = np.dot(self.nn_params[-1][0].T, last_out) + self.nn_params[-1][1]
+
+        mirrorlast_out = np.clip((np.dot(input, self.obs_perm_mat) - self.obrms_mean) / self.obrms_std, -5.0, 5.0)
+        for i in range(len(self.nn_params) - 1):
+            mirrorlast_out = activation(np.dot(self.nn_params[i][0].T, mirrorlast_out) + self.nn_params[i][1])
+        mirrorout = np.dot(np.dot(self.nn_params[-1][0].T, mirrorlast_out) + self.nn_params[-1][1], self.act_perm_mat)
+
+        if self.nvec is None:
+            return out + mirrorout
+        else:
+            # convert for discrete output
+            splitted_out = np.split(out + mirrorout, np.cumsum(self.nvec)[0:-1])
+            discrete_out = np.array([np.argmax(prob) for prob in splitted_out])
+            return discrete_out
+
 # Class for a neural network policy in numpy
 # Includes the action filtering and pose interpolation
 class NP_Policy:
     # interp_sch makes the feed-forward motion
     # interp_sch contains the timing and pose id throughout the trajectory
-    def __init__(self, interp_sch, param_file, discrete_action, action_bins, delta_angle_scale, action_filter_size):
+    def __init__(self, interp_sch, param_file, discrete_action, action_bins, delta_angle_scale, action_filter_size,
+                 obs_perm = None, act_perm = None):
         self.interp_sch = interp_sch
         self.obs_cache = []
         self.action_cache = []
         self.action_filter_size = action_filter_size
-        self.net = NP_Net()
+        if interp_sch is not None:
+            self.net = NP_Net()
+        else:
+            self.net = NP_Net_MirrorSym(action_bins, obs_perm, act_perm)
         self.net.load_from_file(param_file)
         self.discrete_action = discrete_action
         self.delta_angle_scale = delta_angle_scale
@@ -100,16 +177,20 @@ class NP_Policy:
 
         # get feedforward action
         clamped_control = np.clip(filtered_action, -1, 1)
-        self.ref_target = self.interp_sch[0][1]
-        for i in range(len(self.interp_sch) - 1):
-            if t >= self.interp_sch[i][0] and t < self.interp_sch[i + 1][0]:
-                ratio = (t - self.interp_sch[i][0]) / (self.interp_sch[i + 1][0] - self.interp_sch[i][0])
-                self.ref_target = ratio * self.interp_sch[i + 1][1] + (1 - ratio) * self.interp_sch[i][1]
-        if t > self.interp_sch[-1][0]:
-            self.ref_target = self.interp_sch[-1][1]
 
-        # combine policy output and keyframe interpolation to get the target joint positions
-        target_pose = self.ref_target + clamped_control * self.delta_angle_scale
+        if self.interp_sch is not None:
+            self.ref_target = self.interp_sch[0][1]
+            for i in range(len(self.interp_sch) - 1):
+                if t >= self.interp_sch[i][0] and t < self.interp_sch[i + 1][0]:
+                    ratio = (t - self.interp_sch[i][0]) / (self.interp_sch[i + 1][0] - self.interp_sch[i][0])
+                    self.ref_target = ratio * self.interp_sch[i + 1][1] + (1 - ratio) * self.interp_sch[i][1]
+            if t > self.interp_sch[-1][0]:
+                self.ref_target = self.interp_sch[-1][1]
+
+            # combine policy output and keyframe interpolation to get the target joint positions
+            target_pose = self.ref_target + clamped_control * self.delta_angle_scale
+        else:
+            target_pose = (clamped_control + 1.0) / 2.0 * (SIM_CONTROL_UP_BOUND_RAD - SIM_CONTROL_LOW_BOUND_RAD) + SIM_CONTROL_LOW_BOUND_RAD
         target_pose = np.clip(target_pose, SIM_JOINT_LOW_BOUND_RAD, SIM_JOINT_UP_BOUND_RAD)
 
         return target_pose

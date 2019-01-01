@@ -14,10 +14,15 @@ from darwin.np_policy import *
 import time
 
 if __name__ == "__main__":
-    policy_path = 'data/sqstsq_weakknee_limvel2.pkl'
+    policy_path = 'data/lift_limvel_robust.pkl'
     fixed_root = True
     action_path = 'data/sysid_data/velocity_test.txt'
-    run_policy = False
+    run_policy = True
+
+    walk_motion = False
+    singlefoot_motion = False
+    crawl_motion = False
+    lift_motion = True
 
     # initialize policy
 
@@ -30,18 +35,39 @@ if __name__ == "__main__":
                            [7.0, pose_squat],
                            ]
 
-    '''rig_keyframe = np.loadtxt('data/rig_data/rig_keyframe_crawl.txt')
+    rig_keyframe = np.loadtxt('data/rig_data/rig_keyframe_crawl.txt')
     interp_sch = [[0.0, rig_keyframe[0]],
                   [2.0, rig_keyframe[1]],
                   [6.0, rig_keyframe[1]]]
 
-    interp_sch = []
-    interp_time = 0.0
-    for i in range(10):
-        for k in range(1, len(rig_keyframe)):
-            interp_sch.append([interp_time, rig_keyframe[k]])
-            interp_time += 0.5
-    interp_sch.append([interp_time, rig_keyframe[0]])'''
+    if walk_motion or crawl_motion or lift_motion:
+        if walk_motion:
+            rig_keyframe = np.loadtxt('data/rig_data/rig_keyframe.txt')
+        elif lift_motion:
+            rig_keyframe = np.loadtxt('data/rig_data/rig_keyframe_lift.txt')
+        else:
+            rig_keyframe = np.loadtxt('data/rig_data/rig_keyframe_crawl.txt')
+        interp_sch = [[0.0, rig_keyframe[0]]]
+        interp_time = 0.5
+        for i in range(10):
+            for k in range(1, len(rig_keyframe)):
+                interp_sch.append([interp_time, rig_keyframe[k]])
+                interp_time += 0.5
+        interp_sch.append([interp_time, rig_keyframe[0]])
+
+        if lift_motion:
+            interp_sch = [[0.0, rig_keyframe[0]],
+                               [1.0, rig_keyframe[1]],
+                               [2.0, rig_keyframe[2]],
+                               [3.0, rig_keyframe[3]],
+                               [4.0, rig_keyframe[4]],
+                               ]
+
+    if singlefoot_motion:
+        rig_keyframe = np.loadtxt('data/rig_data/rig_keyframe2.txt')
+        interp_sch = [[0.0, rig_keyframe[0]],
+                      [2.0, rig_keyframe[1]],
+                      [6.0, rig_keyframe[1]]]
 
     policy = NP_Policy(interp_sch, policy_path, discrete_action=True,
                        action_bins=np.array([11] * 20), delta_angle_scale=0.3, action_filter_size=5)

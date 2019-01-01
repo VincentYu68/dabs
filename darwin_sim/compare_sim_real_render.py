@@ -13,16 +13,16 @@ from darwin.np_policy import *
 
 
 if __name__ == "__main__":
-    poses1 = np.loadtxt('data/sim_data/ground_pol_sim_savedsqstsq_weakknee_limvel2_obs.txt')
-    poses2 = np.loadtxt('data/hw_data/groundsqstsq_weakknee_limvel2_saved_obs.txt')
+    poses1 = np.loadtxt('data/sim_data/fixed_pol_sim_savedlift_limvel_robust_obs.txt')
+    poses2 = np.loadtxt('data/hw_data/groundlift_limvel_robust_saved_obs.txt')
     #poses1 = np.loadtxt('data/hw_data/fixed_saved_obs.txt')
 
-    actions1 = np.loadtxt('data/sim_data/ground_pol_sim_savedsqstsq_weakknee_limvel2_action.txt')
-    actions2 = np.loadtxt('data/hw_data/groundsqstsq_weakknee_limvel2_saved_action.txt')
+    actions1 = np.loadtxt('data/sim_data/fixed_pol_sim_savedlift_limvel_robust_action.txt')
+    actions2 = np.loadtxt('data/hw_data/groundlift_limvel_robust_saved_action.txt')
     #actions1 = np.loadtxt('data/hw_data/fixed_saved_action.txt')
 
-    times1 = np.loadtxt('data/sim_data/ground_pol_sim_savedsqstsq_weakknee_limvel2_time.txt')
-    times2 = np.loadtxt('data/hw_data/groundsqstsq_weakknee_limvel2_saved_time.txt')
+    times1 = np.loadtxt('data/sim_data/fixed_pol_sim_savedlift_limvel_robust_time.txt')
+    times2 = np.loadtxt('data/hw_data/groundlift_limvel_robust_saved_time.txt')
 
     loop_size = np.min([len(poses1), len(poses2)])
 
