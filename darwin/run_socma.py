@@ -11,7 +11,7 @@ import os, errno
 from darwin.strategy_optimizer import *
 
 if __name__ == "__main__":
-    filename = 'sqstsq_limvel_UP4d.pkl'
+    filename = 'sqstsq_nolimvel_UP4d.pkl'
 
     walk_motion = False
     singlefoot_motion = False

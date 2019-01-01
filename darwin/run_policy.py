@@ -8,8 +8,8 @@ import time
 import os, errno
 
 if __name__ == "__main__":
-    #filename = 'sqstsq_limvel_UP4d.pkl'
-    filename = 'walk_tl10_vrew10_limvel.pkl'
+    filename = 'sqstsq_nolimvel_UP4d.pkl'
+    #filename = 'walk_tl10_vrew10_limvel.pkl'
 
     savename = 'ground'+filename.split('.')[0]
 
@@ -18,7 +18,7 @@ if __name__ == "__main__":
     crawl_motion = False
     lift_motion = False
 
-    direct_walk = True
+    direct_walk = False
 
     savename += '_walk' if walk_motion else ''
     savename += '_singlefoot' if singlefoot_motion else ''
@@ -32,8 +32,8 @@ if __name__ == "__main__":
     if direct_walk:
         control_timestep = 0.033333
 
-    gyro_input = 1
-    gyro_accum_input = True
+    gyro_input = 0
+    gyro_accum_input = False
 
 
     pose_squat_val = np.array([2509, 2297, 1714, 1508, 1816, 2376,
