@@ -52,7 +52,15 @@ class StrategyOptimizer:
                     prev_motor_pose = np.copy(motor_pose)
 
                     current_step += 1
-            rollout_rew = float(input("Input the estimated reward for this rollout"))
+
+            valid = False
+            while not valid:
+                try:
+                    rollout_rew = float(input("Input the estimated reward for this rollout"))
+                    valid = True
+                except ValueError, e:
+                    print('invalid reward')
+
             self.rollout_num += 1
             avg_perf.append(rollout_rew)
 
