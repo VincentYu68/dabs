@@ -32,8 +32,8 @@ if __name__ == "__main__":
     if direct_walk:
         control_timestep = 0.03
 
-    gyro_input = 0
-    gyro_accum_input = False
+    gyro_input = 1
+    gyro_accum_input = True
 
 
     pose_squat_val = np.array([2509, 2297, 1714, 1508, 1816, 2376,
