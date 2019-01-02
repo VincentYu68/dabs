@@ -8,8 +8,8 @@ import time
 import os, errno
 
 if __name__ == "__main__":
-    filename = 'sqstsq_nolimvel_UP4d.pkl'
-    #filename = 'walk_tl10_vrew10_limvel.pkl'
+    #filename = 'sqstsq_nolimvel_UP4d.pkl'
+    filename = 'walk_tl10_vrew10_limvel.pkl'
 
     savename = 'ground'+filename.split('.')[0]
 
@@ -18,7 +18,7 @@ if __name__ == "__main__":
     crawl_motion = False
     lift_motion = False
 
-    direct_walk = False
+    direct_walk = True
 
     savename += '_walk' if walk_motion else ''
     savename += '_singlefoot' if singlefoot_motion else ''
@@ -30,7 +30,7 @@ if __name__ == "__main__":
 
     control_timestep = 0.05  # time interval between control signals
     if direct_walk:
-        control_timestep = 0.033333
+        control_timestep = 0.03
 
     gyro_input = 0
     gyro_accum_input = False

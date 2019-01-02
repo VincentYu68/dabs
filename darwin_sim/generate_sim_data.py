@@ -14,7 +14,7 @@ from darwin.np_policy import *
 import time
 
 if __name__ == "__main__":
-    policy_path = 'data/lift_limvel_robust.pkl'
+    policy_path = 'data/walk_tl10_vrew10_limvel.pkl'
     fixed_root = True
     action_path = 'data/sysid_data/velocity_test.txt'
     run_policy = True
@@ -22,7 +22,13 @@ if __name__ == "__main__":
     walk_motion = False
     singlefoot_motion = False
     crawl_motion = False
-    lift_motion = True
+    lift_motion = False
+
+    direct_walk = False
+
+    control_timestep = 0.05  # time interval between control signals
+    if direct_walk:
+        control_timestep = 0.03
 
     # initialize policy
 
@@ -69,8 +75,17 @@ if __name__ == "__main__":
                       [2.0, rig_keyframe[1]],
                       [6.0, rig_keyframe[1]]]
 
-    policy = NP_Policy(interp_sch, policy_path, discrete_action=True,
+    if direct_walk:
+        interp_sch = None
+
+    if not direct_walk:
+        policy = NP_Policy(interp_sch, policy_path, discrete_action=True,
                        action_bins=np.array([11] * 20), delta_angle_scale=0.3, action_filter_size=5)
+    else:
+        obs_perm, act_perm = make_mirror_perm_indices(1, True, False, 0)
+        policy = NP_Policy(None, policy_path, discrete_action=True,
+                           action_bins=np.array([11] * 20), delta_angle_scale=0.0, action_filter_size=5,
+                           obs_perm=obs_perm, act_perm=act_perm)
 
     # load actions
     hw_actions = np.loadtxt(action_path)
@@ -79,6 +94,8 @@ if __name__ == "__main__":
     darwinenv.toggle_fix_root(fixed_root)
 
     darwinenv.simenv.env.interp_sch = interp_sch
+
+    darwinenv.simenv.env.frame_skip = int(control_timestep / darwinenv.simenv.env.dt)
 
     darwinenv.reset()
     darwinenv.set_pose(policy.get_initial_state())
@@ -110,7 +127,7 @@ if __name__ == "__main__":
         sim_actions.append(act)
         sim_times.append(darwinenv.time)
         darwinenv.render()
-        time.sleep(0.05)
+        time.sleep(control_timestep)
         sim_poses.append(input_obs)
         sim_vels.append(current_vel)
         prev_obs = current_obs
