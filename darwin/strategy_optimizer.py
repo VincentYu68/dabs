@@ -58,7 +58,7 @@ class StrategyOptimizer:
                 try:
                     rollout_rew = float(input("Input the estimated reward for this rollout"))
                     valid = True
-                except ValueError, e:
+                except ValueError:
                     print('invalid reward')
 
             self.rollout_num += 1
