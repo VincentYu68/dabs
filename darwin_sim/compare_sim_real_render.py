@@ -13,16 +13,16 @@ from darwin.np_policy import *
 
 
 if __name__ == "__main__":
-    poses1 = np.loadtxt('data/sim_data/fixed_pol_sim_savedlift_limvel_robust_obs.txt')
-    poses2 = np.loadtxt('data/hw_data/groundlift_limvel_robust_saved_obs.txt')
+    poses1 = np.loadtxt('data/sim_data/ground_pol_sim_savedwalk_tl10_vrew10_limvel_obs.txt')
+    poses2 = np.loadtxt('data/hw_data/groundwalk_tl10_vrew10_limvel_direct_walk_saved_obs.txt')
     #poses1 = np.loadtxt('data/hw_data/fixed_saved_obs.txt')
 
-    actions1 = np.loadtxt('data/sim_data/fixed_pol_sim_savedlift_limvel_robust_action.txt')
-    actions2 = np.loadtxt('data/hw_data/groundlift_limvel_robust_saved_action.txt')
+    actions1 = np.loadtxt('data/sim_data/ground_pol_sim_savedwalk_tl10_vrew10_limvel_action.txt')
+    actions2 = np.loadtxt('data/hw_data/groundwalk_tl10_vrew10_limvel_direct_walk_saved_action.txt')
     #actions1 = np.loadtxt('data/hw_data/fixed_saved_action.txt')
 
-    times1 = np.loadtxt('data/sim_data/fixed_pol_sim_savedlift_limvel_robust_time.txt')
-    times2 = np.loadtxt('data/hw_data/groundlift_limvel_robust_saved_time.txt')
+    times1 = np.loadtxt('data/sim_data/ground_pol_sim_savedwalk_tl10_vrew10_limvel_time.txt')
+    times2 = np.loadtxt('data/hw_data/groundwalk_tl10_vrew10_limvel_direct_walk_saved_time.txt')
 
     loop_size = np.min([len(poses1), len(poses2)])
 
@@ -104,8 +104,8 @@ if __name__ == "__main__":
 
                     plt.clf()
                     plt.subplot(2,1,1)
-                    plt.plot(np.arange(40), poses1[current_step], label='pose1')
-                    plt.plot(np.arange(40), poses2[current_step], label='pose2')
+                    plt.plot(np.arange(len(poses1[0])), poses1[current_step], label='pose1')
+                    plt.plot(np.arange(len(poses1[0])), poses2[current_step], label='pose2')
                     plt.legend()
                     plt.subplot(2, 1, 2)
                     plt.plot(np.arange(20), actions1[current_step], label='action1')

@@ -2,27 +2,48 @@ import cma, sys, joblib
 import numpy as np
 from darwin.darwin_utils import *
 import time
+import os, errno
 
 class StrategyOptimizer:
-    def __init__(self, robot, policy, strategy_dim, eval_num = 2):
+    def __init__(self, robot, policy, strategy_dim, eval_num = 2, save_dir = None):
         self.robot = robot
         self.policy = policy
         self.strategy_dim = strategy_dim
         self.eval_num = eval_num
-        self.sample_num = 0
         self.rollout_num = 0
 
-        self.solution_history = []
+        self.all_samples = []
+        self.all_fitness = []
+        self.best_x_hist = []
+        self.best_f_hist = []
         self.best_f = 100000
         self.best_x = None
+
+        self.save_dir = save_dir
+        if save_dir is not None:
+            try:
+                os.makedirs(save_dir)
+            except OSError as e:
+                if e.errno != errno.EEXIST:
+                    raise
 
     def reset(self):
-        self.sample_num = 0
         self.rollout_num = 0
 
         self.best_f = 100000
         self.best_x = None
-        self.solution_history = []
+        self.all_samples = []
+        self.all_fitness = []
+        self.best_x_hist = []
+        self.best_f_hist = []
+
+    def cames_callback(self, es):
+        self.best_x_hist.append(self.best_x)
+        self.best_f_hist.append(self.best_f)
+        if self.save_dir is not None:
+            np.savetxt(self.save_dir + '/best_x_hist.txt', np.array(self.best_x_hist))
+            np.savetxt(self.save_dir + '/best_f_hist.txt', np.array(self.best_f_hist))
+
 
     def fitness(self, x):
         app = np.copy(x)
@@ -68,6 +89,14 @@ class StrategyOptimizer:
             self.best_x = np.copy(x)
             self.best_f = -np.mean(avg_perf)
         print('Sampled perf: ', np.mean(avg_perf))
+        self.all_samples.append(x)
+        self.all_fitness.append(np.mean(avg_perf))
+
+        if self.save_dir is not None:
+            # save all samples and other info
+            np.savetxt(self.save_dir + '/all_samples.txt', np.array(self.all_samples))
+            np.savetxt(self.save_dir + '/all_fitness.txt', np.array(self.all_fitness))
+
         return -np.mean(avg_perf)
 
 
@@ -77,7 +106,8 @@ class StrategyOptimizer:
         init_std = 0.5
         bound = [0.0, 1.0]
 
-        xopt, es = cma.fmin2(self.fitness, init_guess, init_std, options={'bounds': bound, 'maxiter': maxiter})
+        xopt, es = cma.fmin2(self.fitness, init_guess, init_std, options={'bounds': bound, 'maxiter': maxiter}
+                             , callback=self.cames_callback)
 
         print('optimized: ', repr(xopt))
         print('Total rollout: ', self.rollout_num)

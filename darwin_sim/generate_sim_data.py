@@ -15,7 +15,8 @@ import time
 
 if __name__ == "__main__":
     policy_path = 'data/walk_tl10_vrew10_limvel.pkl'
-    fixed_root = True
+    #policy_path = 'data/sqstsq_nolimvel_UP4d.pkl'
+    fixed_root = False
     action_path = 'data/sysid_data/velocity_test.txt'
     run_policy = True
 
@@ -24,7 +25,7 @@ if __name__ == "__main__":
     crawl_motion = False
     lift_motion = False
 
-    direct_walk = False
+    direct_walk = True
 
     control_timestep = 0.05  # time interval between control signals
     if direct_walk:
@@ -95,14 +96,16 @@ if __name__ == "__main__":
 
     darwinenv.simenv.env.interp_sch = interp_sch
 
-    darwinenv.simenv.env.frame_skip = int(control_timestep / darwinenv.simenv.env.dt)
+    darwinenv.simenv.env.frame_skip = int(control_timestep / darwinenv.simenv.env.sim_dt)
 
     darwinenv.reset()
-    darwinenv.set_pose(policy.get_initial_state())
+    if not direct_walk:
+        darwinenv.set_pose(policy.get_initial_state())
 
     #hw_poses = np.loadtxt('data/hw_data/ground_saved_obs.txt')
     if not run_policy:
         darwinenv.set_pose(hw_actions[0])
+
 
     sim_poses = []
     sim_vels = []
@@ -118,6 +121,9 @@ if __name__ == "__main__":
         current_obs = darwinenv.get_motor_pose()
         current_vel = darwinenv.get_motor_velocity()
         input_obs = np.concatenate([prev_obs, current_obs])
+        if direct_walk:
+            input_obs = np.concatenate([input_obs, darwinenv.get_gyro_data(), darwinenv.accum_orientation])
+
         if run_policy:
             act = policy.act(input_obs, darwinenv.time)
         else:
@@ -135,6 +141,7 @@ if __name__ == "__main__":
         darwinenv.integrate_imu_reading()
         sim_gyro.append(imu_data)
         sim_orientation.append(darwinenv.get_integrated_imu())
+
 
     sim_poses = np.array(sim_poses)
     sim_vels = np.array(sim_vels)

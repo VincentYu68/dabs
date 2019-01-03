@@ -43,6 +43,8 @@ class DarwinPlain:
         self.max_so_far = None
         self.max_id = None
 
+        self.accum_orientation = np.zeros(3)
+
     def render(self):
         self.simenv.render()
 
@@ -100,6 +102,11 @@ class DarwinPlain:
                         self.max_so_far = np.max(np.abs(np.array(self.robot.dq)[6:]))
                         self.max_id = np.argmax(np.abs(np.array(self.robot.dq)[6:]))
                         print(self.max_so_far, self.max_id)
+        self.accum_orientation += self.get_gyro_data() * self.simenv.env.dt
+
+
+    def get_gyro_data(self):
+        return np.array(self.simenv.env.get_imu_data()[-3:])
 
     def passive_step(self): # advance simualtion without control
         for i in range(self.simenv.env.frame_skip):
@@ -126,6 +133,8 @@ class DarwinPlain:
         q[4] = 0.4
         #q[5] = 0.35
         self.dup_robot.set_positions(q)
+
+        self.accum_orientation = np.zeros(3)
 
         self.time = 0
 

@@ -68,7 +68,12 @@ if __name__ == "__main__":
 
     darwin.write_pid(32, 0, 16)
 
-    optimizer = StrategyOptimizer(darwin, policy, 4, 1)
+    try:
+        os.makedirs('data/socma/')
+    except OSError as e:
+        if e.errno != errno.EEXIST:
+            raise
+    optimizer = StrategyOptimizer(darwin, policy, 4, 1, 'data/socma/'+filename.split('.')[0])
 
     optimizer.optimize()
 
