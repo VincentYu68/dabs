@@ -23,6 +23,7 @@ if __name__ == "__main__":
     savename += '_walk' if walk_motion else ''
     savename += '_singlefoot' if singlefoot_motion else ''
     savename += '_crawl' if crawl_motion else ''
+    savename += '_lift' if lift_motion else ''
 
     savename += '_direct_walk' if direct_walk else ''
 
@@ -72,10 +73,11 @@ if __name__ == "__main__":
 
         if lift_motion:
             interp_sch = [[0.0, rig_keyframe[0]],
-                               [1.0, rig_keyframe[1]],
-                               [2.0, rig_keyframe[2]],
-                               [3.0, rig_keyframe[3]],
-                               [4.0, rig_keyframe[4]],
+                          [1.0, rig_keyframe[0]],
+                               [2.0, rig_keyframe[1]],
+                               [3.0, rig_keyframe[2]],
+                               [4.0, rig_keyframe[3]],
+                               [5.0, rig_keyframe[4]],
                                ]
 
     if singlefoot_motion:

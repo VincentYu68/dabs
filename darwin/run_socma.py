@@ -16,6 +16,7 @@ if __name__ == "__main__":
     walk_motion = False
     singlefoot_motion = False
     crawl_motion = False
+    lift_motion = False
 
     gyro_input = 0
 
@@ -38,9 +39,11 @@ if __name__ == "__main__":
                   [7.0, pose_squat],
                   ]
 
-    if walk_motion or crawl_motion:
+    if walk_motion or crawl_motion or lift_motion:
         if walk_motion:
             rig_keyframe = np.loadtxt('data/rig_data/rig_keyframe.txt')
+        elif lift_motion:
+            rig_keyframe = np.loadtxt('data/rig_data/rig_keyframe_lift.txt')
         else:
             rig_keyframe = np.loadtxt('data/rig_data/rig_keyframe_crawl.txt')
         interp_sch = [[0.0, rig_keyframe[0]]]
@@ -50,6 +53,15 @@ if __name__ == "__main__":
                 interp_sch.append([interp_time, rig_keyframe[k]])
                 interp_time += 0.5
         interp_sch.append([interp_time, rig_keyframe[0]])
+
+        if lift_motion:
+            interp_sch = [[0.0, rig_keyframe[0]],
+                          [1.0, rig_keyframe[0]],
+                          [2.0, rig_keyframe[1]],
+                          [3.0, rig_keyframe[2]],
+                          [4.0, rig_keyframe[3]],
+                          [5.0, rig_keyframe[4]],
+                          ]
 
     if singlefoot_motion:
         rig_keyframe = np.loadtxt('data/rig_data/rig_keyframe2.txt')
