@@ -50,8 +50,8 @@ if __name__ == "__main__":
                 motor_velocity = SPEED_HW2SIM(HW2SIM_INDEX(np.array(darwin.read_motor_velocities())))
 
                 pose_data.append(motor_pose)
-                vel_data.append(vel_data)
-                gyro_data.append(gyro_data)
+                vel_data.append(motor_velocity)
+                gyro_data.append(gyro)
         all_trajs[i]['pose_data'] = pose_data
         all_trajs[i]['vel_data'] = vel_data
         all_trajs[i]['gyro_data'] = gyro_data
