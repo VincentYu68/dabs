@@ -12,9 +12,10 @@ import cma, os, sys, joblib
 from mpi4py import MPI
 
 class SysIDOptimizer:
-    def __init__(self, data_dir, velocity_weight = 1.0):
+    def __init__(self, data_dir, velocity_weight = 1.0, regularization = 0.001):
         self.data_dir = data_dir
         self.velocity_weight = velocity_weight
+        self.regularization = regularization
         self.all_trajs = [joblib.load(data_dir + file) for file in os.listdir(data_dir) if '.pkl' in file]
 
         self.darwinenv = DarwinPlain()
@@ -67,7 +68,8 @@ class SysIDOptimizer:
             total_velocity_error += np.sum(
                 np.square(np.array(hw_vel_data)[1:max_step] - np.array(sim_vels)[1:max_step]))
 
-        loss = (total_positional_error + total_velocity_error * self.velocity_weight) / total_step
+        loss = (total_positional_error + total_velocity_error * self.velocity_weight) / total_step +
+                self.regularization * np.linalg.norm(x)
 
         if loss < self.best_f:
             self.best_x = np.copy(x)
