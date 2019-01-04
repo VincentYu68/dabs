@@ -58,8 +58,8 @@ if __name__ == "__main__":
 
         joblib.dump(all_trajs[i], all_files[i], compress=True)
 
-        input('Press any key to start the next trajectory ...')
-        time.sleep(1)
+        print('Start next trajectory in 3 seconds ...')
+        time.sleep(3)
 
     print('Finished single poses.')
 
