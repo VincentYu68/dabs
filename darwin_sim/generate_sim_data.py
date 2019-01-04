@@ -17,7 +17,7 @@ if __name__ == "__main__":
     policy_path = 'data/walk_tl10_vrew10_limvel.pkl'
     #policy_path = 'data/sqstsq_nolimvel_UP4d.pkl'
     fixed_root = False
-    action_path = 'data/sysid_data/velocity_test.txt'
+    action_path = 'data/hw_data/groundwalk_tl10_vrew10_limvel_direct_walk_saved_action.txt'
     run_policy = True
 
     walk_motion = False
@@ -83,7 +83,7 @@ if __name__ == "__main__":
         policy = NP_Policy(interp_sch, policy_path, discrete_action=True,
                        action_bins=np.array([11] * 20), delta_angle_scale=0.3, action_filter_size=5)
     else:
-        obs_perm, act_perm = make_mirror_perm_indices(1, True, False, 0)
+        obs_perm, act_perm = make_mirror_perm_indices(0, False, False, 0)
         policy = NP_Policy(None, policy_path, discrete_action=True,
                            action_bins=np.array([11] * 20), delta_angle_scale=0.0, action_filter_size=5,
                            obs_perm=obs_perm, act_perm=act_perm)
@@ -121,8 +121,8 @@ if __name__ == "__main__":
         current_obs = darwinenv.get_motor_pose()
         current_vel = darwinenv.get_motor_velocity()
         input_obs = np.concatenate([prev_obs, current_obs])
-        if direct_walk:
-            input_obs = np.concatenate([input_obs, darwinenv.get_gyro_data(), darwinenv.accum_orientation])
+        #if direct_walk:
+        #    input_obs = np.concatenate([input_obs, darwinenv.get_gyro_data(), darwinenv.accum_orientation])
 
         if run_policy:
             act = policy.act(input_obs, darwinenv.time)

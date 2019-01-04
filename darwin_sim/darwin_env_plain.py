@@ -77,6 +77,8 @@ class DarwinPlain:
         else:
             self.dart_world.remove_all_constraints()
 
+    def set_control_timestep(self, control_dt):
+        self.simenv.env.frame_skip = int(control_dt/self.simenv.env.sim_dt)
 
     def step(self, target):
         self.time += self.simenv.env.dt
@@ -113,10 +115,10 @@ class DarwinPlain:
             self.dart_world.step()
 
     def get_motor_pose(self):
-        return self.robot.q[6:]
+        return np.array(self.robot.q)[6:]
 
     def get_motor_velocity(self):
-        return self.robot.dq[6:]
+        return np.array(self.robot.dq)[6:]
 
     def reset(self):
         self.simenv.reset()
@@ -179,3 +181,155 @@ class DarwinPlain:
 
     def get_imu_reading(self):
         return self.simenv.env.get_imu_data()
+
+
+    ####################################
+    ##### parameters for system id #####
+    ####################################
+    KP, KD, KC, VEL_LIM, JOINT_DAMPING, JOINT_FRICTION, TORQUE_LIM = list(range(7))
+    MU_DIMS = np.array([5, 5, 5, 1, 1, 1, 1])
+    MU_UP_BOUNDS = [[100, 100, 100, 100, 100], [1,1,1,1,1], [10,10,10,10,10], [15], [10], [5], [20.0]]
+    MU_LOW_BOUNDS = [[0, 0, 0, 0, 0], [0, 0, 0, 0, 0], [0, 0, 0, 0, 0], [2.0], [0], [0], [3.0]]
+    ACTIVE_MUS = [KP, KD, VEL_LIM, JOINT_DAMPING, JOINT_FRICTION, TORQUE_LIM]
+
+    def set_mu(self, x):
+        assert(len(x) == np.sum(self.MU_DIMS[self.ACTIVE_MUS]))
+
+        current_id = 0
+        if self.KP in self.ACTIVE_MUS:
+            self.simenv.env.kp = np.zeros(20)
+            # arms
+            self.simenv.env.kp[0:6] = x[current_id] * (self.MU_UP_BOUNDS[self.KP][0] - self.MU_LOW_BOUNDS[self.KP][0]) + \
+                                      self.MU_LOW_BOUNDS[self.KP][0]
+            # head
+            self.simenv.env.kp[6:8] = x[current_id + 1] * (
+                    self.MU_UP_BOUNDS[self.KP][1] - self.MU_LOW_BOUNDS[self.KP][1]) + \
+                                      self.MU_LOW_BOUNDS[self.KP][1]
+            # hip
+            self.simenv.env.kp[8:11] = x[current_id + 2] * (
+                    self.MU_UP_BOUNDS[self.KP][2] - self.MU_LOW_BOUNDS[self.KP][2]) + \
+                                      self.MU_LOW_BOUNDS[self.KP][2]
+            self.simenv.env.kp[14:17] = x[current_id + 2] * (
+                    self.MU_UP_BOUNDS[self.KP][2] - self.MU_LOW_BOUNDS[self.KP][2]) + \
+                                       self.MU_LOW_BOUNDS[self.KP][2]
+            # knee
+            self.simenv.env.kp[11] = x[current_id + 3] * (
+                    self.MU_UP_BOUNDS[self.KP][3] - self.MU_LOW_BOUNDS[self.KP][3]) + \
+                                       self.MU_LOW_BOUNDS[self.KP][3]
+            self.simenv.env.kp[17] = x[current_id + 3] * (
+                    self.MU_UP_BOUNDS[self.KP][3] - self.MU_LOW_BOUNDS[self.KP][3]) + \
+                                     self.MU_LOW_BOUNDS[self.KP][3]
+            # ankle
+            self.simenv.env.kp[12:14] = x[current_id + 4] * (
+                    self.MU_UP_BOUNDS[self.KP][4] - self.MU_LOW_BOUNDS[self.KP][4]) + \
+                                     self.MU_LOW_BOUNDS[self.KP][4]
+            self.simenv.env.kp[18:20] = x[current_id + 4] * (
+                    self.MU_UP_BOUNDS[self.KP][4] - self.MU_LOW_BOUNDS[self.KP][4]) + \
+                                     self.MU_LOW_BOUNDS[self.KP][4]
+
+            current_id += self.MU_DIMS[self.KP]
+
+        if self.KD in self.ACTIVE_MUS:
+            self.simenv.env.kd = np.zeros(20)
+            # arms
+            self.simenv.env.kd[0:6] = x[current_id] * (self.MU_UP_BOUNDS[self.KD][0] - self.MU_LOW_BOUNDS[self.KD][0]) + \
+                                      self.MU_LOW_BOUNDS[self.KD][0]
+            # head
+            self.simenv.env.kd[6:8] = x[current_id + 1] * (
+                    self.MU_UP_BOUNDS[self.KD][1] - self.MU_LOW_BOUNDS[self.KD][1]) + \
+                                      self.MU_LOW_BOUNDS[self.KD][1]
+            # hip
+            self.simenv.env.kd[8:11] = x[current_id + 2] * (
+                    self.MU_UP_BOUNDS[self.KD][2] - self.MU_LOW_BOUNDS[self.KD][2]) + \
+                                       self.MU_LOW_BOUNDS[self.KD][2]
+            self.simenv.env.kd[14:17] = x[current_id + 2] * (
+                    self.MU_UP_BOUNDS[self.KD][2] - self.MU_LOW_BOUNDS[self.KD][2]) + \
+                                        self.MU_LOW_BOUNDS[self.KD][2]
+            # knee
+            self.simenv.env.kd[11] = x[current_id + 3] * (
+                    self.MU_UP_BOUNDS[self.KD][3] - self.MU_LOW_BOUNDS[self.KD][3]) + \
+                                     self.MU_LOW_BOUNDS[self.KD][3]
+            self.simenv.env.kd[17] = x[current_id + 3] * (
+                    self.MU_UP_BOUNDS[self.KD][3] - self.MU_LOW_BOUNDS[self.KD][3]) + \
+                                     self.MU_LOW_BOUNDS[self.KD][3]
+            # ankle
+            self.simenv.env.kd[12:14] = x[current_id + 4] * (
+                    self.MU_UP_BOUNDS[self.KD][4] - self.MU_LOW_BOUNDS[self.KD][4]) + \
+                                        self.MU_LOW_BOUNDS[self.KD][4]
+            self.simenv.env.kd[18:20] = x[current_id + 4] * (
+                    self.MU_UP_BOUNDS[self.KD][4] - self.MU_LOW_BOUNDS[self.KD][4]) + \
+                                        self.MU_LOW_BOUNDS[self.KD][4]
+            current_id += self.MU_DIMS[self.KD]
+
+        if self.KC in self.ACTIVE_MUS:
+            self.simenv.env.kc = np.zeros(20)
+            # arms
+            self.simenv.env.kc[0:6] = x[current_id] * (self.MU_UP_BOUNDS[self.KC][0] - self.MU_LOW_BOUNDS[self.KC][0]) + \
+                                      self.MU_LOW_BOUNDS[self.KC][0]
+            # head
+            self.simenv.env.kc[6:8] = x[current_id + 1] * (
+                    self.MU_UP_BOUNDS[self.KC][1] - self.MU_LOW_BOUNDS[self.KC][1]) + \
+                                      self.MU_LOW_BOUNDS[self.KC][1]
+            # hip
+            self.simenv.env.kc[8:11] = x[current_id + 2] * (
+                    self.MU_UP_BOUNDS[self.KC][2] - self.MU_LOW_BOUNDS[self.KC][2]) + \
+                                       self.MU_LOW_BOUNDS[self.KC][2]
+            self.simenv.env.kc[14:17] = x[current_id + 2] * (
+                    self.MU_UP_BOUNDS[self.KC][2] - self.MU_LOW_BOUNDS[self.KC][2]) + \
+                                        self.MU_LOW_BOUNDS[self.KC][2]
+            # knee
+            self.simenv.env.kc[11] = x[current_id + 3] * (
+                    self.MU_UP_BOUNDS[self.KC][3] - self.MU_LOW_BOUNDS[self.KC][3]) + \
+                                     self.MU_LOW_BOUNDS[self.KC][3]
+            self.simenv.env.kc[17] = x[current_id + 3] * (
+                    self.MU_UP_BOUNDS[self.KC][3] - self.MU_LOW_BOUNDS[self.KC][3]) + \
+                                     self.MU_LOW_BOUNDS[self.KC][3]
+            # ankle
+            self.simenv.env.kc[12:14] = x[current_id + 4] * (
+                    self.MU_UP_BOUNDS[self.KC][4] - self.MU_LOW_BOUNDS[self.KC][4]) + \
+                                        self.MU_LOW_BOUNDS[self.KC][4]
+            self.simenv.env.kc[18:20] = x[current_id + 4] * (
+                    self.MU_UP_BOUNDS[self.KC][4] - self.MU_LOW_BOUNDS[self.KC][4]) + \
+                                        self.MU_LOW_BOUNDS[self.KC][4]
+            current_id += self.MU_DIMS[self.KC]
+
+        if self.VEL_LIM in self.ACTIVE_MUS:
+            self.simenv.env.joint_vel_limit = x[current_id] * (
+                    self.MU_UP_BOUNDS[self.VEL_LIM][0] - self.MU_LOW_BOUNDS[self.VEL_LIM][0]) \
+                                              + self.MU_LOW_BOUNDS[self.VEL_LIM][0]
+            current_id += self.MU_DIMS[self.VEL_LIM]
+
+        if self.JOINT_DAMPING in self.ACTIVE_MUS:
+            joint_damping = x[current_id] * (
+                    self.MU_UP_BOUNDS[self.JOINT_DAMPING][0] - self.MU_LOW_BOUNDS[self.JOINT_DAMPING][0]) \
+                                              + self.MU_LOW_BOUNDS[self.JOINT_DAMPING][0]
+            for i in range(6, self.robot.ndofs):
+                j = self.robot.dof(i)
+                j.set_damping_coefficient(joint_damping)
+
+            current_id += self.MU_DIMS[self.JOINT_DAMPING]
+
+        if self.JOINT_FRICTION in self.ACTIVE_MUS:
+            joint_friction = x[current_id] * (
+                    self.MU_UP_BOUNDS[self.JOINT_FRICTION][0] - self.MU_LOW_BOUNDS[self.JOINT_FRICTION][0]) \
+                                              + self.MU_LOW_BOUNDS[self.JOINT_FRICTION][0]
+            for i in range(6, self.robot.ndofs):
+                j = self.robot.dof(i)
+                j.set_coulomb_friction(joint_friction)
+            current_id += self.MU_DIMS[self.JOINT_FRICTION]
+
+        if self.TORQUE_LIM in self.ACTIVE_MUS:
+            self.simenv.env.torqueLimits = x[current_id] * (
+                    self.MU_UP_BOUNDS[self.TORQUE_LIM][0] - self.MU_LOW_BOUNDS[self.TORQUE_LIM][0]) \
+                                              + self.MU_LOW_BOUNDS[self.TORQUE_LIM][0]
+            current_id += self.MU_DIMS[self.TORQUE_LIM]
+
+
+
+
+
+
+
+
+
+
