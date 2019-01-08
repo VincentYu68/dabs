@@ -5,10 +5,11 @@ import time
 import os, errno
 
 class StrategyOptimizer:
-    def __init__(self, robot, policy, strategy_dim, eval_num = 2, save_dir = None):
+    def __init__(self, robot, policy, strategy_dim, timestep, eval_num = 2, save_dir = None):
         self.robot = robot
         self.policy = policy
         self.strategy_dim = strategy_dim
+        self.timestep = timestep
         self.eval_num = eval_num
         self.rollout_num = 0
 
@@ -61,9 +62,9 @@ class StrategyOptimizer:
             initial_time = time.monotonic()
             prev_time = time.monotonic()
             while current_step < 200:
-                if time.monotonic() - prev_time >= 0.05:  # control every 50 ms
+                if time.monotonic() - prev_time >= self.timestep:  # control every 50 ms
                     # tdif = time.monotonic() - prev_time
-                    prev_time = time.monotonic() - ((time.monotonic() - prev_time) - 0.05)
+                    prev_time = time.monotonic() - ((time.monotonic() - prev_time) - self.timestep)
                     motor_pose = np.array(self.robot.read_motor_positions())
                     obs_input = VAL2RADIAN(np.concatenate([HW2SIM_INDEX(prev_motor_pose), HW2SIM_INDEX(motor_pose)]))
                     ct = time.monotonic() - initial_time

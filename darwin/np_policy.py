@@ -152,7 +152,10 @@ class NP_Policy:
     # Get the initial state for the robot
     # RETURN: a 20d vector for the robot pose
     def get_initial_state(self):
-        return self.interp_sch[0][1]
+        if self.interp_sch is not None:
+            return self.interp_sch[0][1]
+        else:
+            return np.zeros(20)
 
     # Reset the state of the policy
     # This is needed because the action cache essentially forms a memory in the policy

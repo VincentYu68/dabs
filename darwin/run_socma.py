@@ -11,14 +11,22 @@ import os, errno
 from darwin.strategy_optimizer import *
 
 if __name__ == "__main__":
-    filename = 'sqstsq_nolimvel_UP4d.pkl'
+    filename = 'walk_up5d.pkl'
 
     walk_motion = False
     singlefoot_motion = False
     crawl_motion = False
     lift_motion = False
 
+    direct_walk = True
+
+    UP_dim = 5
+
     gyro_input = 0
+    gyro_accum_input = False
+    timestep = 0.05
+    if direct_walk:
+        timestep = 0.03
 
     pose_squat_val = np.array([2509, 2297, 1714, 1508, 1816, 2376,
                                2047, 2171,
@@ -69,8 +77,17 @@ if __name__ == "__main__":
                       [2.0, rig_keyframe[1]],
                       [6.0, rig_keyframe[1]]]
 
-    policy = NP_Policy(interp_sch, 'data/'+filename, discrete_action=True,
+    if direct_walk:
+        interp_sch = None
+
+    if not direct_walk:
+        policy = NP_Policy(interp_sch, 'data/'+filename, discrete_action=True,
                        action_bins=np.array([11] * 20), delta_angle_scale=0.3, action_filter_size=5)
+    else:
+        obs_perm, act_perm = make_mirror_perm_indices(gyro_input, gyro_accum_input, False, UP_dim)
+        policy = NP_Policy(None, 'data/' + filename, discrete_action=True,
+                           action_bins=np.array([11] * 20), delta_angle_scale=0.0, action_filter_size=5,
+                           obs_perm=obs_perm, act_perm=act_perm)
 
     darwin = BasicDarwin()
 
@@ -85,7 +102,7 @@ if __name__ == "__main__":
     except OSError as e:
         if e.errno != errno.EEXIST:
             raise
-    optimizer = StrategyOptimizer(darwin, policy, 4, 1, 'data/socma/'+filename.split('.')[0])
+    optimizer = StrategyOptimizer(darwin, policy, UP_dim, timestep, 1, 'data/socma/'+filename.split('.')[0])
 
     optimizer.optimize()
 
