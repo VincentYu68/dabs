@@ -94,7 +94,7 @@ class DarwinPlain:
             #tau[(np.abs(self.robot.dq) > 2.0) * (np.sign(self.robot.dq) == np.sign(tau))] = 0
             self.robot.set_forces(tau)
             self.dart_world.step()
-            if self.time > 0.1:
+            '''if self.time > 0.1:
                 if self.max_so_far is None:
                     self.max_so_far = np.max(np.abs(np.array(self.robot.dq)[6:]))
                     self.max_id = np.argmax(np.abs(np.array(self.robot.dq)[6:]))
@@ -103,7 +103,7 @@ class DarwinPlain:
                     if np.max(np.abs(np.array(self.robot.dq)[6:])) > self.max_so_far:
                         self.max_so_far = np.max(np.abs(np.array(self.robot.dq)[6:]))
                         self.max_id = np.argmax(np.abs(np.array(self.robot.dq)[6:]))
-                        print(self.max_so_far, self.max_id)
+                        print(self.max_so_far, self.max_id)'''
         self.accum_orientation += self.get_gyro_data() * self.simenv.env.dt
 
 
@@ -111,6 +111,7 @@ class DarwinPlain:
         return np.array(self.simenv.env.get_imu_data()[-3:])
 
     def passive_step(self): # advance simualtion without control
+        self.time += self.simenv.env.dt
         for i in range(self.simenv.env.frame_skip):
             self.dart_world.step()
 
@@ -191,118 +192,79 @@ class DarwinPlain:
     MU_UP_BOUNDS = [[100, 100, 100, 100, 100], [1,1,1,1,1], [10,10,10,10,10], [15], [10], [5], [20.0]]
     MU_LOW_BOUNDS = [[0, 0, 0, 0, 0], [0, 0, 0, 0, 0], [0, 0, 0, 0, 0], [2.0], [0], [0], [3.0]]
     ACTIVE_MUS = [KP, KD, VEL_LIM, JOINT_DAMPING, JOINT_FRICTION, TORQUE_LIM]
+    MU_UNSCALED = None # unscaled version of mu
 
     def set_mu(self, x):
         assert(len(x) == np.sum(self.MU_DIMS[self.ACTIVE_MUS]))
+
+        self.MU_UNSCALED = np.zeros(len(x))
+        current_id = 0
+        for mu in self.ACTIVE_MUS:
+            self.MU_UNSCALED[current_id:current_id + self.MU_DIMS[mu]] = \
+                np.array(x[current_id:current_id + self.MU_DIMS[mu]]) * \
+                (np.array(self.MU_UP_BOUNDS[mu]) - np.array(self.MU_LOW_BOUNDS[mu])) + \
+                np.array(self.MU_LOW_BOUNDS[mu])
+            current_id += self.MU_DIMS[mu]
 
         current_id = 0
         if self.KP in self.ACTIVE_MUS:
             self.simenv.env.kp = np.zeros(20)
             # arms
-            self.simenv.env.kp[0:6] = x[current_id] * (self.MU_UP_BOUNDS[self.KP][0] - self.MU_LOW_BOUNDS[self.KP][0]) + \
-                                      self.MU_LOW_BOUNDS[self.KP][0]
+            self.simenv.env.kp[0:6] = self.MU_UNSCALED[current_id]
             # head
-            self.simenv.env.kp[6:8] = x[current_id + 1] * (
-                    self.MU_UP_BOUNDS[self.KP][1] - self.MU_LOW_BOUNDS[self.KP][1]) + \
-                                      self.MU_LOW_BOUNDS[self.KP][1]
+            self.simenv.env.kp[6:8] = self.MU_UNSCALED[current_id + 1]
             # hip
-            self.simenv.env.kp[8:11] = x[current_id + 2] * (
-                    self.MU_UP_BOUNDS[self.KP][2] - self.MU_LOW_BOUNDS[self.KP][2]) + \
-                                      self.MU_LOW_BOUNDS[self.KP][2]
-            self.simenv.env.kp[14:17] = x[current_id + 2] * (
-                    self.MU_UP_BOUNDS[self.KP][2] - self.MU_LOW_BOUNDS[self.KP][2]) + \
-                                       self.MU_LOW_BOUNDS[self.KP][2]
+            self.simenv.env.kp[8:11] = self.MU_UNSCALED[current_id + 2]
+            self.simenv.env.kp[14:17] = self.MU_UNSCALED[current_id + 2]
             # knee
-            self.simenv.env.kp[11] = x[current_id + 3] * (
-                    self.MU_UP_BOUNDS[self.KP][3] - self.MU_LOW_BOUNDS[self.KP][3]) + \
-                                       self.MU_LOW_BOUNDS[self.KP][3]
-            self.simenv.env.kp[17] = x[current_id + 3] * (
-                    self.MU_UP_BOUNDS[self.KP][3] - self.MU_LOW_BOUNDS[self.KP][3]) + \
-                                     self.MU_LOW_BOUNDS[self.KP][3]
+            self.simenv.env.kp[11] = self.MU_UNSCALED[current_id + 3]
+            self.simenv.env.kp[17] = self.MU_UNSCALED[current_id + 3]
             # ankle
-            self.simenv.env.kp[12:14] = x[current_id + 4] * (
-                    self.MU_UP_BOUNDS[self.KP][4] - self.MU_LOW_BOUNDS[self.KP][4]) + \
-                                     self.MU_LOW_BOUNDS[self.KP][4]
-            self.simenv.env.kp[18:20] = x[current_id + 4] * (
-                    self.MU_UP_BOUNDS[self.KP][4] - self.MU_LOW_BOUNDS[self.KP][4]) + \
-                                     self.MU_LOW_BOUNDS[self.KP][4]
+            self.simenv.env.kp[12:14] = self.MU_UNSCALED[current_id + 4]
+            self.simenv.env.kp[18:20] = self.MU_UNSCALED[current_id + 4]
 
             current_id += self.MU_DIMS[self.KP]
 
         if self.KD in self.ACTIVE_MUS:
             self.simenv.env.kd = np.zeros(20)
             # arms
-            self.simenv.env.kd[0:6] = x[current_id] * (self.MU_UP_BOUNDS[self.KD][0] - self.MU_LOW_BOUNDS[self.KD][0]) + \
-                                      self.MU_LOW_BOUNDS[self.KD][0]
+            self.simenv.env.kd[0:6] = self.MU_UNSCALED[current_id]
             # head
-            self.simenv.env.kd[6:8] = x[current_id + 1] * (
-                    self.MU_UP_BOUNDS[self.KD][1] - self.MU_LOW_BOUNDS[self.KD][1]) + \
-                                      self.MU_LOW_BOUNDS[self.KD][1]
+            self.simenv.env.kd[6:8] = self.MU_UNSCALED[current_id + 1]
             # hip
-            self.simenv.env.kd[8:11] = x[current_id + 2] * (
-                    self.MU_UP_BOUNDS[self.KD][2] - self.MU_LOW_BOUNDS[self.KD][2]) + \
-                                       self.MU_LOW_BOUNDS[self.KD][2]
-            self.simenv.env.kd[14:17] = x[current_id + 2] * (
-                    self.MU_UP_BOUNDS[self.KD][2] - self.MU_LOW_BOUNDS[self.KD][2]) + \
-                                        self.MU_LOW_BOUNDS[self.KD][2]
+            self.simenv.env.kd[8:11] = self.MU_UNSCALED[current_id + 2]
+            self.simenv.env.kd[14:17] = self.MU_UNSCALED[current_id + 2]
             # knee
-            self.simenv.env.kd[11] = x[current_id + 3] * (
-                    self.MU_UP_BOUNDS[self.KD][3] - self.MU_LOW_BOUNDS[self.KD][3]) + \
-                                     self.MU_LOW_BOUNDS[self.KD][3]
-            self.simenv.env.kd[17] = x[current_id + 3] * (
-                    self.MU_UP_BOUNDS[self.KD][3] - self.MU_LOW_BOUNDS[self.KD][3]) + \
-                                     self.MU_LOW_BOUNDS[self.KD][3]
+            self.simenv.env.kd[11] = self.MU_UNSCALED[current_id + 3]
+            self.simenv.env.kd[17] = self.MU_UNSCALED[current_id + 3]
             # ankle
-            self.simenv.env.kd[12:14] = x[current_id + 4] * (
-                    self.MU_UP_BOUNDS[self.KD][4] - self.MU_LOW_BOUNDS[self.KD][4]) + \
-                                        self.MU_LOW_BOUNDS[self.KD][4]
-            self.simenv.env.kd[18:20] = x[current_id + 4] * (
-                    self.MU_UP_BOUNDS[self.KD][4] - self.MU_LOW_BOUNDS[self.KD][4]) + \
-                                        self.MU_LOW_BOUNDS[self.KD][4]
+            self.simenv.env.kd[12:14] = self.MU_UNSCALED[current_id + 4]
+            self.simenv.env.kd[18:20] = self.MU_UNSCALED[current_id + 4]
             current_id += self.MU_DIMS[self.KD]
 
         if self.KC in self.ACTIVE_MUS:
             self.simenv.env.kc = np.zeros(20)
             # arms
-            self.simenv.env.kc[0:6] = x[current_id] * (self.MU_UP_BOUNDS[self.KC][0] - self.MU_LOW_BOUNDS[self.KC][0]) + \
-                                      self.MU_LOW_BOUNDS[self.KC][0]
+            self.simenv.env.kc[0:6] = self.MU_UNSCALED[current_id]
             # head
-            self.simenv.env.kc[6:8] = x[current_id + 1] * (
-                    self.MU_UP_BOUNDS[self.KC][1] - self.MU_LOW_BOUNDS[self.KC][1]) + \
-                                      self.MU_LOW_BOUNDS[self.KC][1]
+            self.simenv.env.kc[6:8] = self.MU_UNSCALED[current_id + 1]
             # hip
-            self.simenv.env.kc[8:11] = x[current_id + 2] * (
-                    self.MU_UP_BOUNDS[self.KC][2] - self.MU_LOW_BOUNDS[self.KC][2]) + \
-                                       self.MU_LOW_BOUNDS[self.KC][2]
-            self.simenv.env.kc[14:17] = x[current_id + 2] * (
-                    self.MU_UP_BOUNDS[self.KC][2] - self.MU_LOW_BOUNDS[self.KC][2]) + \
-                                        self.MU_LOW_BOUNDS[self.KC][2]
+            self.simenv.env.kc[8:11] = self.MU_UNSCALED[current_id + 2]
+            self.simenv.env.kc[14:17] = self.MU_UNSCALED[current_id + 2]
             # knee
-            self.simenv.env.kc[11] = x[current_id + 3] * (
-                    self.MU_UP_BOUNDS[self.KC][3] - self.MU_LOW_BOUNDS[self.KC][3]) + \
-                                     self.MU_LOW_BOUNDS[self.KC][3]
-            self.simenv.env.kc[17] = x[current_id + 3] * (
-                    self.MU_UP_BOUNDS[self.KC][3] - self.MU_LOW_BOUNDS[self.KC][3]) + \
-                                     self.MU_LOW_BOUNDS[self.KC][3]
+            self.simenv.env.kc[11] = self.MU_UNSCALED[current_id + 3]
+            self.simenv.env.kc[17] = self.MU_UNSCALED[current_id + 3]
             # ankle
-            self.simenv.env.kc[12:14] = x[current_id + 4] * (
-                    self.MU_UP_BOUNDS[self.KC][4] - self.MU_LOW_BOUNDS[self.KC][4]) + \
-                                        self.MU_LOW_BOUNDS[self.KC][4]
-            self.simenv.env.kc[18:20] = x[current_id + 4] * (
-                    self.MU_UP_BOUNDS[self.KC][4] - self.MU_LOW_BOUNDS[self.KC][4]) + \
-                                        self.MU_LOW_BOUNDS[self.KC][4]
+            self.simenv.env.kc[12:14] = self.MU_UNSCALED[current_id + 4]
+            self.simenv.env.kc[18:20] = self.MU_UNSCALED[current_id + 4]
             current_id += self.MU_DIMS[self.KC]
 
         if self.VEL_LIM in self.ACTIVE_MUS:
-            self.simenv.env.joint_vel_limit = x[current_id] * (
-                    self.MU_UP_BOUNDS[self.VEL_LIM][0] - self.MU_LOW_BOUNDS[self.VEL_LIM][0]) \
-                                              + self.MU_LOW_BOUNDS[self.VEL_LIM][0]
+            self.simenv.env.joint_vel_limit = self.MU_UNSCALED[current_id]
             current_id += self.MU_DIMS[self.VEL_LIM]
 
         if self.JOINT_DAMPING in self.ACTIVE_MUS:
-            joint_damping = x[current_id] * (
-                    self.MU_UP_BOUNDS[self.JOINT_DAMPING][0] - self.MU_LOW_BOUNDS[self.JOINT_DAMPING][0]) \
-                                              + self.MU_LOW_BOUNDS[self.JOINT_DAMPING][0]
+            joint_damping = self.MU_UNSCALED[current_id]
             for i in range(6, self.robot.ndofs):
                 j = self.robot.dof(i)
                 j.set_damping_coefficient(joint_damping)
@@ -310,18 +272,14 @@ class DarwinPlain:
             current_id += self.MU_DIMS[self.JOINT_DAMPING]
 
         if self.JOINT_FRICTION in self.ACTIVE_MUS:
-            joint_friction = x[current_id] * (
-                    self.MU_UP_BOUNDS[self.JOINT_FRICTION][0] - self.MU_LOW_BOUNDS[self.JOINT_FRICTION][0]) \
-                                              + self.MU_LOW_BOUNDS[self.JOINT_FRICTION][0]
+            joint_friction = self.MU_UNSCALED[current_id]
             for i in range(6, self.robot.ndofs):
                 j = self.robot.dof(i)
                 j.set_coulomb_friction(joint_friction)
             current_id += self.MU_DIMS[self.JOINT_FRICTION]
 
         if self.TORQUE_LIM in self.ACTIVE_MUS:
-            self.simenv.env.torqueLimits = x[current_id] * (
-                    self.MU_UP_BOUNDS[self.TORQUE_LIM][0] - self.MU_LOW_BOUNDS[self.TORQUE_LIM][0]) \
-                                              + self.MU_LOW_BOUNDS[self.TORQUE_LIM][0]
+            self.simenv.env.torqueLimits = self.MU_UNSCALED[current_id]
             current_id += self.MU_DIMS[self.TORQUE_LIM]
 
 
