@@ -63,6 +63,8 @@ if __name__ == "__main__":
             rig_keyframe = np.loadtxt('data/rig_data/rig_keyframe.txt')
         elif lift_motion:
             rig_keyframe = np.loadtxt('data/rig_data/rig_keyframe_lift.txt')
+        elif step_motion:
+            rig_keyframe = np.loadtxt('data/rig_data/rig_keyframe_step.txt')
         else:
             rig_keyframe = np.loadtxt('data/rig_data/rig_keyframe_crawl.txt')
         interp_sch = [[0.0, rig_keyframe[0]]]
