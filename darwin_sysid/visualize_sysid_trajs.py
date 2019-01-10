@@ -25,11 +25,10 @@ if __name__ == "__main__":
     opt_result = np.loadtxt(data_dir+'/opt_result'+specific_data+'.txt')
     print('Use mu of: ', opt_result[1])
 
-    darwinenv.set_mu(np.array([6.79727023e-01, 4.30710845e-01, 4.88055626e-01, 5.79413647e-01,
-       7.53536566e-01, 5.33679671e-01, 7.54755203e-01, 6.65190354e-01,
-       7.33820380e-01, 1.30757348e-03, 5.18111700e-01, 2.88111537e-01,
-       1.71658886e-04, 4.72139902e-01]))
-    darwinenv.set_mu(opt_result[0])
+    darwinenv.set_mu(np.array([0.5, 0.5, 0.5, 0.5, 0.5,\
+                               0.1, 0.1, 0.1, 0.1, 0.1,\
+                               0.5, 0.5, 0.0, 0.5]))
+    #darwinenv.set_mu(opt_result[0])
 
     sysid_optimizer = SysIDOptimizer('data/sysid_data/generic_motion/', velocity_weight=0.05, specific_data='',
                                      save_app='vel005')
@@ -75,7 +74,10 @@ if __name__ == "__main__":
         total_velocity_error += np.sum(
             np.abs(np.array(hw_vel_data)[1:max_step] - np.array(sim_vels)[1:max_step]))
 
-        plt.figure()
+        traj['pose_data'] = sim_poses
+        traj['vel_data'] = sim_vels
+
+        '''plt.figure()
         actions = np.array(actions)
         sim_poses = np.array(sim_poses)
         hw_pose_data = np.array(hw_pose_data)
@@ -84,7 +86,12 @@ if __name__ == "__main__":
         plt.plot(hw_pose_data[:, -3], label='hw pose')
         plt.title(str(i))
         plt.legend()
-        plt.show()
+        plt.show()'''
+
+        #allfiles = [data_dir.replace('generic', 'synthetic') + file for file in os.listdir(data_dir) if
+        # '.pkl' in file]
+        #joblib.dump(traj, allfiles[i], compress=True)
+
 
     loss = (total_positional_error + total_velocity_error * 0.05) / total_step + 0.001 * np.sum(opt_result[0] ** 2)
 

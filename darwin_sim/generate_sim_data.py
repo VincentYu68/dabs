@@ -14,8 +14,8 @@ from darwin.np_policy import *
 import time
 
 if __name__ == "__main__":
-    policy_path = 'data/walk_tl10_vrew10_limvel.pkl'
-    #policy_path = 'data/sqstsq_nolimvel_UP4d.pkl'
+    #policy_path = 'data/walk_tl10_vrew10_limvel.pkl'
+    policy_path = 'data/sqstsq_weakknee.pkl'
     fixed_root = False
     action_path = 'data/hw_data/groundwalk_tl10_vrew10_limvel_direct_walk_saved_action.txt'
     run_policy = True
@@ -24,8 +24,9 @@ if __name__ == "__main__":
     singlefoot_motion = False
     crawl_motion = False
     lift_motion = False
+    step_motion = True
 
-    direct_walk = True
+    direct_walk = False
 
     control_timestep = 0.05  # time interval between control signals
     if direct_walk:
@@ -47,19 +48,21 @@ if __name__ == "__main__":
                   [2.0, rig_keyframe[1]],
                   [6.0, rig_keyframe[1]]]
 
-    if walk_motion or crawl_motion or lift_motion:
+    if walk_motion or crawl_motion or lift_motion or step_motion:
         if walk_motion:
             rig_keyframe = np.loadtxt('data/rig_data/rig_keyframe.txt')
         elif lift_motion:
             rig_keyframe = np.loadtxt('data/rig_data/rig_keyframe_lift.txt')
+        elif step_motion:
+            rig_keyframe = np.loadtxt('data/rig_data/rig_keyframe_step.txt')
         else:
             rig_keyframe = np.loadtxt('data/rig_data/rig_keyframe_crawl.txt')
         interp_sch = [[0.0, rig_keyframe[0]]]
-        interp_time = 0.5
+        interp_time = 0.03
         for i in range(10):
-            for k in range(1, len(rig_keyframe)):
+            for k in range(0, len(rig_keyframe)):
                 interp_sch.append([interp_time, rig_keyframe[k]])
-                interp_time += 0.5
+                interp_time += 0.03
         interp_sch.append([interp_time, rig_keyframe[0]])
 
         if lift_motion:

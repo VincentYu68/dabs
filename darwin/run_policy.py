@@ -17,6 +17,7 @@ if __name__ == "__main__":
     singlefoot_motion = False
     crawl_motion = False
     lift_motion = False
+    step_motion = False
 
     direct_walk = True
 
@@ -24,6 +25,7 @@ if __name__ == "__main__":
     savename += '_singlefoot' if singlefoot_motion else ''
     savename += '_crawl' if crawl_motion else ''
     savename += '_lift' if lift_motion else ''
+    savename += '_step_motion' if step_motion else ''
 
     savename += '_direct_walk' if direct_walk else ''
 
@@ -64,11 +66,11 @@ if __name__ == "__main__":
         else:
             rig_keyframe = np.loadtxt('data/rig_data/rig_keyframe_crawl.txt')
         interp_sch = [[0.0, rig_keyframe[0]]]
-        interp_time = 0.5
+        interp_time = 0.03
         for i in range(10):
-            for k in range(1, len(rig_keyframe)):
+            for k in range(0, len(rig_keyframe)):
                 interp_sch.append([interp_time, rig_keyframe[k]])
-                interp_time += 0.5
+                interp_time += 0.03
         interp_sch.append([interp_time, rig_keyframe[0]])
 
         if lift_motion:
@@ -116,6 +118,10 @@ if __name__ == "__main__":
 
     time.sleep(5)
 
+    max_step = 200
+    if interp_sch is not None:
+        max_step = interp_sch[-1][0] / control_timestep
+
     prev_motor_pose = np.array(darwin.read_motor_positions())
     current_step = 0
     initial_time = time.monotonic()
@@ -126,7 +132,7 @@ if __name__ == "__main__":
     all_gyros = []
     all_orientations = []
     cur_orientation = np.zeros(3)
-    while current_step < 200:
+    while current_step < max_step:
         if time.monotonic() - prev_time >= control_timestep:  # control every 50 ms
             tdif = time.monotonic() - prev_time
             prev_time = time.monotonic() - ((time.monotonic() - prev_time) - control_timestep)

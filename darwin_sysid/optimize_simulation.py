@@ -1,5 +1,5 @@
 import matplotlib
-matplotlib.use('TkAgg')
+matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 
 import pydart2 as pydart
@@ -12,7 +12,7 @@ import cma, os, sys, joblib
 from mpi4py import MPI
 
 class SysIDOptimizer:
-    def __init__(self, data_dir, velocity_weight = 1.0, regularization = 0.001, specific_data = '.', save_app=''):
+    def __init__(self, data_dir, velocity_weight = 1.0, regularization = 0.001, specific_data = '.', save_app='', minibatch = 0):
         self.data_dir = data_dir
         self.save_app = save_app
         self.velocity_weight = velocity_weight
@@ -22,6 +22,8 @@ class SysIDOptimizer:
         self.darwinenv = DarwinPlain()
         self.darwinenv.toggle_fix_root(True)
         self.darwinenv.reset()
+
+        self.minibatch = minibatch
 
         self.solution_history = []
         self.value_history = []
@@ -33,14 +35,21 @@ class SysIDOptimizer:
         self.thread_id = MPI.COMM_WORLD.Get_rank()
         self.total_threads = MPI.COMM_WORLD.Get_size()
 
-    def fitness(self, x):
+    def meta_fitness(self, x): # x would be mean and std of cma
+        pass
+
+    def fitness(self, x, iter_num = -1):
         self.darwinenv.set_mu(x)
 
         total_positional_error = 0
         total_velocity_error = 0
 
         total_step = 0
-        for i, traj in enumerate(self.all_trajs):
+        if self.minibatch == 0 or iter_num == -1:
+            traj_to_test = self.all_trajs
+        else:
+            traj_to_test = self.all_trajs[self.minibatch * iter_num:np.min([self.minibatch*(iter_num+1), len(self.all_trajs)])]
+        for i, traj in enumerate(traj_to_test):
             control_dt = traj['control_dt']
             keyframes = traj['keyframes']
             traj_time = traj['total_time']
@@ -72,7 +81,7 @@ class SysIDOptimizer:
                 np.abs(np.array(hw_pose_data)[1:max_step] - np.array(sim_poses)[1:max_step]))
             total_velocity_error += np.sum(
                 np.abs(np.array(hw_vel_data)[1:max_step] - np.array(sim_vels)[1:max_step]))
-
+        #print('total step: ', total_step)
         loss = (total_positional_error + total_velocity_error * self.velocity_weight) / total_step + \
                 self.regularization * np.sum(x**2)
 
@@ -120,11 +129,16 @@ class SysIDOptimizer:
 
         print('Current best: ', repr(self.best_x), self.best_f)
 
-    def optimize(self, maxiter = 100):
+    def optimize(self, maxiter = 300):
         init_guess = [0.5] * self.optimize_dimension
         init_std = 0.5
 
         bound = [0.0, 1.0]
+
+        num_segs = 1
+        if self.minibatch > 0:
+            num_segs = int(np.ceil(len(self.all_trajs) / self.minibatch))
+            maxiter *= num_segs
 
         es = cma.CMAEvolutionStrategy(init_guess, init_std, {'bounds': bound, 'maxiter': maxiter,})
 
@@ -138,13 +152,17 @@ class SysIDOptimizer:
             sol_id_to_evaluate.append(sol_id)
         print('Thread ' + str(self.thread_id) + ' evaluates: ' + str(sol_id_to_evaluate))
 
+        iter_num = 0
         while not es.stop():
+            if self.minibatch > 0 and iter_num % num_segs == 0:
+                # reshuffle the data
+                self.all_trajs = np.random.permutation(self.all_trajs)
             solutions = es.ask()
             solutions = MPI.COMM_WORLD.bcast(solutions, root=0)
             # evaluate fitness for each sample, spread out to multiple threads
             evaluated_fitness = {str(self.thread_id): []}
             for sol_id in sol_id_to_evaluate:
-                eval = self.fitness(solutions[sol_id])
+                eval = self.fitness(solutions[sol_id], iter_num%num_segs)
                 evaluated_fitness[str(self.thread_id)].append(eval)
 
             all_evaluated_fitness = {k: v for d in MPI.COMM_WORLD.allgather(evaluated_fitness) for k, v in d.items()}
@@ -155,7 +173,9 @@ class SysIDOptimizer:
             es.tell(solutions, merged_evaluated_fitness)
             es.logger.add()  # write data to disc to be plotted
             es.disp()
-            self.cmaes_callback(es)
+            if iter_num % (num_segs * 20) == 0:
+                self.cmaes_callback(es)
+            iter_num += 1
         es.result_pretty()
         xopt = self.best_x
 
@@ -166,12 +186,14 @@ class SysIDOptimizer:
             np.savetxt(self.data_dir+'/opt_result' + self.save_app + '.txt', opt_result)
 
 if __name__ == "__main__":
-    sysid_optimizer = SysIDOptimizer('data/sysid_data/generic_motion/', velocity_weight=0.1, specific_data='0.6', save_app='vel01_0.6only')
+    data_dir = 'data/sysid_data/generic_motion/'
+    savename = 'vel01_minibatch3'
+    sysid_optimizer = SysIDOptimizer(data_dir, velocity_weight=0.1, specific_data='', save_app=savename, minibatch=3)
 
     sysid_optimizer.optimize()
 
     if MPI.COMM_WORLD.Get_rank() == 0:
         plt.plot(sysid_optimizer.value_history)
-    plt.show()
+        savefig(data_dir+savename+'.png')
 
 
