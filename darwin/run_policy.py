@@ -58,7 +58,7 @@ if __name__ == "__main__":
                            [7.0, pose_squat],
                            ]
 
-    if walk_motion or crawl_motion or lift_motion:
+    if walk_motion or crawl_motion or lift_motion or step_motion:
         if walk_motion:
             rig_keyframe = np.loadtxt('data/rig_data/rig_keyframe.txt')
         elif lift_motion:
