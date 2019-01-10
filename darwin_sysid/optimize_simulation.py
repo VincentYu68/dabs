@@ -194,6 +194,6 @@ if __name__ == "__main__":
 
     if MPI.COMM_WORLD.Get_rank() == 0:
         plt.plot(sysid_optimizer.value_history)
-        savefig(data_dir+savename+'.png')
+        plt.savefig(data_dir+savename+'.png')
 
 

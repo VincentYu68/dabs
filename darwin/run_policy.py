@@ -9,7 +9,7 @@ import os, errno
 
 if __name__ == "__main__":
     #filename = 'sqstsq_nolimvel_UP4d.pkl'
-    filename = 'walk_tl10_vrew10_limvel.pkl'
+    filename = 'step_UP4d_03action.pkl'
 
     savename = 'ground'+filename.split('.')[0]
 
@@ -17,9 +17,9 @@ if __name__ == "__main__":
     singlefoot_motion = False
     crawl_motion = False
     lift_motion = False
-    step_motion = False
+    step_motion = True
 
-    direct_walk = True
+    direct_walk = False
 
     savename += '_walk' if walk_motion else ''
     savename += '_singlefoot' if singlefoot_motion else ''
@@ -29,7 +29,7 @@ if __name__ == "__main__":
 
     savename += '_direct_walk' if direct_walk else ''
 
-    obs_app = []#[0.05945156, 0.73512937, 0.76391359, 0.41831418]
+    obs_app = [0.5, 0.5, 0.5, 0.5]#[0.05945156, 0.73512937, 0.76391359, 0.41831418]
 
     control_timestep = 0.05  # time interval between control signals
     if direct_walk:
@@ -67,7 +67,7 @@ if __name__ == "__main__":
             rig_keyframe = np.loadtxt('data/rig_data/rig_keyframe_crawl.txt')
         interp_sch = [[0.0, rig_keyframe[0]]]
         interp_time = 0.03
-        for i in range(10):
+        for i in range(1):
             for k in range(0, len(rig_keyframe)):
                 interp_sch.append([interp_time, rig_keyframe[k]])
                 interp_time += 0.03
@@ -120,7 +120,7 @@ if __name__ == "__main__":
 
     max_step = 200
     if interp_sch is not None:
-        max_step = interp_sch[-1][0] / control_timestep
+        max_step = int(interp_sch[-1][0] / control_timestep)
 
     prev_motor_pose = np.array(darwin.read_motor_positions())
     current_step = 0

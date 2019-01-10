@@ -15,7 +15,7 @@ import time
 
 if __name__ == "__main__":
     #policy_path = 'data/walk_tl10_vrew10_limvel.pkl'
-    policy_path = 'data/sqstsq_weakknee.pkl'
+    policy_path = 'data/step_UP4d_03action.pkl'
     fixed_root = False
     action_path = 'data/hw_data/groundwalk_tl10_vrew10_limvel_direct_walk_saved_action.txt'
     run_policy = True
@@ -27,6 +27,8 @@ if __name__ == "__main__":
     step_motion = True
 
     direct_walk = False
+
+    obs_app = [0.5, 0.5, 0.5, 0.5]
 
     control_timestep = 0.05  # time interval between control signals
     if direct_walk:
@@ -59,7 +61,7 @@ if __name__ == "__main__":
             rig_keyframe = np.loadtxt('data/rig_data/rig_keyframe_crawl.txt')
         interp_sch = [[0.0, rig_keyframe[0]]]
         interp_time = 0.03
-        for i in range(10):
+        for i in range(1):
             for k in range(0, len(rig_keyframe)):
                 interp_sch.append([interp_time, rig_keyframe[k]])
                 interp_time += 0.03
@@ -117,10 +119,12 @@ if __name__ == "__main__":
     sim_gyro = []
     sim_orientation = []
     prev_obs = darwinenv.get_motor_pose()
-    total_steps = 200
+    max_step = 200
+    if interp_sch is not None:
+        max_step = int(interp_sch[-1][0] / control_timestep)
     if not run_policy:
-        total_steps = len(hw_actions)
-    for i in range(total_steps):
+        max_step = len(hw_actions)
+    for i in range(max_step):
         current_obs = darwinenv.get_motor_pose()
         current_vel = darwinenv.get_motor_velocity()
         input_obs = np.concatenate([prev_obs, current_obs])
@@ -128,6 +132,8 @@ if __name__ == "__main__":
         #    input_obs = np.concatenate([input_obs, darwinenv.get_gyro_data(), darwinenv.accum_orientation])
 
         if run_policy:
+            if len(obs_app) > 0:
+                input_obs = np.concatenate([input_obs, obs_app])
             act = policy.act(input_obs, darwinenv.time)
         else:
             act = hw_actions[i]
