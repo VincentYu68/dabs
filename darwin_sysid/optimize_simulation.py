@@ -186,9 +186,9 @@ class SysIDOptimizer:
             np.savetxt(self.data_dir+'/opt_result' + self.save_app + '.txt', opt_result)
 
 if __name__ == "__main__":
-    data_dir = 'data/sysid_data/generic_motion/'
+    data_dir = 'data/sysid_data/synthetic_motion/'
     savename = 'vel01_minibatch3'
-    sysid_optimizer = SysIDOptimizer(data_dir, velocity_weight=0.1, specific_data='', save_app=savename, minibatch=3)
+    sysid_optimizer = SysIDOptimizer(data_dir, velocity_weight=1.0, specific_data='', save_app=savename, minibatch=3)
 
     sysid_optimizer.optimize()
 
