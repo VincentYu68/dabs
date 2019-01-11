@@ -15,7 +15,7 @@ import time
 
 if __name__ == "__main__":
     #policy_path = 'data/walk_tl10_vrew10_limvel.pkl'
-    policy_path = 'data/step_UP4d_03action.pkl'
+    policy_path = 'data/sqstsq_limvel_UP4d_2.pkl'
     fixed_root = False
     action_path = 'data/hw_data/groundwalk_tl10_vrew10_limvel_direct_walk_saved_action.txt'
     run_policy = True
@@ -24,7 +24,7 @@ if __name__ == "__main__":
     singlefoot_motion = False
     crawl_motion = False
     lift_motion = False
-    step_motion = True
+    step_motion = False
 
     direct_walk = False
 
@@ -45,10 +45,10 @@ if __name__ == "__main__":
                            [7.0, pose_squat],
                            ]
 
-    rig_keyframe = np.loadtxt('data/rig_data/rig_keyframe_crawl.txt')
+    '''rig_keyframe = np.loadtxt('data/rig_data/rig_keyframe_crawl.txt')
     interp_sch = [[0.0, rig_keyframe[0]],
                   [2.0, rig_keyframe[1]],
-                  [6.0, rig_keyframe[1]]]
+                  [6.0, rig_keyframe[1]]]'''
 
     if walk_motion or crawl_motion or lift_motion or step_motion:
         if walk_motion:
@@ -98,6 +98,12 @@ if __name__ == "__main__":
 
     darwinenv = DarwinPlain()
     darwinenv.toggle_fix_root(fixed_root)
+
+    darwinenv.set_mu(np.array([4.295156336729233360e-01, 9.547139638558959085e-01, 6.929434610954511298e-01,\
+                               9.782717037252172121e-01, 9.990063426489504961e-01, 9.983547461764588071e-01,\
+                               5.049677514992344518e-01, 1.721375253280012230e-02, 3.108910579911322580e-01,\
+                               2.352015444571272651e-01, 1.889580853785498005e-01, 2.318264830448395486e-01,\
+                               2.195776263584806737e-03, 4.484429587055664967e-01]))
 
     darwinenv.simenv.env.interp_sch = interp_sch
 

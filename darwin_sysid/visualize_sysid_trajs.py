@@ -14,7 +14,7 @@ from darwin_sysid.optimize_simulation import *
 
 if __name__ == "__main__":
     data_dir = 'data/sysid_data/generic_motion/'
-    specific_data = 'vel01_0.1only'
+    specific_data = 'vel01_minibatch3'
     all_trajs = [joblib.load(data_dir + file) for file in os.listdir(data_dir) if
                       '.pkl' in file]
 
@@ -28,7 +28,7 @@ if __name__ == "__main__":
     darwinenv.set_mu(np.array([0.5, 0.5, 0.5, 0.5, 0.5,\
                                0.1, 0.1, 0.1, 0.1, 0.1,\
                                0.5, 0.5, 0.0, 0.5]))
-    #darwinenv.set_mu(opt_result[0])
+    darwinenv.set_mu(opt_result[0])
 
     sysid_optimizer = SysIDOptimizer('data/sysid_data/generic_motion/', velocity_weight=0.05, specific_data='',
                                      save_app='vel005')
@@ -77,16 +77,18 @@ if __name__ == "__main__":
         traj['pose_data'] = sim_poses
         traj['vel_data'] = sim_vels
 
-        '''plt.figure()
+        plt.figure()
         actions = np.array(actions)
         sim_poses = np.array(sim_poses)
         hw_pose_data = np.array(hw_pose_data)
+        sim_vels = np.array(sim_vels)
+        hw_vel_data = np.array(hw_vel_data)
         plt.plot(actions[:, -3], label='sim action')
-        plt.plot(sim_poses[:, -3], label='sim pose')
-        plt.plot(hw_pose_data[:, -3], label='hw pose')
+        plt.plot(sim_vels[:, -3], label='sim pose')
+        plt.plot(hw_vel_data[:, -3], label='hw pose')
         plt.title(str(i))
         plt.legend()
-        plt.show()'''
+        plt.show()
 
         #allfiles = [data_dir.replace('generic', 'synthetic') + file for file in os.listdir(data_dir) if
         # '.pkl' in file]

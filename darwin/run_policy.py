@@ -9,7 +9,7 @@ import os, errno
 
 if __name__ == "__main__":
     #filename = 'sqstsq_nolimvel_UP4d.pkl'
-    filename = 'step_UP4d_03action.pkl'
+    filename = 'step_UP4d_02action.pkl'
 
     savename = 'ground'+filename.split('.')[0]
 
@@ -29,7 +29,7 @@ if __name__ == "__main__":
 
     savename += '_direct_walk' if direct_walk else ''
 
-    obs_app = [0.5, 0.5, 0.5, 0.5]#[0.05945156, 0.73512937, 0.76391359, 0.41831418]
+    obs_app = [0.3, 0.5, 0.8, 0.0]#[0.05945156, 0.73512937, 0.76391359, 0.41831418]
 
     control_timestep = 0.05  # time interval between control signals
     if direct_walk:
