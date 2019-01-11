@@ -96,7 +96,7 @@ if __name__ == "__main__":
 
     if not direct_walk:
         policy = NP_Policy(interp_sch, 'data/'+filename, discrete_action=True,
-                       action_bins=np.array([11] * 20), delta_angle_scale=0.3, action_filter_size=5)
+                       action_bins=np.array([11] * 20), delta_angle_scale=0.2, action_filter_size=5)
     else:
         obs_perm, act_perm = make_mirror_perm_indices(gyro_input, gyro_accum_input, False, len(obs_app))
         policy = NP_Policy(None, 'data/' + filename, discrete_action=True,
