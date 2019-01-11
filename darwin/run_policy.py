@@ -108,7 +108,6 @@ if __name__ == "__main__":
     darwin.connect()
 
     darwin.write_torque_enable(True)
-    policy_params.pkl
     darwin.write_pid(32, 0, 16)
 
     motor_pose = darwin.read_motor_positions()
