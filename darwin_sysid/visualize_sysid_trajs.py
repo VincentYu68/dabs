@@ -14,7 +14,7 @@ from darwin_sysid.optimize_simulation import *
 
 if __name__ == "__main__":
     data_dir = 'data/sysid_data/generic_motion/'
-    specific_data = 'vel01_minibatch3'
+    specific_data = 'vel5_minibatch3'
     all_trajs = [joblib.load(data_dir + file) for file in os.listdir(data_dir) if
                       '.pkl' in file]
 
@@ -25,14 +25,14 @@ if __name__ == "__main__":
     opt_result = np.loadtxt(data_dir+'/opt_result'+specific_data+'.txt')
     print('Use mu of: ', opt_result[1])
 
-    '''darwinenv.set_mu(np.array([9.98700160e-01, 9.93477536e-01, 7.42574043e-01, 8.38474456e-01,
-       9.89942253e-01, 9.25398239e-01, 8.55233009e-01, 3.68581868e-02,
-       5.81654424e-01, 7.05997254e-01, 7.00933068e-04, 8.84790921e-02,
-       5.37830453e-03, 8.18570571e-01]))'''
+    #darwinenv.set_mu(np.array([0.03216347, 0.34971422, 0.50214142, 0.94386206, 0.47390177,
+    #   0.12861344, 0.96039561, 0.56407919, 0.72965827, 0.84092037,
+    #   0.07445393, 0.98530918, 0.07949251]))
     darwinenv.set_mu(opt_result[0])
 
-    sysid_optimizer = SysIDOptimizer('data/sysid_data/generic_motion/', velocity_weight=0.05, specific_data='',
+    sysid_optimizer = SysIDOptimizer('data/sysid_data/generic_motion/', velocity_weight=5.0, specific_data='',
                                      save_app='vel005')
+
 
     total_positional_error = 0
     total_velocity_error = 0
@@ -61,7 +61,7 @@ if __name__ == "__main__":
                     act = kf[1]
             actions.append(act)
             sim_poses.append(darwinenv.get_motor_pose())
-            sim_vels.append(darwinenv.get_motor_velocity())
+            sim_vels.append(darwinenv.get_closest_motor_velocity(hw_vel_data[step+1], 'l1', np.arange(5)))
             darwinenv.set_dup_pose(hw_pose_data[step])
             darwinenv.render()
             darwinenv.step(act)
@@ -84,9 +84,9 @@ if __name__ == "__main__":
         hw_pose_data = np.array(hw_pose_data)
         sim_vels = np.array(sim_vels)
         hw_vel_data = np.array(hw_vel_data)
-        plt.plot(actions[:, -3], label='sim action')
-        plt.plot(sim_vels[:, -3], label='sim pose')
-        plt.plot(hw_vel_data[:, -3], label='hw pose')
+        plt.plot(actions[:, -2], label='sim action')
+        plt.plot(sim_poses[:, -2], label='sim pose')
+        plt.plot(hw_pose_data[:, -2], label='hw pose')
         plt.title(str(i))
         plt.legend()
         plt.show()
@@ -96,7 +96,7 @@ if __name__ == "__main__":
         #joblib.dump(traj, allfiles[i], compress=True)
 
 
-    loss = (total_positional_error + total_velocity_error * 0.05) / total_step + 0.001 * np.sum(opt_result[0] ** 2)
+    loss = (total_positional_error + total_velocity_error * 5) / total_step + 0.001 * np.sum(opt_result[0] ** 2)
 
     print('Loss: ', loss)
 

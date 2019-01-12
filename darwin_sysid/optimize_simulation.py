@@ -62,25 +62,27 @@ class SysIDOptimizer:
             self.darwinenv.set_pose(keyframes[0][1])
             sim_poses = [self.darwinenv.get_motor_pose()]
             sim_vels = [self.darwinenv.get_motor_velocity()]
+            step = 0
             while self.darwinenv.time <= traj_time+0.004:
                 act = keyframes[0][1]
                 for kf in keyframes:
                     if self.darwinenv.time >= kf[0] - 0.00001:
                         act = kf[1]
                 pose = self.darwinenv.get_motor_pose()
-                vel = self.darwinenv.get_motor_velocity()
+                vel = self.darwinenv.get_closest_motor_velocity(hw_vel_data[step+1], 'l1', np.arange(5))
                 self.darwinenv.step(act)
                 sim_poses.append(pose)
                 sim_vels.append(vel)
+                step += 1
             max_step = np.min([len(sim_poses), len(hw_pose_data)])
             total_step += max_step
             #total_positional_error += np.sum(np.square(np.array(hw_pose_data)[1:max_step] - np.array(sim_poses)[1:max_step]))
             #total_velocity_error += np.sum(
             #    np.square(np.array(hw_vel_data)[1:max_step] - np.array(sim_vels)[1:max_step]))
-            total_positional_error += np.sum(
-                np.abs(np.array(hw_pose_data)[1:max_step] - np.array(sim_poses)[1:max_step]))
-            total_velocity_error += np.sum(
-                np.abs(np.array(hw_vel_data)[1:max_step] - np.array(sim_vels)[1:max_step]))
+            total_positional_error += np.clip(np.sum(
+                np.abs(np.array(hw_pose_data)[1:max_step] - np.array(sim_poses)[1:max_step])), 0, 1000)
+            total_velocity_error += np.clip(np.sum(
+                np.abs(np.array(hw_vel_data)[1:max_step] - np.array(sim_vels)[1:max_step])), 0, 1000)
         #print('total step: ', total_step)
         loss = (total_positional_error + total_velocity_error * self.velocity_weight) / total_step + \
                 self.regularization * np.sum(x**2)
@@ -118,6 +120,7 @@ class SysIDOptimizer:
 
     def cmaes_callback(self, es):
         all_best_xs = MPI.COMM_WORLD.allgather(self.best_x)
+        self.best_f = 100000
         for x in all_best_xs:
             eval = self.fitness(x)
             if eval < self.best_f:
@@ -128,6 +131,11 @@ class SysIDOptimizer:
         self.value_history.append(self.best_f)
 
         print('Current best: ', repr(self.best_x), self.best_f)
+        if MPI.COMM_WORLD.Get_rank() == 0:
+            self.darwinenv.set_mu(self.best_x)
+            print('optimized: ', self.darwinenv.MU_UNSCALED, self.best_f)
+            opt_result = [self.best_x, self.darwinenv.MU_UNSCALED]
+            np.savetxt(self.data_dir+'/opt_result' + self.save_app + '.txt', opt_result)
 
     def optimize(self, maxiter = 200):
         init_guess = [0.5] * self.optimize_dimension
@@ -181,14 +189,14 @@ class SysIDOptimizer:
 
         if MPI.COMM_WORLD.Get_rank() == 0:
             self.darwinenv.set_mu(xopt)
-            print('optimized: ', self.darwinenv.MU_UNSCALED)
+            print('optimized: ', self.darwinenv.MU_UNSCALED, self.best_f)
             opt_result = [xopt, self.darwinenv.MU_UNSCALED]
             np.savetxt(self.data_dir+'/opt_result' + self.save_app + '.txt', opt_result)
 
 if __name__ == "__main__":
-    data_dir = 'data/sysid_data/synthetic_motion/'
-    savename = 'vel01_minibatch3'
-    sysid_optimizer = SysIDOptimizer(data_dir, velocity_weight=1.0, specific_data='', save_app=savename, minibatch=3)
+    data_dir = 'data/sysid_data/generic_motion/'
+    savename = 'vel0_minibatch3'
+    sysid_optimizer = SysIDOptimizer(data_dir, velocity_weight=0.0, specific_data='.', save_app=savename, minibatch=3)
 
     sysid_optimizer.optimize()
 

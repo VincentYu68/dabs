@@ -45,6 +45,8 @@ class DarwinPlain:
 
         self.accum_orientation = np.zeros(3)
 
+        self.sub_step_velocities = []
+
     def render(self):
         self.simenv.render()
 
@@ -88,12 +90,14 @@ class DarwinPlain:
 
         tau = np.zeros(26)
 
+        self.sub_step_velocities = []
         for i in range(self.simenv.env.frame_skip):
             #self.robot.bodynode('MP_ANKLE2_L').add_ext_force(np.array([-20, 0, 0]), np.array([0.0, 0.0, 0.0]))
             tau[6:] = self.simenv.env.PID()
             #tau[(np.abs(self.robot.dq) > 2.0) * (np.sign(self.robot.dq) == np.sign(tau))] = 0
             self.robot.set_forces(tau)
             self.dart_world.step()
+            self.sub_step_velocities.append(np.array(self.robot.dq)[6:])
             '''if self.time > 0.1:
                 if self.max_so_far is None:
                     self.max_so_far = np.max(np.abs(np.array(self.robot.dq)[6:]))
@@ -120,6 +124,22 @@ class DarwinPlain:
 
     def get_motor_velocity(self):
         return np.array(self.robot.dq)[6:]
+
+    def get_closest_motor_velocity(self, ref, metric, search_range):
+        if len(self.sub_step_velocities) == 0:
+            return self.get_motor_velocity()
+        evals = []
+        for i in search_range:
+            if metric == 'l1':
+                val = np.sum(np.abs(ref-self.sub_step_velocities[i]))
+            elif metric == 'l2':
+                val = np.sum(np.square(ref-self.sub_step_velocities[i]))
+            else:
+                print('Unknown metric!')
+                val = 0
+            evals.append(val)
+        return self.sub_step_velocities[np.argmin(evals)]
+
 
     def reset(self):
         self.simenv.reset()
@@ -189,9 +209,9 @@ class DarwinPlain:
     ####################################
     KP, KD, KC, VEL_LIM, JOINT_DAMPING, JOINT_FRICTION, TORQUE_LIM = list(range(7))
     MU_DIMS = np.array([5, 5, 5, 1, 1, 1, 1])
-    MU_UP_BOUNDS = [[100, 100, 100, 100, 100], [1,1,1,1,1], [10,10,10,10,10], [15], [10], [5], [20.0]]
+    MU_UP_BOUNDS = [[200, 200, 200, 200, 200], [1,1,1,1,1], [10,10,10,10,10], [15], [1], [1], [20.0]]
     MU_LOW_BOUNDS = [[0, 0, 0, 0, 0], [0, 0, 0, 0, 0], [0, 0, 0, 0, 0], [2.0], [0], [0], [3.0]]
-    ACTIVE_MUS = [KP, KD, VEL_LIM, JOINT_DAMPING, JOINT_FRICTION, TORQUE_LIM]
+    ACTIVE_MUS = [KP, KD, VEL_LIM, JOINT_DAMPING, TORQUE_LIM]
     MU_UNSCALED = None # unscaled version of mu
 
     def set_mu(self, x):
