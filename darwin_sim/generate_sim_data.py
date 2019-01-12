@@ -99,6 +99,9 @@ if __name__ == "__main__":
     darwinenv = DarwinPlain()
     darwinenv.toggle_fix_root(fixed_root)
 
+    opt_result = np.loadtxt('data/sysid_data/synthetic_motion/' + '/opt_result' + 'vel01_minibatch3' + '.txt')
+    darwinenv.set_mu(opt_result[0])
+
     '''darwinenv.set_mu(np.array([4.295156336729233360e-01, 9.547139638558959085e-01, 6.929434610954511298e-01,\
                                9.782717037252172121e-01, 9.990063426489504961e-01, 9.983547461764588071e-01,\
                                5.049677514992344518e-01, 1.721375253280012230e-02, 3.108910579911322580e-01,\

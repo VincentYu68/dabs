@@ -45,9 +45,9 @@ if __name__ == "__main__":
 
                 darwin.write_motor_goal(RADIAN2VAL(SIM2HW_INDEX(action)))
 
+                motor_velocity = SPEED_HW2SIM(HW2SIM_INDEX(np.array(darwin.read_motor_velocities())))
                 motor_pose = VAL2RADIAN(HW2SIM_INDEX(np.array(darwin.read_motor_positions())))
                 gyro = VAL2RPS(np.array(darwin.read_gyro()))
-                motor_velocity = SPEED_HW2SIM(HW2SIM_INDEX(np.array(darwin.read_motor_velocities())))
 
                 pose_data.append(motor_pose)
                 vel_data.append(motor_velocity)

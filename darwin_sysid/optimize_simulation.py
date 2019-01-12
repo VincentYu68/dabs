@@ -129,7 +129,7 @@ class SysIDOptimizer:
 
         print('Current best: ', repr(self.best_x), self.best_f)
 
-    def optimize(self, maxiter = 300):
+    def optimize(self, maxiter = 200):
         init_guess = [0.5] * self.optimize_dimension
         init_std = 0.5
 
@@ -193,6 +193,7 @@ if __name__ == "__main__":
     sysid_optimizer.optimize()
 
     if MPI.COMM_WORLD.Get_rank() == 0:
+        plt.figure()
         plt.plot(sysid_optimizer.value_history)
         plt.savefig(data_dir+savename+'.png')
 
