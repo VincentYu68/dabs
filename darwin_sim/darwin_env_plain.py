@@ -207,11 +207,11 @@ class DarwinPlain:
     ####################################
     ##### parameters for system id #####
     ####################################
-    KP, KD, KC, VEL_LIM, JOINT_DAMPING, JOINT_FRICTION, TORQUE_LIM = list(range(7))
-    MU_DIMS = np.array([5, 5, 5, 1, 1, 1, 1])
-    MU_UP_BOUNDS = [[200, 200, 200, 200, 200], [1,1,1,1,1], [10,10,10,10,10], [15], [1], [1], [20.0]]
-    MU_LOW_BOUNDS = [[0, 0, 0, 0, 0], [0, 0, 0, 0, 0], [0, 0, 0, 0, 0], [2.0], [0], [0], [3.0]]
-    ACTIVE_MUS = [KP, KD, VEL_LIM, JOINT_DAMPING, TORQUE_LIM]
+    KP, KD, KC, VEL_LIM, GROUP_JOINT_DAMPING, JOINT_DAMPING, JOINT_FRICTION, TORQUE_LIM = list(range(8))
+    MU_DIMS = np.array([5, 5, 5, 1, 5, 1, 1, 1])
+    MU_UP_BOUNDS = [[200, 200, 200, 200, 200], [1,1,1,1,1], [10,10,10,10,10], [15], [1, 1, 1, 1, 1], [1], [1], [20.0]]
+    MU_LOW_BOUNDS = [[0, 0, 0, 0, 0], [0, 0, 0, 0, 0], [0, 0, 0, 0, 0], [2.0], [0, 0, 0, 0, 0], [0], [0], [3.0]]
+    ACTIVE_MUS = [KP, KD, VEL_LIM, GROUP_JOINT_DAMPING, TORQUE_LIM]
     MU_UNSCALED = None # unscaled version of mu
 
     def set_mu(self, x):
@@ -282,6 +282,37 @@ class DarwinPlain:
         if self.VEL_LIM in self.ACTIVE_MUS:
             self.simenv.env.joint_vel_limit = self.MU_UNSCALED[current_id]
             current_id += self.MU_DIMS[self.VEL_LIM]
+
+        if self.GROUP_JOINT_DAMPING in self.ACTIVE_MUS:
+            # arms
+            for i in range(6, 12):
+                j = self.robot.dof(i)
+                j.set_damping_coefficient(self.MU_UNSCALED[current_id])
+            # head
+            for i in range(12, 14):
+                j = self.robot.dof(i)
+                j.set_damping_coefficient(self.MU_UNSCALED[current_id+1])
+            # hip
+            for i in range(14, 17):
+                j = self.robot.dof(i)
+                j.set_damping_coefficient(self.MU_UNSCALED[current_id + 2])
+            for i in range(20, 23):
+                j = self.robot.dof(i)
+                j.set_damping_coefficient(self.MU_UNSCALED[current_id + 2])
+            # knee
+            j = self.robot.dof(17)
+            j.set_damping_coefficient(self.MU_UNSCALED[current_id + 3])
+            j = self.robot.dof(23)
+            j.set_damping_coefficient(self.MU_UNSCALED[current_id + 3])
+            # ankle
+            for i in range(18, 20):
+                j = self.robot.dof(i)
+                j.set_damping_coefficient(self.MU_UNSCALED[current_id + 4])
+            for i in range(24, 26):
+                j = self.robot.dof(i)
+                j.set_damping_coefficient(self.MU_UNSCALED[current_id + 4])
+
+            current_id += self.MU_DIMS[self.GROUP_JOINT_DAMPING]
 
         if self.JOINT_DAMPING in self.ACTIVE_MUS:
             joint_damping = self.MU_UNSCALED[current_id]

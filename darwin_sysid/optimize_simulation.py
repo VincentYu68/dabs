@@ -195,7 +195,7 @@ class SysIDOptimizer:
 
 if __name__ == "__main__":
     data_dir = 'data/sysid_data/generic_motion/'
-    savename = 'vel0_minibatch3'
+    savename = 'vel0_minibatch3_sepdamping'
     sysid_optimizer = SysIDOptimizer(data_dir, velocity_weight=0.0, specific_data='.', save_app=savename, minibatch=3)
 
     sysid_optimizer.optimize()
