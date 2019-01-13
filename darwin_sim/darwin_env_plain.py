@@ -207,11 +207,12 @@ class DarwinPlain:
     ####################################
     ##### parameters for system id #####
     ####################################
-    KP, KD, KC, VEL_LIM, GROUP_JOINT_DAMPING, JOINT_DAMPING, JOINT_FRICTION, TORQUE_LIM = list(range(8))
-    MU_DIMS = np.array([5, 5, 5, 1, 5, 1, 1, 1])
-    MU_UP_BOUNDS = [[200, 200, 200, 200, 200], [1,1,1,1,1], [10,10,10,10,10], [15], [1, 1, 1, 1, 1], [1], [1], [20.0]]
-    MU_LOW_BOUNDS = [[0, 0, 0, 0, 0], [0, 0, 0, 0, 0], [0, 0, 0, 0, 0], [2.0], [0, 0, 0, 0, 0], [0], [0], [3.0]]
-    ACTIVE_MUS = [KP, KD, VEL_LIM, GROUP_JOINT_DAMPING, TORQUE_LIM]
+    KP, KD, KC, NEURAL_MOTOR, VEL_LIM, GROUP_JOINT_DAMPING, JOINT_DAMPING, JOINT_FRICTION, TORQUE_LIM = list(range(9))
+    MU_DIMS = np.array([5, 5, 5, 27, 1, 5, 1, 1, 1])
+    MU_UP_BOUNDS = [[200, 200, 200, 200, 200], [1,1,1,1,1], [10,10,10,10,10], [1]*27, [15], [1, 1, 1, 1, 1], [1], [1], [20.0]]
+    MU_LOW_BOUNDS = [[0, 0, 0, 0, 0], [0, 0, 0, 0, 0], [0, 0, 0, 0, 0], [-1]*27, [2.0], [0, 0, 0, 0, 0], [0], [0], [3.0]]
+    #ACTIVE_MUS = [NEURAL_MOTOR, JOINT_DAMPING, TORQUE_LIM]
+    ACTIVE_MUS = [KP, KD, KC, VEL_LIM, GROUP_JOINT_DAMPING, TORQUE_LIM]
     MU_UNSCALED = None # unscaled version of mu
 
     def set_mu(self, x):
@@ -278,6 +279,14 @@ class DarwinPlain:
             self.simenv.env.kc[12:14] = self.MU_UNSCALED[current_id + 4]
             self.simenv.env.kc[18:20] = self.MU_UNSCALED[current_id + 4]
             current_id += self.MU_DIMS[self.KC]
+
+        if self.NEURAL_MOTOR in self.ACTIVE_MUS:
+            self.simenv.env.NN_motor = True
+            for pm in range(len(self.simenv.env.NN_motor_parameters)):
+                dim = np.prod(self.simenv.env.NN_motor_parameters[pm].shape)
+                shape = self.simenv.env.NN_motor_parameters[pm].shape
+                self.simenv.env.NN_motor_parameters[pm] = np.reshape(self.MU_UNSCALED[current_id : current_id + dim], shape)
+                current_id += dim
 
         if self.VEL_LIM in self.ACTIVE_MUS:
             self.simenv.env.joint_vel_limit = self.MU_UNSCALED[current_id]

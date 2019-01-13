@@ -28,7 +28,7 @@ if __name__ == "__main__":
 
     direct_walk = False
 
-    obs_app = [0.8, 0.8, 0.8, 0.9]
+    obs_app = [0.5, 0.2, 0.2, 0.9]
 
     control_timestep = 0.05  # time interval between control signals
     if direct_walk:
@@ -99,7 +99,7 @@ if __name__ == "__main__":
     darwinenv = DarwinPlain()
     darwinenv.toggle_fix_root(fixed_root)
 
-    opt_result = np.loadtxt('data/sysid_data/generic_motion/' + '/opt_result' + 'vel0_minibatch3' + '.txt')
+    opt_result = np.loadtxt('data/sysid_data/generic_motion/' + '/opt_result' + '01only_vel0_minibatch3_NNmotor' + '.txt')
     darwinenv.set_mu(opt_result[0])
 
     '''darwinenv.set_mu(np.array([4.295156336729233360e-01, 9.547139638558959085e-01, 6.929434610954511298e-01,\

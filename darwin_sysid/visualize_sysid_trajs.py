@@ -14,7 +14,7 @@ from darwin_sysid.optimize_simulation import *
 
 if __name__ == "__main__":
     data_dir = 'data/sysid_data/generic_motion/'
-    specific_data = 'vel0_minibatch3'
+    specific_data = 'vel0_minibatch3_sepdamping'
     all_trajs = [joblib.load(data_dir + file) for file in os.listdir(data_dir) if
                       '.pkl' in file]
 
@@ -91,9 +91,9 @@ if __name__ == "__main__":
         plt.legend()
 
         plt.figure()
-        plt.plot(actions[:, 13], label='sim action')
-        plt.plot(sim_poses[:, 13], label='sim pose')
-        plt.plot(hw_pose_data[:, 13], label='hw pose')
+        plt.plot(actions[:, 5], label='sim action')
+        plt.plot(sim_poses[:, 5], label='sim pose')
+        plt.plot(hw_pose_data[:, 5], label='hw pose')
         plt.title(str(i) + '_13')
         plt.legend()
         plt.show()
