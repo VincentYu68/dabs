@@ -15,7 +15,7 @@ import time
 
 if __name__ == "__main__":
     #policy_path = 'data/walk_tl10_vrew10_limvel.pkl'
-    policy_path = 'data/sqstsq_limvel_UP4d_2.pkl'
+    policy_path = 'data/walk_up5d_02stride_fixgain_squatinit_gyroin.pkl'
     fixed_root = False
     action_path = 'data/hw_data/groundwalk_tl10_vrew10_limvel_direct_walk_saved_action.txt'
     run_policy = True
@@ -26,9 +26,11 @@ if __name__ == "__main__":
     lift_motion = False
     step_motion = False
 
-    direct_walk = False
+    direct_walk = True
 
-    obs_app = [0.5, 0.2, 0.2, 0.9]
+    obs_app = [0.3, 0.5, 0.8, 0.0, 0.2]
+
+    gyro_input = True
 
     control_timestep = 0.05  # time interval between control signals
     if direct_walk:
@@ -86,9 +88,9 @@ if __name__ == "__main__":
 
     if not direct_walk:
         policy = NP_Policy(interp_sch, policy_path, discrete_action=True,
-                       action_bins=np.array([11] * 20), delta_angle_scale=0.3, action_filter_size=5)
+                       action_bins=np.array([11] * 20), delta_angle_scale=0.4, action_filter_size=5)
     else:
-        obs_perm, act_perm = make_mirror_perm_indices(0, False, False, 0)
+        obs_perm, act_perm = make_mirror_perm_indices(0, False, False, len(obs_app), gyro_input)
         policy = NP_Policy(None, policy_path, discrete_action=True,
                            action_bins=np.array([11] * 20), delta_angle_scale=0.0, action_filter_size=5,
                            obs_perm=obs_perm, act_perm=act_perm)
@@ -99,8 +101,8 @@ if __name__ == "__main__":
     darwinenv = DarwinPlain()
     darwinenv.toggle_fix_root(fixed_root)
 
-    opt_result = np.loadtxt('data/sysid_data/generic_motion/' + '/opt_result' + '06only_vel0_pid_warmstartall' + '.txt')
-    darwinenv.set_mu(opt_result[0])
+    #opt_result = np.loadtxt('data/sysid_data/generic_motion/' + '/opt_result' + '06only_vel0_pid_warmstartall' + '.txt')
+    #darwinenv.set_mu(opt_result[0])
 
     '''darwinenv.set_mu(np.array([4.295156336729233360e-01, 9.547139638558959085e-01, 6.929434610954511298e-01,\
                                9.782717037252172121e-01, 9.990063426489504961e-01, 9.983547461764588071e-01,\
@@ -137,10 +139,13 @@ if __name__ == "__main__":
         current_obs = darwinenv.get_motor_pose()
         current_vel = darwinenv.get_motor_velocity()
         input_obs = np.concatenate([prev_obs, current_obs])
+
         #if direct_walk:
         #    input_obs = np.concatenate([input_obs, darwinenv.get_gyro_data(), darwinenv.accum_orientation])
 
         if run_policy:
+            if gyro_input:
+                input_obs = np.concatenate([input_obs, darwinenv.get_gyro_data()])
             if len(obs_app) > 0:
                 input_obs = np.concatenate([input_obs, obs_app])
             act = policy.act(input_obs, darwinenv.time)
@@ -155,10 +160,8 @@ if __name__ == "__main__":
         sim_poses.append(input_obs)
         sim_vels.append(current_vel)
         prev_obs = current_obs
-        imu_data = darwinenv.get_imu_reading()
-        darwinenv.integrate_imu_reading()
+        imu_data = darwinenv.get_gyro_data()
         sim_gyro.append(imu_data)
-        sim_orientation.append(darwinenv.get_integrated_imu())
 
 
     sim_poses = np.array(sim_poses)
@@ -188,6 +191,5 @@ if __name__ == "__main__":
     np.savetxt('data/sim_data/' + savename + '_action.txt', sim_actions)
     np.savetxt('data/sim_data/' + savename + '_time.txt', sim_times)
     np.savetxt('data/sim_data/' + savename + '_gyro.txt', sim_gyro)
-    np.savetxt('data/sim_data/' + savename + '_orientation.txt', sim_orientation)
 
 

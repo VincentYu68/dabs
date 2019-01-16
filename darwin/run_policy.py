@@ -150,7 +150,7 @@ if __name__ == "__main__":
             if bno055_input:
                 gyro = darwin.read_bno055_gyro()
                 obs_input = np.concatenate([obs_input, gyro])
-                all_gyros.append(VAL2RPS(gyro))
+                all_gyros.append(gyro)
 
             if len(obs_app) > 0:
                 obs_input = np.concatenate([obs_input, obs_app])

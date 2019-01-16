@@ -108,11 +108,11 @@ class DarwinPlain:
                         self.max_so_far = np.max(np.abs(np.array(self.robot.dq)[6:]))
                         self.max_id = np.argmax(np.abs(np.array(self.robot.dq)[6:]))
                         print(self.max_so_far, self.max_id)'''
-        self.accum_orientation += self.get_gyro_data() * self.simenv.env.dt
+        #self.accum_orientation += self.get_gyro_data() * self.simenv.env.dt
 
 
     def get_gyro_data(self):
-        return np.array(self.simenv.env.get_imu_data()[-3:])
+        return np.concatenate([self.robot.q[0:3], self.robot.dq[0:3]])
 
     def passive_step(self): # advance simualtion without control
         self.time += self.simenv.env.dt
