@@ -139,16 +139,19 @@ if __name__ == "__main__":
             tdif = time.monotonic() - prev_time
             prev_time = time.monotonic() - ((time.monotonic() - prev_time) - control_timestep)
             motor_pose = np.array(darwin.read_motor_positions())
-            gyro = darwin.read_gyro()
-            cur_orientation += VAL2RPS(gyro) * tdif
+            #gyro = darwin.read_gyro()
+            #cur_orientation += VAL2RPS(gyro) * tdif
             #est_vel = (motor_pose - prev_motor_pose) / tdif
             obs_input = VAL2RADIAN(np.concatenate([HW2SIM_INDEX(prev_motor_pose), HW2SIM_INDEX(motor_pose)]))
-            if gyro_input > 0:
-                obs_input = np.concatenate([obs_input, VAL2RPS(gyro)])
-            if gyro_accum_input:
-                obs_input = np.concatenate([obs_input, cur_orientation])
+            #if gyro_input > 0:
+            #    obs_input = np.concatenate([obs_input, VAL2RPS(gyro)])
+            #if gyro_accum_input:
+            #    obs_input = np.concatenate([obs_input, cur_orientation])
             if bno055_input:
-                obs_input = np.concatenate([obs_input, darwin.read_bno055_gyro()])
+                gyro = darwin.read_bno055_gyro()
+                obs_input = np.concatenate([obs_input, gyro])
+                all_gyros.append(VAL2RPS(gyro))
+
             if len(obs_app) > 0:
                 obs_input = np.concatenate([obs_input, obs_app])
 
@@ -162,8 +165,6 @@ if __name__ == "__main__":
             all_actions.append(act)
             all_inputs.append(obs_input)
             all_time.append(ct - control_timestep)
-            all_gyros.append(VAL2RPS(gyro))
-            all_orientations.append(np.copy(cur_orientation))
 
     all_inputs = np.array(all_inputs)
     all_time = np.array(all_time)
@@ -181,7 +182,6 @@ if __name__ == "__main__":
     np.savetxt('data/hw_data/'+savename+'_saved_time.txt', all_time)
     np.savetxt('data/hw_data/'+savename+'_saved_action.txt', all_actions)
     np.savetxt('data/hw_data/' + savename + '_saved_gyro.txt', all_gyros)
-    np.savetxt('data/hw_data/' + savename + '_saved_orientation.txt', all_orientations)
 
     darwin.disconnect()
 
