@@ -11,7 +11,7 @@ import os, errno
 from darwin.strategy_optimizer import *
 
 if __name__ == "__main__":
-    filename = 'walk_up5d.pkl'
+    filename = 'walk_up5d_02stride_fixgain_squatinit.pkl'
 
     walk_motion = False
     singlefoot_motion = False

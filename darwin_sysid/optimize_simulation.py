@@ -12,7 +12,8 @@ import cma, os, sys, joblib
 from mpi4py import MPI
 
 class SysIDOptimizer:
-    def __init__(self, data_dir, velocity_weight = 1.0, regularization = 0.001, specific_data = '.', save_app='', minibatch = 0):
+    def __init__(self, data_dir, velocity_weight = 1.0, regularization = 0.001, specific_data = '.', save_app='',
+                 minibatch = 0, init_guess = None, random_subset = None):
         self.data_dir = data_dir
         self.save_app = save_app
         self.velocity_weight = velocity_weight
@@ -24,6 +25,13 @@ class SysIDOptimizer:
         self.darwinenv.reset()
 
         self.minibatch = minibatch
+        self.random_subset = random_subset
+
+        if self.random_subset is not None:
+            self.all_trajs = np.random.permutation(self.all_trajs)
+            self.all_trajs = self.all_trajs[0:int(self.random_subset * len(self.all_trajs))]
+
+        self.init_guess = init_guess
 
         self.solution_history = []
         self.value_history = []
@@ -137,9 +145,13 @@ class SysIDOptimizer:
             opt_result = [self.best_x, self.darwinenv.MU_UNSCALED]
             np.savetxt(self.data_dir+'/opt_result' + self.save_app + '.txt', opt_result)
 
-    def optimize(self, maxiter = 200):
-        init_guess = [0.5] * self.optimize_dimension
-        init_std = 0.25
+    def optimize(self, maxiter = 100):
+        if self.init_guess is None:
+            init_guess = [0.5] * self.optimize_dimension
+            init_std = 0.25
+        else:
+            init_guess = np.copy(self.init_guess)
+            init_std = 0.05
 
         bound = [0.0, 1.0]
 
@@ -196,14 +208,17 @@ class SysIDOptimizer:
 if __name__ == "__main__":
     data_dir = 'data/sysid_data/generic_motion/'
     #savename = '01only_vel0_minibatch3_NNmotor'
-    savename = '03only_vel0_minibatch3_sepdamping_1'
-    sysid_optimizer = SysIDOptimizer(data_dir, velocity_weight=0.0, specific_data='0.3', save_app=savename, minibatch=3)
 
-    sysid_optimizer.optimize()
+    for i in range(10):
+        savename = '1o3subset_vel0_minibatch3_pid_warmstartall_' + str(i)
+        warmstart_data = np.loadtxt(data_dir + 'opt_resultall_vel0_minibatch0_pid.txt')[0]
+        sysid_optimizer = SysIDOptimizer(data_dir, velocity_weight=0.0, specific_data='.', save_app=savename, minibatch=0,
+                                         init_guess = warmstart_data, random_subset=0.3333)
+        sysid_optimizer.optimize()
 
-    if MPI.COMM_WORLD.Get_rank() == 0:
-        plt.figure()
-        plt.plot(sysid_optimizer.value_history)
-        plt.savefig(data_dir+savename+'.png')
+        if MPI.COMM_WORLD.Get_rank() == 0:
+            plt.figure()
+            plt.plot(sysid_optimizer.value_history)
+            plt.savefig(data_dir+savename+'.png')
 
 

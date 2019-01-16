@@ -99,7 +99,7 @@ if __name__ == "__main__":
     darwinenv = DarwinPlain()
     darwinenv.toggle_fix_root(fixed_root)
 
-    opt_result = np.loadtxt('data/sysid_data/generic_motion/' + '/opt_result' + '01only_vel0_minibatch3_NNmotor' + '.txt')
+    opt_result = np.loadtxt('data/sysid_data/generic_motion/' + '/opt_result' + '06only_vel0_pid_warmstartall' + '.txt')
     darwinenv.set_mu(opt_result[0])
 
     '''darwinenv.set_mu(np.array([4.295156336729233360e-01, 9.547139638558959085e-01, 6.929434610954511298e-01,\

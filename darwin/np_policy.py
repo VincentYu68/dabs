@@ -155,7 +155,7 @@ class NP_Policy:
         if self.interp_sch is not None:
             return self.interp_sch[0][1]
         else:
-            return np.zeros(20)
+            return 0.5*(pose_squat + pose_stand)
 
     # Reset the state of the policy
     # This is needed because the action cache essentially forms a memory in the policy
