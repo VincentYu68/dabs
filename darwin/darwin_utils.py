@@ -103,7 +103,7 @@ SIM_CONTROL_UP_BOUND_NEWFOOT_RAD = VAL2RADIAN(SIM_CONTROL_UP_BOUND_NEWFOOT_VAL)
 
 
 ################################ obs and action permutation indices for mirror symmetry ######################
-def make_mirror_perm_indices(imu_input_step, accum_imu_input, include_accelerometer, UP_dim):
+def make_mirror_perm_indices(imu_input_step, accum_imu_input, include_accelerometer, UP_dim, gyro_in = False):
     obs_perm_base = np.array(
         [-3, -4, -5, -0.0001, -1, -2, 6, 7, -14, -15, -16, -17, -18, -19, -8, -9, -10, -11, -12, -13,
          -23, -24, -25, -20, -21, -22, 26, 27, -34, -35, -36, -37, -38, -39, -28, -29, -30, -31, -32, -33])
@@ -125,6 +125,11 @@ def make_mirror_perm_indices(imu_input_step, accum_imu_input, include_accelerome
                                  -beginid - 6, beginid + 7, -beginid - 8]])
         else:
             obs_perm_base = np.concatenate([obs_perm_base, [-beginid, beginid + 1, -beginid - 2]])
+
+    if gyro_in:
+        beginid = len(obs_perm_base)
+        obs_perm_base = np.concatenate(
+            [obs_perm_base, [-beginid, beginid + 1, -beginid - 2, -beginid - 3, beginid + 4, -beginid - 5]])
 
     if UP_dim > 0:
         obs_perm_base = np.concatenate([obs_perm_base, np.arange(len(obs_perm_base), len(obs_perm_base) + UP_dim)])
