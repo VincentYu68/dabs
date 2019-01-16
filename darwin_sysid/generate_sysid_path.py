@@ -11,7 +11,7 @@ if __name__ == "__main__":
     import argparse
     parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument('--control_dt', help='control timestep', type=float, default=0.05)
-    parser.add_argument('--move_size', help='movement size', type=float, default=0.1)
+    parser.add_argument('--move_size', help='movement size', type=float, default=0.6)
     parser.add_argument('--num_move', help='number of movements', type=int, default=4)
     parser.add_argument('--num_trajs', help='number of trajectories', type=int, default=5)
     parser.add_argument('--traj_time', help='total time for each traj', type=float, default=1.0)
