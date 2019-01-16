@@ -99,7 +99,7 @@ if __name__ == "__main__":
         policy = NP_Policy(interp_sch, 'data/'+filename, discrete_action=True,
                        action_bins=np.array([11] * 20), delta_angle_scale=0.4, action_filter_size=5)
     else:
-        obs_perm, act_perm = make_mirror_perm_indices(gyro_input, gyro_accum_input, False, len(obs_app))
+        obs_perm, act_perm = make_mirror_perm_indices(gyro_input, gyro_accum_input, False, len(obs_app), bno055_input)
         policy = NP_Policy(None, 'data/' + filename, discrete_action=True,
                            action_bins=np.array([11] * 20), delta_angle_scale=0.3, action_filter_size=5,
                            obs_perm=obs_perm, act_perm=act_perm)
