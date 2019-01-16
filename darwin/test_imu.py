@@ -16,7 +16,7 @@ if __name__ == '__main__':
 
     motor_pose = darwin.read_motor_positions()
 
-    darwin.write_motor_goal(np.zeros(20))
+    darwin.write_motor_goal(RADIAN2VAL(np.zeros(20)))
 
 
     for packet in bno_usb_stick.recv_streaming_generator():
