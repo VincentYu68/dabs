@@ -14,7 +14,7 @@ from darwin_sysid.optimize_simulation import *
 
 if __name__ == "__main__":
     data_dir = 'data/sysid_data/generic_motion/'
-    specific_data = 'vel0_minibatch3_sepdamping'
+    specific_data = '01only_vel0_minibatch3_NNmotor'
     all_trajs = [joblib.load(data_dir + file) for file in os.listdir(data_dir) if
                       '.pkl' in file]
 

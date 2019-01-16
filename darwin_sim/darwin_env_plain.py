@@ -211,8 +211,8 @@ class DarwinPlain:
     MU_DIMS = np.array([5, 5, 5, 27, 1, 5, 1, 1, 1])
     MU_UP_BOUNDS = [[200, 200, 200, 200, 200], [1,1,1,1,1], [10,10,10,10,10], [1]*27, [15], [1, 1, 1, 1, 1], [1], [1], [20.0]]
     MU_LOW_BOUNDS = [[0, 0, 0, 0, 0], [0, 0, 0, 0, 0], [0, 0, 0, 0, 0], [-1]*27, [2.0], [0, 0, 0, 0, 0], [0], [0], [3.0]]
-    #ACTIVE_MUS = [NEURAL_MOTOR, JOINT_DAMPING, TORQUE_LIM]
-    ACTIVE_MUS = [KP, KD, KC, VEL_LIM, GROUP_JOINT_DAMPING, TORQUE_LIM]
+    ACTIVE_MUS = [NEURAL_MOTOR, JOINT_DAMPING, TORQUE_LIM]
+    #ACTIVE_MUS = [KP, KD, KC, VEL_LIM, GROUP_JOINT_DAMPING, TORQUE_LIM]
     MU_UNSCALED = None # unscaled version of mu
 
     def set_mu(self, x):

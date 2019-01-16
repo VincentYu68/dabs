@@ -9,7 +9,7 @@ import os, errno
 
 if __name__ == "__main__":
     #filename = 'sqstsq_nolimvel_UP4d.pkl'
-    filename = 'step_UP4d_02action.pkl'
+    filename = 'walk_up5d_02stride_fixgain_squatinit.pkl'
 
     savename = 'ground'+filename.split('.')[0]
 
@@ -17,9 +17,9 @@ if __name__ == "__main__":
     singlefoot_motion = False
     crawl_motion = False
     lift_motion = False
-    step_motion = True
+    step_motion = False
 
-    direct_walk = False
+    direct_walk = True
 
     savename += '_walk' if walk_motion else ''
     savename += '_singlefoot' if singlefoot_motion else ''
@@ -96,7 +96,7 @@ if __name__ == "__main__":
 
     if not direct_walk:
         policy = NP_Policy(interp_sch, 'data/'+filename, discrete_action=True,
-                       action_bins=np.array([11] * 20), delta_angle_scale=0.2, action_filter_size=5)
+                       action_bins=np.array([11] * 20), delta_angle_scale=0.4, action_filter_size=5)
     else:
         obs_perm, act_perm = make_mirror_perm_indices(gyro_input, gyro_accum_input, False, len(obs_app))
         policy = NP_Policy(None, 'data/' + filename, discrete_action=True,
@@ -115,7 +115,7 @@ if __name__ == "__main__":
     if not direct_walk:
         darwin.write_motor_goal(RADIAN2VAL(SIM2HW_INDEX(policy.get_initial_state())))
     else:
-        darwin.write_motor_goal(RADIAN2VAL(np.zeros(20)))
+        darwin.write_motor_goal(RADIAN2VAL(SIM2HW_INDEX(0.5*(pose_squat_val + pose_stand_val))))
 
     time.sleep(5)
 
