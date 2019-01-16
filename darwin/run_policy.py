@@ -9,7 +9,7 @@ import os, errno
 
 if __name__ == "__main__":
     #filename = 'sqstsq_nolimvel_UP4d.pkl'
-    filename = 'walk_up5d_02stride_fixgain_squatinit.pkl'
+    filename = 'walk_up5d_02stride_fixgain_squatinit_gyroin.pkl'
 
     savename = 'ground'+filename.split('.')[0]
 
@@ -35,6 +35,7 @@ if __name__ == "__main__":
     if direct_walk:
         control_timestep = 0.03
 
+    bno055_input = True
     gyro_input = 0
     gyro_accum_input = False
 
@@ -103,7 +104,7 @@ if __name__ == "__main__":
                            action_bins=np.array([11] * 20), delta_angle_scale=0.3, action_filter_size=5,
                            obs_perm=obs_perm, act_perm=act_perm)
 
-    darwin = BasicDarwin()
+    darwin = BasicDarwin(use_bno055=bno055_input)
 
     darwin.connect()
 
@@ -146,6 +147,8 @@ if __name__ == "__main__":
                 obs_input = np.concatenate([obs_input, VAL2RPS(gyro)])
             if gyro_accum_input:
                 obs_input = np.concatenate([obs_input, cur_orientation])
+            if bno055_input:
+                obs_input = np.concatenate([obs_input, darwin.read_bno055_gyro()])
             if len(obs_app) > 0:
                 obs_input = np.concatenate([obs_input, obs_app])
 

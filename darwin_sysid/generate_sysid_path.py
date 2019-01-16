@@ -85,7 +85,7 @@ if __name__ == "__main__":
             break
 
         fname = 'sysidpath_' + str(args.control_dt) + '_' + str(args.move_size) + '_' + str(generated_trajs) + '.pkl'
-        joblib.dump(one_traj, 'data/sysid_data/generic_motion/'+fname, compress=True)
+        joblib.dump(one_traj, 'data/sysid_data/generic_motion_test/'+fname, compress=True)
         generated_trajs += 1
 
 
