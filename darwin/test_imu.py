@@ -20,4 +20,4 @@ if __name__ == '__main__':
 
 
     for packet in bno_usb_stick.recv_streaming_generator():
-        print(DEGREE2RAD(list(packet.euler)))
+        print(DEGREE2RAD(np.array(packet.euler)))
