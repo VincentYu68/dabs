@@ -29,7 +29,7 @@ if __name__ == "__main__":
 
     savename += '_direct_walk' if direct_walk else ''
 
-    obs_app = [0.3, 0.5, 0.8, 0.0]#[0.05945156, 0.73512937, 0.76391359, 0.41831418]
+    obs_app = [0.3, 0.5, 0.8, 0.0, 0.2]#[0.05945156, 0.73512937, 0.76391359, 0.41831418]
 
     control_timestep = 0.05  # time interval between control signals
     if direct_walk:
@@ -115,7 +115,7 @@ if __name__ == "__main__":
     if not direct_walk:
         darwin.write_motor_goal(RADIAN2VAL(SIM2HW_INDEX(policy.get_initial_state())))
     else:
-        darwin.write_motor_goal(RADIAN2VAL(SIM2HW_INDEX(0.5*(pose_squat_val + pose_stand_val))))
+        darwin.write_motor_goal(SIM2HW_INDEX(0.5*(pose_squat_val + pose_stand_val)))
 
     time.sleep(5)
 
