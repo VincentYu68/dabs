@@ -86,12 +86,13 @@ class BasicDarwin:
     def read_bno055_gyro(self):
         gyro_data = []
 
-        reg_start_addr = 0x08
-        num_registers = 0x12
+        reg_start_addr = 0X14
+        num_registers = 0xC
         burst_read_result = self.bno_usb_stick.burst_read(reg_start_addr, num_registers)
-        print(burst_read_result)
+        print(burst_read_result[0], burst_read_result[1])
         return burst_read_result
-        
+        '''gyroscope_resolution: float = 1. / 16.
+        euler_resolution: float = 1. / 16.'''
         '''packet = self.bno_usb_stick.recv_streaming_packet()
         euler = DEGREE2RAD(np.array(packet.euler))
         angvel = DEGREE2RAD(np.array(packet.g))
