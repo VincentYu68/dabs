@@ -86,6 +86,11 @@ class BasicDarwin:
     def read_bno055_gyro(self):
         gyro_data = []
         packet = self.bno_usb_stick.recv_streaming_packet()
+        reg_start_addr = 0x08
+        num_registers = 0x12
+        burst_read_result = self.bno_usb_stick.burst_read(reg_start_addr, num_registers)
+        print(burst_read_result)
+
         euler = DEGREE2RAD(np.array(packet.euler))
         angvel = DEGREE2RAD(np.array(packet.g))
         if euler[0] > np.pi:
