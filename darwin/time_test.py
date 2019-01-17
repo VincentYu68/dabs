@@ -57,7 +57,7 @@ if __name__ == "__main__":
         t2 = time.monotonic()
         times.append(t2-t1)
 
-    print('List of all time intervals ', times)
+    #print('List of all time intervals ', times)
     print('Average time interval: ', np.mean(times))
     print('Std time interval: ', np.std(times))
 
