@@ -85,12 +85,12 @@ class BasicDarwin:
 
     def read_bno055_gyro(self):
         gyro_data = []
-        for packet in self.bno_usb_stick.recv_streaming_generator(num_packets=1):
-            euler = DEGREE2RAD(np.array(packet.euler))
-            angvel = DEGREE2RAD(np.array(packet.g))
-            if euler[0] > np.pi:
-                euler[0] -= 2 * np.pi
-            gyro_data.append(np.array([-euler[1], euler[2], -euler[0],   angvel[1], -angvel[0], angvel[2]]))
+        packet = self.bno_usb_stick.recv_streaming_packet()
+        euler = DEGREE2RAD(np.array(packet.euler))
+        angvel = DEGREE2RAD(np.array(packet.g))
+        if euler[0] > np.pi:
+            euler[0] -= 2 * np.pi
+        gyro_data.append(np.array([-euler[1], euler[2], -euler[0],   angvel[1], -angvel[0], angvel[2]]))
         return np.mean(gyro_data, axis=0)
 
 
