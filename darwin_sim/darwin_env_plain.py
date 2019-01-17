@@ -207,12 +207,12 @@ class DarwinPlain:
     ####################################
     ##### parameters for system id #####
     ####################################
-    KP, KD, KC, NEURAL_MOTOR, VEL_LIM, GROUP_JOINT_DAMPING, JOINT_DAMPING, JOINT_FRICTION, TORQUE_LIM = list(range(9))
-    MU_DIMS = np.array([5, 5, 5, 27, 1, 5, 1, 1, 1])
-    MU_UP_BOUNDS = [[200, 200, 200, 200, 200], [1,1,1,1,1], [10,10,10,10,10], [1]*27, [15], [1, 1, 1, 1, 1], [1], [1], [20.0]]
-    MU_LOW_BOUNDS = [[0, 0, 0, 0, 0], [0, 0, 0, 0, 0], [0, 0, 0, 0, 0], [-1]*27, [2.0], [0, 0, 0, 0, 0], [0], [0], [3.0]]
-    ACTIVE_MUS = [NEURAL_MOTOR, JOINT_DAMPING, TORQUE_LIM]
-    #ACTIVE_MUS = [KP, KD, KC, VEL_LIM, GROUP_JOINT_DAMPING, TORQUE_LIM]
+    KP, KD, KC, KP_RATIO, KD_RATIO, NEURAL_MOTOR, VEL_LIM, GROUP_JOINT_DAMPING, JOINT_DAMPING, JOINT_FRICTION, TORQUE_LIM = list(range(11))
+    MU_DIMS = np.array([5, 5, 5, 5, 5, 27, 1, 5, 1, 1, 1])
+    MU_UP_BOUNDS = [[200, 200, 200, 200, 200], [1,1,1,1,1], [10,10,10,10,10], [3.0, 3.0, 3.0, 3.0, 3.0], [3.0, 3.0, 3.0, 3.0, 3.0], [1]*27, [15], [1, 1, 1, 1, 1], [1], [1], [20.0]]
+    MU_LOW_BOUNDS = [[0, 0, 0, 0, 0], [0, 0, 0, 0, 0], [0, 0, 0, 0, 0], [0, 0, 0, 0, 0], [0, 0, 0, 0, 0], [-1]*27, [2.0], [0, 0, 0, 0, 0], [0], [0], [3.0]]
+    #ACTIVE_MUS = [KP_RATIO, KD_RATIO, NEURAL_MOTOR, JOINT_DAMPING, TORQUE_LIM]
+    ACTIVE_MUS = [KP, KD, KC, VEL_LIM, GROUP_JOINT_DAMPING, TORQUE_LIM]
     MU_UNSCALED = None # unscaled version of mu
 
     def set_mu(self, x):
@@ -279,6 +279,14 @@ class DarwinPlain:
             self.simenv.env.kc[12:14] = self.MU_UNSCALED[current_id + 4]
             self.simenv.env.kc[18:20] = self.MU_UNSCALED[current_id + 4]
             current_id += self.MU_DIMS[self.KC]
+
+        if self.KP_RATIO in self.ACTIVE_MUS:
+            self.simenv.env.kp_ratios = self.MU_UNSCALED[current_id:current_id + self.MU_DIMS[self.KP_RATIO]]
+            current_id += self.MU_DIMS[self.KP_RATIO]
+
+        if self.KD_RATIO in self.ACTIVE_MUS:
+            self.simenv.env.kd_ratios = self.MU_UNSCALED[current_id:current_id + self.MU_DIMS[self.KD_RATIO]]
+            current_id += self.MU_DIMS[self.KD_RATIO]
 
         if self.NEURAL_MOTOR in self.ACTIVE_MUS:
             self.simenv.env.NN_motor = True

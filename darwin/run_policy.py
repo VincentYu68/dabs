@@ -9,7 +9,7 @@ import os, errno
 
 if __name__ == "__main__":
     #filename = 'sqstsq_nolimvel_UP4d.pkl'
-    filename = 'walk_up5d_02stride_fixgain_squatinit_gyroin.pkl'
+    filename = 'step_policies/02action_noin_robust.pkl'
 
     savename = 'ground'+filename.split('.')[0]
 
@@ -17,9 +17,9 @@ if __name__ == "__main__":
     singlefoot_motion = False
     crawl_motion = False
     lift_motion = False
-    step_motion = False
+    step_motion = True
 
-    direct_walk = True
+    direct_walk = False
 
     savename += '_walk' if walk_motion else ''
     savename += '_singlefoot' if singlefoot_motion else ''
@@ -29,11 +29,13 @@ if __name__ == "__main__":
 
     savename += '_direct_walk' if direct_walk else ''
 
-    obs_app = [0.3, 0.5, 0.8, 0.0, 0.2]#[0.05945156, 0.73512937, 0.76391359, 0.41831418]
+    obs_app = []#[0.3, 0.5, 0.8, 0.0, 0.2]#[0.05945156, 0.73512937, 0.76391359, 0.41831418]
 
     control_timestep = 0.05  # time interval between control signals
     if direct_walk:
         control_timestep = 0.03
+
+    delta_action = 0.2
 
     bno055_input = True
     gyro_input = 0
@@ -97,11 +99,11 @@ if __name__ == "__main__":
 
     if not direct_walk:
         policy = NP_Policy(interp_sch, 'data/'+filename, discrete_action=True,
-                       action_bins=np.array([11] * 20), delta_angle_scale=0.4, action_filter_size=5)
+                       action_bins=np.array([11] * 20), delta_angle_scale=delta_action, action_filter_size=5)
     else:
         obs_perm, act_perm = make_mirror_perm_indices(gyro_input, gyro_accum_input, False, len(obs_app), bno055_input)
         policy = NP_Policy(None, 'data/' + filename, discrete_action=True,
-                           action_bins=np.array([11] * 20), delta_angle_scale=0.3, action_filter_size=5,
+                           action_bins=np.array([11] * 20), delta_angle_scale=delta_action, action_filter_size=5,
                            obs_perm=obs_perm, act_perm=act_perm)
 
     darwin = BasicDarwin(use_bno055=bno055_input)

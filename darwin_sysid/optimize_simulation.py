@@ -12,7 +12,7 @@ import cma, os, sys, joblib
 from mpi4py import MPI
 
 class SysIDOptimizer:
-    def __init__(self, data_dir, velocity_weight = 1.0, regularization = 0.001, specific_data = '.', save_app='',
+    def __init__(self, env, data_dir, velocity_weight = 1.0, regularization = 0.001, specific_data = '.', save_app='',
                  minibatch = 0, init_guess = None, random_subset = None):
         self.data_dir = data_dir
         self.save_app = save_app
@@ -20,9 +20,7 @@ class SysIDOptimizer:
         self.regularization = regularization
         self.all_trajs = [joblib.load(data_dir + file) for file in os.listdir(data_dir) if '.pkl' in file and specific_data in file]
 
-        self.darwinenv = DarwinPlain()
-        self.darwinenv.toggle_fix_root(True)
-        self.darwinenv.reset()
+        self.darwinenv = env
 
         self.minibatch = minibatch
         self.random_subset = random_subset
@@ -143,7 +141,7 @@ class SysIDOptimizer:
             self.darwinenv.set_mu(self.best_x)
             print('optimized: ', self.darwinenv.MU_UNSCALED, self.best_f)
             opt_result = [self.best_x, self.darwinenv.MU_UNSCALED]
-            np.savetxt(self.data_dir+'/opt_result' + self.save_app + '.txt', opt_result)
+            #np.savetxt(self.data_dir+'/opt_result' + self.save_app + '.txt', opt_result)
 
     def optimize(self, maxiter = 100):
         if self.init_guess is None:
@@ -199,26 +197,37 @@ class SysIDOptimizer:
         es.result_pretty()
         xopt = self.best_x
 
-        if MPI.COMM_WORLD.Get_rank() == 0:
-            self.darwinenv.set_mu(xopt)
-            print('optimized: ', self.darwinenv.MU_UNSCALED, self.best_f)
-            opt_result = [xopt, self.darwinenv.MU_UNSCALED]
-            np.savetxt(self.data_dir+'/opt_result' + self.save_app + '.txt', opt_result)
+        self.darwinenv.set_mu(xopt)
+        print('optimized: ', self.darwinenv.MU_UNSCALED, self.best_f)
+        opt_result = [xopt, self.darwinenv.MU_UNSCALED]
+        return opt_result
 
 if __name__ == "__main__":
     data_dir = 'data/sysid_data/generic_motion/'
     #savename = '01only_vel0_minibatch3_NNmotor'
 
-    for i in range(10):
-        savename = '1o3subset_vel0_minibatch3_pid_warmstartall_' + str(i)
-        warmstart_data = np.loadtxt(data_dir + 'opt_resultall_vel0_minibatch0_pid.txt')[0]
-        sysid_optimizer = SysIDOptimizer(data_dir, velocity_weight=0.0, specific_data='.', save_app=savename, minibatch=0,
-                                         init_guess = warmstart_data, random_subset=0.3333)
-        sysid_optimizer.optimize()
+    darwinenv = DarwinPlain()
+    darwinenv.toggle_fix_root(True)
+    darwinenv.reset()
 
-        if MPI.COMM_WORLD.Get_rank() == 0:
-            plt.figure()
-            plt.plot(sysid_optimizer.value_history)
-            plt.savefig(data_dir+savename+'.png')
+    group_run_result = {}
 
+    all_savename = 'all_vel0_pid'
+    sysid_optimizer = SysIDOptimizer(darwinenv, data_dir, velocity_weight=0.0, specific_data='.', save_app=all_savename,
+                                     minibatch=0)
+    result_all = sysid_optimizer.optimize(maxiter=300)
+    group_run_result['all_sol'] = result_all
+    group_run_result['all_lc'] = sysid_optimizer.value_history
+
+    for i in range(50):
+        savename = '1o3subset_vel0_pid_warmstartall_' + str(i)
+        sysid_optimizer = SysIDOptimizer(darwinenv, data_dir, velocity_weight=0.0, specific_data='.', save_app=savename,
+                                         minibatch=0,
+                                         init_guess=result_all[0], random_subset=0.1)
+        result = sysid_optimizer.optimize(maxiter=100)
+
+        group_run_result['subset_'+str(i)+'_sol'] = result
+        group_run_result['subset_'+str(i)+'_lc'] = sysid_optimizer.value_history
+
+    joblib.dump(group_run_result, data_dir+all_savename+'.pkl', compress=True)
 

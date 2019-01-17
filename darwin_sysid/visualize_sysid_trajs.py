@@ -10,10 +10,9 @@ from darwin.np_policy import *
 import time
 import cma, os, sys, joblib
 
-from darwin_sysid.optimize_simulation import *
 
 if __name__ == "__main__":
-    data_dir = 'data/sysid_data/generic_motion/'
+    data_dir = 'data/sysid_data/generic_motion_test/'
     specific_data = 'all_vel0_minibatch0_pid'
     all_trajs = [joblib.load(data_dir + file) for file in os.listdir(data_dir) if
                       '.pkl' in file]
@@ -22,16 +21,13 @@ if __name__ == "__main__":
     darwinenv.toggle_fix_root(True)
     darwinenv.reset()
 
-    opt_result = np.loadtxt(data_dir+'/opt_result'+specific_data+'.txt')
+    opt_result = np.loadtxt('data/sysid_data/generic_motion/opt_result'+specific_data+'.txt')
     print('Use mu of: ', opt_result[1])
 
     #darwinenv.set_mu(np.array([0.03216347, 0.34971422, 0.50214142, 0.94386206, 0.47390177,
     #   0.12861344, 0.96039561, 0.56407919, 0.72965827, 0.84092037,
     #   0.07445393, 0.98530918, 0.07949251]))
     darwinenv.set_mu(opt_result[0])
-
-    sysid_optimizer = SysIDOptimizer('data/sysid_data/generic_motion/', velocity_weight=5.0, specific_data='',
-                                     save_app='vel005')
 
 
     total_positional_error = 0
@@ -78,7 +74,7 @@ if __name__ == "__main__":
         traj['pose_data'] = sim_poses
         traj['vel_data'] = sim_vels
 
-        plt.figure()
+        '''plt.figure()
         actions = np.array(actions)
         sim_poses = np.array(sim_poses)
         hw_pose_data = np.array(hw_pose_data)
@@ -96,14 +92,14 @@ if __name__ == "__main__":
         plt.plot(hw_pose_data[:, 5], label='hw pose')
         plt.title(str(i) + '_13')
         plt.legend()
-        plt.show()
+        plt.show()'''
 
         #allfiles = [data_dir.replace('generic', 'synthetic') + file for file in os.listdir(data_dir) if
         # '.pkl' in file]
         #joblib.dump(traj, allfiles[i], compress=True)
 
 
-    loss = (total_positional_error + total_velocity_error * 5) / total_step + 0.001 * np.sum(opt_result[0] ** 2)
+    loss = (total_positional_error) / total_step + 0.001 * np.sum(opt_result[0] ** 2)
 
     print('Loss: ', loss)
 
