@@ -9,7 +9,7 @@ import os, errno
 
 if __name__ == "__main__":
     #filename = 'sqstsq_nolimvel_UP4d.pkl'
-    filename = 'step_policies/02action_noin_robust.pkl'
+    filename = 'step_policies/02action_fwd_noin_up5d.pkl'
 
     savename = 'ground'+filename.split('.')[0]
 
@@ -29,7 +29,7 @@ if __name__ == "__main__":
 
     savename += '_direct_walk' if direct_walk else ''
 
-    obs_app = []#[0.3, 0.5, 0.8, 0.0, 0.2]#[0.05945156, 0.73512937, 0.76391359, 0.41831418]
+    obs_app = [0.3, 0.5, 0.8, 0.0, 0.2]#[0.05945156, 0.73512937, 0.76391359, 0.41831418]
 
     control_timestep = 0.05  # time interval between control signals
     if direct_walk:
@@ -37,7 +37,7 @@ if __name__ == "__main__":
 
     delta_action = 0.2
 
-    bno055_input = True
+    bno055_input = False
     gyro_input = 0
     gyro_accum_input = False
 
