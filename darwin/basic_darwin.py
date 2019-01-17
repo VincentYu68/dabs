@@ -87,7 +87,7 @@ class BasicDarwin:
         gyro_data = []
 
         reg_start_addr = 0X14
-        num_registers = 0xC
+        num_registers = 0x0C
         burst_read_result = self.bno_usb_stick.burst_read(reg_start_addr, num_registers)
         print(burst_read_result[0], burst_read_result[1])
         euler1 = DEGREE2RAD(np.array(burst_read_result[0])[3:] / 16.)
@@ -96,7 +96,7 @@ class BasicDarwin:
 
         euler = DEGREE2RAD(np.array(packet.euler))
         angvel = DEGREE2RAD(np.array(packet.g))
-        print(euler1, euler, angvel, angvel)
+        print(euler1, euler, angvel, angvel1)
         if euler[0] > np.pi:
             euler[0] -= 2 * np.pi
         gyro_data.append(np.array([-euler[1], euler[2], -euler[0],   angvel[1], -angvel[0], angvel[2]]))
