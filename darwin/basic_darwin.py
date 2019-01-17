@@ -88,7 +88,6 @@ class BasicDarwin:
         reg_start_addr = 0X14
         num_registers = 0x0C
         burst_read_result = self.bno_usb_stick.burst_read(reg_start_addr, num_registers)
-        print(burst_read_result[0], burst_read_result[1])
         euler = DEGREE2RAD(np.array(burst_read_result[0])[3:] / 16.)
         angvel = DEGREE2RAD(np.array(burst_read_result[0])[0:3] / 16.)
 
