@@ -78,19 +78,17 @@ class BasicDarwin:
         if self.use_bno055:
             from bno055_usb_stick_py import BnoUsbStick
             self.bno_usb_stick = BnoUsbStick()
+            self.bno_usb_stick.activate_streaming()
 
     def disconnect(self):
         self.port_handler.closePort()
 
     def read_bno055_gyro(self):
         gyro_data = []
-
-        reg_start_addr = 0X14
-        num_registers = 0x0C
-        burst_read_result = self.bno_usb_stick.burst_read(reg_start_addr, num_registers)
-        euler = DEGREE2RAD(np.array(burst_read_result[0])[3:] / 16.)
-        angvel = DEGREE2RAD(np.array(burst_read_result[0])[0:3] / 16.)
-
+        
+        packet = self.bno_usb_stick.recv_streaming_packet()
+        euler = DEGREE2RAD(np.array(packet.euler))
+        angvel = DEGREE2RAD(np.array(packet.g))
         if euler[0] > np.pi:
             euler[0] -= 2 * np.pi
         gyro_data.append(np.array([-euler[1], euler[2], -euler[0],   angvel[1], -angvel[0], angvel[2]]))
