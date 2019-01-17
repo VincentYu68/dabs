@@ -78,7 +78,7 @@ class BasicDarwin:
         if self.use_bno055:
             from bno055_usb_stick_py import BnoUsbStick
             self.bno_usb_stick = BnoUsbStick()
-            #self.bno_usb_stick.activate_streaming()
+            self.bno_usb_stick.activate_streaming()
 
     def disconnect(self):
         self.port_handler.closePort()
@@ -90,16 +90,17 @@ class BasicDarwin:
         num_registers = 0xC
         burst_read_result = self.bno_usb_stick.burst_read(reg_start_addr, num_registers)
         print(burst_read_result[0], burst_read_result[1])
-        return burst_read_result
-        '''gyroscope_resolution: float = 1. / 16.
-        euler_resolution: float = 1. / 16.'''
-        '''packet = self.bno_usb_stick.recv_streaming_packet()
+        euler1 = DEGREE2RAD(np.array(burst_read_result[0])[3:] / 16.)
+        angvel1 = DEGREE2RAD(np.array(burst_read_result[0])[0:3] / 16.)
+        packet = self.bno_usb_stick.recv_streaming_packet()
+
         euler = DEGREE2RAD(np.array(packet.euler))
         angvel = DEGREE2RAD(np.array(packet.g))
+        print(euler1, euler, angvel, angvel)
         if euler[0] > np.pi:
             euler[0] -= 2 * np.pi
         gyro_data.append(np.array([-euler[1], euler[2], -euler[0],   angvel[1], -angvel[0], angvel[2]]))
-        return np.mean(gyro_data, axis=0)'''
+        return np.mean(gyro_data, axis=0)
 
 
     def read_motor_positions(self):
