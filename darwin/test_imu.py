@@ -16,7 +16,7 @@ if __name__ == '__main__':
 
     pose_id = 0
 
-    darwin = BasicDarwin()
+    darwin = BasicDarwin(True)
 
     darwin.connect()
 

@@ -9,7 +9,7 @@ if __name__ == "__main__":
 
     feedforward_goals = np.loadtxt('data/'+filename)
 
-    darwin = BasicDarwin()
+    darwin = BasicDarwin(True)
 
     darwin.connect()
 
@@ -52,7 +52,7 @@ if __name__ == "__main__":
         t1 = time.monotonic()
         darwin.read_motor_positions()
         darwin.write_motor_goal(squat_pose)
-        darwin.read_gyro()
+        darwin.read_bno055_gyro()
         #darwin.read_motor_voltages()
         t2 = time.monotonic()
         times.append(t2-t1)
@@ -60,5 +60,15 @@ if __name__ == "__main__":
     print('List of all time intervals ', times)
     print('Average time interval: ', np.mean(times))
     print('Std time interval: ', np.std(times))
+
+    times = []
+    for i in range(50):
+        t1 = time.monotonic()
+        darwin.read_bno055_gyro()
+        t2 = time.monotonic()
+        times.append(t2 - t1)
+
+    print('Average time for gyro read: ', np.mean(times))
+    print('Std time for gyro read: ', np.std(times))
 
     darwin.disconnect()
