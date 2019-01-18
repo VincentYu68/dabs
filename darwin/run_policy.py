@@ -12,7 +12,7 @@ if __name__ == "__main__":
     folder = 'step_policies/'
     filename = '02action_fwd_gyroinxy_up5d.pkl'
 
-    savename = folder+'ground'+filename.split('.')[0]
+    savename = 'ground'+filename.split('.')[0]
 
     walk_motion = False
     singlefoot_motion = False
