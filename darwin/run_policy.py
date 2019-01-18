@@ -9,9 +9,10 @@ import os, errno
 
 if __name__ == "__main__":
     #filename = 'sqstsq_nolimvel_UP4d.pkl'
-    filename = 'step_policies/02action_fwd_gyroinxy_up5d.pkl'
+    folder = 'step_policies/'
+    filename = '02action_fwd_gyroinxy_up5d.pkl'
 
-    savename = 'ground'+filename.split('.')[0]
+    savename = folder+'ground'+filename.split('.')[0]
 
     walk_motion = False
     singlefoot_motion = False
@@ -98,11 +99,11 @@ if __name__ == "__main__":
         interp_sch = None
 
     if not direct_walk:
-        policy = NP_Policy(interp_sch, 'data/'+filename, discrete_action=True,
+        policy = NP_Policy(interp_sch, 'data/'+folder+filename, discrete_action=True,
                        action_bins=np.array([11] * 20), delta_angle_scale=delta_action, action_filter_size=5)
     else:
         obs_perm, act_perm = make_mirror_perm_indices(gyro_input, gyro_accum_input, False, len(obs_app), bno055_input)
-        policy = NP_Policy(None, 'data/' + filename, discrete_action=True,
+        policy = NP_Policy(None, 'data/' + folder+filename, discrete_action=True,
                            action_bins=np.array([11] * 20), delta_angle_scale=delta_action, action_filter_size=5,
                            obs_perm=obs_perm, act_perm=act_perm)
 
