@@ -14,8 +14,8 @@ from darwin.np_policy import *
 import time
 
 if __name__ == "__main__":
-    #policy_path = 'data/walk_tl10_vrew10_limvel.pkl'
-    policy_path = 'data/walk_up5d_02stride_fixgain_squatinit_gyroin.pkl'
+    policy_path = 'data/step_UP5d_02action_2.pkl'
+    #policy_path = 'data/walk_up5d_02stride_fixgain_squatinit_gyroin.pkl'
     fixed_root = False
     action_path = 'data/hw_data/groundwalk_tl10_vrew10_limvel_direct_walk_saved_action.txt'
     run_policy = True
@@ -24,13 +24,13 @@ if __name__ == "__main__":
     singlefoot_motion = False
     crawl_motion = False
     lift_motion = False
-    step_motion = False
+    step_motion = True
 
-    direct_walk = True
+    direct_walk = False
 
-    obs_app = [0.3, 0.5, 0.8, 0.0, 0.2]
+    obs_app = [0.2, 0.2, 0.8, 0.0, 0.2]
 
-    gyro_input = True
+    gyro_input = False
 
     control_timestep = 0.05  # time interval between control signals
     if direct_walk:
@@ -88,7 +88,7 @@ if __name__ == "__main__":
 
     if not direct_walk:
         policy = NP_Policy(interp_sch, policy_path, discrete_action=True,
-                       action_bins=np.array([11] * 20), delta_angle_scale=0.4, action_filter_size=5)
+                       action_bins=np.array([11] * 20), delta_angle_scale=0.2, action_filter_size=5)
     else:
         obs_perm, act_perm = make_mirror_perm_indices(0, False, False, len(obs_app), gyro_input)
         policy = NP_Policy(None, policy_path, discrete_action=True,
@@ -101,8 +101,8 @@ if __name__ == "__main__":
     darwinenv = DarwinPlain()
     darwinenv.toggle_fix_root(fixed_root)
 
-    #opt_result = np.loadtxt('data/sysid_data/generic_motion/' + '/opt_result' + '06only_vel0_pid_warmstartall' + '.txt')
-    #darwinenv.set_mu(opt_result[0])
+    opt_result = np.loadtxt('data/sysid_data/generic_motion/' + '/opt_result' + 'all_vel0_minibatch0_pid' + '.txt')
+    darwinenv.set_mu(opt_result[0])
 
     '''darwinenv.set_mu(np.array([4.295156336729233360e-01, 9.547139638558959085e-01, 6.929434610954511298e-01,\
                                9.782717037252172121e-01, 9.990063426489504961e-01, 9.983547461764588071e-01,\

@@ -13,7 +13,7 @@ import cma, os, sys, joblib
 
 if __name__ == "__main__":
     data_dir = 'data/sysid_data/generic_motion_test/'
-    specific_data = 'all_vel0_minibatch0_pid'
+    specific_data = 'all_vel0_nn_pdratio_vellim_0'
     all_trajs = [joblib.load(data_dir + file) for file in os.listdir(data_dir) if
                       '.pkl' in file]
 
@@ -74,7 +74,7 @@ if __name__ == "__main__":
         traj['pose_data'] = sim_poses
         traj['vel_data'] = sim_vels
 
-        '''plt.figure()
+        plt.figure()
         actions = np.array(actions)
         sim_poses = np.array(sim_poses)
         hw_pose_data = np.array(hw_pose_data)
@@ -92,7 +92,7 @@ if __name__ == "__main__":
         plt.plot(hw_pose_data[:, 5], label='hw pose')
         plt.title(str(i) + '_13')
         plt.legend()
-        plt.show()'''
+        plt.show()
 
         #allfiles = [data_dir.replace('generic', 'synthetic') + file for file in os.listdir(data_dir) if
         # '.pkl' in file]

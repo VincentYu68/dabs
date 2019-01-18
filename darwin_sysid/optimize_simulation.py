@@ -158,7 +158,7 @@ class SysIDOptimizer:
             num_segs = int(np.ceil(len(self.all_trajs) / self.minibatch))
             maxiter *= num_segs
 
-        es = cma.CMAEvolutionStrategy(init_guess, init_std, {'bounds': bound, 'maxiter': maxiter,})
+        es = cma.CMAEvolutionStrategy(init_guess, init_std, {'popsize':int(self.optimize_dimension*1.5),'bounds': bound, 'maxiter': maxiter,})
 
         pop_size = es.popsize
         sol_id_to_evaluate = []
@@ -211,15 +211,16 @@ if __name__ == "__main__":
     darwinenv.reset()
 
     group_run_result = {}
+    group_run_result['variations'] = darwinenv.VARIATIONS[darwinenv.ACTIVE_MUS]
 
     all_savename = 'all_vel0_pid'
     sysid_optimizer = SysIDOptimizer(darwinenv, data_dir, velocity_weight=0.0, specific_data='.', save_app=all_savename,
                                      minibatch=0)
-    result_all = sysid_optimizer.optimize(maxiter=300)
+    result_all = sysid_optimizer.optimize(maxiter=500)
     group_run_result['all_sol'] = result_all
     group_run_result['all_lc'] = sysid_optimizer.value_history
 
-    for i in range(50):
+    for i in range(0):
         savename = '1o3subset_vel0_pid_warmstartall_' + str(i)
         sysid_optimizer = SysIDOptimizer(darwinenv, data_dir, velocity_weight=0.0, specific_data='.', save_app=savename,
                                          minibatch=0,
