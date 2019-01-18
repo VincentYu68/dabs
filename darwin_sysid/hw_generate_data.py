@@ -8,15 +8,16 @@ if __name__ == "__main__":
     darwin = BasicDarwin()
 
     # load data
-    data_dir = 'data/sysid_data/generic_motion_test/'
-    all_trajs = [joblib.load(data_dir + file) for file in os.listdir(data_dir) if '.pkl' in file]
-    all_files = [data_dir + file for file in os.listdir(data_dir) if '.pkl' in file]
+    data_dir = 'data/sysid_data/generic_motion/'
+    specific_traj = 'standup'
+    all_trajs = [joblib.load(data_dir + file) for file in os.listdir(data_dir) if '.pkl' in file and 'path' in file and specific_traj in file]
+    all_files = [data_dir + file for file in os.listdir(data_dir) if '.pkl' in file and 'path' in file and specific_traj in file]
 
     darwin.connect()
 
     darwin.write_torque_enable(True)
 
-    input('Press any key to start ...')
+    input('Press enter to start ...')
     time.sleep(1)
 
     for i in range(len(all_trajs)):
@@ -28,6 +29,8 @@ if __name__ == "__main__":
         init_pose = RADIAN2VAL(SIM2HW_INDEX(keyframes[0][1]))
         darwin.write_motor_goal(init_pose)
         time.sleep(2)
+        if specific_traj == 'standup':
+            input('Press enter to start next traj...')
 
         pose_data = [VAL2RADIAN(HW2SIM_INDEX(np.array(darwin.read_motor_positions())))]
         vel_data = [SPEED_HW2SIM(HW2SIM_INDEX(np.array(darwin.read_motor_velocities())))]

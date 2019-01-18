@@ -17,8 +17,8 @@ if __name__ == "__main__":
     policy_path = 'data/step_policies/02action_fwd_gyroinxy_up5d.pkl'
     #policy_path = 'data/walk_up5d_02stride_fixgain_squatinit_gyroin.pkl'
     fixed_root = False
-    action_path = 'data/hw_data/ground02action_fwd_gyroinxy_up5d_step_motion_saved_action.txt'
-    run_policy = True
+    action_path = 'data/hw_data/squat_stand.txt'
+    run_policy = False
 
     walk_motion = False
     singlefoot_motion = False
@@ -28,7 +28,7 @@ if __name__ == "__main__":
 
     direct_walk = False
 
-    obs_app = [0.9, 0.1, 0.9, 0.6, 0.2]
+    obs_app = [0.9, 0.1, 0.9, 0.9, 0.2]
 
     gyro_input = True
 
@@ -61,8 +61,8 @@ if __name__ == "__main__":
             rig_keyframe = np.loadtxt('data/rig_data/rig_keyframe_step.txt')
         else:
             rig_keyframe = np.loadtxt('data/rig_data/rig_keyframe_crawl.txt')
-        interp_sch = [[0.0, rig_keyframe[0]]]
-        interp_time = 0.03
+        interp_sch = [[0.0, 0.5*(pose_stand + pose_squat)]]
+        interp_time = 0.2
         for i in range(1):
             for k in range(0, len(rig_keyframe)):
                 interp_sch.append([interp_time, rig_keyframe[k]])
