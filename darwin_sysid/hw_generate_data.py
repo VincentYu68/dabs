@@ -29,8 +29,6 @@ if __name__ == "__main__":
         init_pose = RADIAN2VAL(SIM2HW_INDEX(keyframes[0][1]))
         darwin.write_motor_goal(init_pose)
         time.sleep(2)
-        if specific_traj == 'standup':
-            input('Press enter to start next traj...')
 
         pose_data = [VAL2RADIAN(HW2SIM_INDEX(np.array(darwin.read_motor_positions())))]
         vel_data = [SPEED_HW2SIM(HW2SIM_INDEX(np.array(darwin.read_motor_velocities())))]
@@ -67,6 +65,8 @@ if __name__ == "__main__":
 
         print('Start next trajectory in 3 seconds ...')
         time.sleep(3)
+        if specific_traj == 'standup':
+            input('Press enter to start next traj...')
 
     print('Finished single poses.')
 
