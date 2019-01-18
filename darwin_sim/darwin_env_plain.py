@@ -116,7 +116,7 @@ class DarwinPlain:
 
 
     def get_gyro_data(self):
-        return np.concatenate([self.robot.q[0:3], self.robot.dq[0:3]])
+        return np.concatenate([self.robot.q[0:2], self.robot.dq[0:2]])
 
     def passive_step(self): # advance simualtion without control
         self.time += self.simenv.env.dt

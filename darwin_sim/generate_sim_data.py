@@ -7,17 +7,17 @@ matplotlib.use('TkAgg')
 import matplotlib.pyplot as plt
 
 import pydart2 as pydart
-import gym
+import gym, joblib
 import numpy as np
 from darwin_sim.darwin_env_plain import *
 from darwin.np_policy import *
 import time
 
 if __name__ == "__main__":
-    policy_path = 'data/step_UP5d_02action_2.pkl'
+    policy_path = 'data/step_policies/02action_fwd_gyroinxy_up5d.pkl'
     #policy_path = 'data/walk_up5d_02stride_fixgain_squatinit_gyroin.pkl'
     fixed_root = False
-    action_path = 'data/hw_data/groundwalk_tl10_vrew10_limvel_direct_walk_saved_action.txt'
+    action_path = 'data/hw_data/ground02action_fwd_gyroinxy_up5d_step_motion_saved_action.txt'
     run_policy = True
 
     walk_motion = False
@@ -28,9 +28,9 @@ if __name__ == "__main__":
 
     direct_walk = False
 
-    obs_app = [0.2, 0.2, 0.8, 0.0, 0.2]
+    obs_app = [0.9, 0.1, 0.9, 0.6, 0.2]
 
-    gyro_input = False
+    gyro_input = True
 
     control_timestep = 0.05  # time interval between control signals
     if direct_walk:
@@ -100,9 +100,10 @@ if __name__ == "__main__":
 
     darwinenv = DarwinPlain()
     darwinenv.toggle_fix_root(fixed_root)
+    darwinenv.simenv.env.param_manager.set_simulator_parameters(obs_app)
 
-    opt_result = np.loadtxt('data/sysid_data/generic_motion/' + '/opt_result' + 'all_vel0_minibatch0_pid' + '.txt')
-    darwinenv.set_mu(opt_result[0])
+    opt_result = joblib.load('data/sysid_data/generic_motion/' + 'all_vel0_nn_hid5' + '.pkl')['all_sol']
+    #darwinenv.set_mu(opt_result[0])
 
     '''darwinenv.set_mu(np.array([4.295156336729233360e-01, 9.547139638558959085e-01, 6.929434610954511298e-01,\
                                9.782717037252172121e-01, 9.990063426489504961e-01, 9.983547461764588071e-01,\
@@ -143,11 +144,11 @@ if __name__ == "__main__":
         #if direct_walk:
         #    input_obs = np.concatenate([input_obs, darwinenv.get_gyro_data(), darwinenv.accum_orientation])
 
+        if gyro_input:
+            input_obs = np.concatenate([input_obs, darwinenv.get_gyro_data()])
+        if len(obs_app) > 0:
+            input_obs = np.concatenate([input_obs, obs_app])
         if run_policy:
-            if gyro_input:
-                input_obs = np.concatenate([input_obs, darwinenv.get_gyro_data()])
-            if len(obs_app) > 0:
-                input_obs = np.concatenate([input_obs, obs_app])
             act = policy.act(input_obs, darwinenv.time)
         else:
             act = hw_actions[i]

@@ -22,7 +22,7 @@ if __name__ == "__main__":
 
     direct_walk = False
 
-    obs_app = [0.3, 0.5, 0.8, 0.0, 0.2]#[0.05945156, 0.73512937, 0.76391359, 0.41831418]
+    obs_app = [0.9, 0.05, 0.9, 0.0, 0.2]#[0.05945156, 0.73512937, 0.76391359, 0.41831418]
 
     control_timestep = 0.05  # time interval between control signals
     if direct_walk:
@@ -71,7 +71,7 @@ if __name__ == "__main__":
             rig_keyframe = np.loadtxt('data/rig_data/rig_keyframe_step.txt')
         else:
             rig_keyframe = np.loadtxt('data/rig_data/rig_keyframe_crawl.txt')
-        interp_sch = [[0.0, rig_keyframe[0]]]
+        interp_sch = [[0.0, 0.5*(pose_squat+pose_stand)]]
         interp_time = 0.03
         for i in range(1):
             for k in range(0, len(rig_keyframe)):
