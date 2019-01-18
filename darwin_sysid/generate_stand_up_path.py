@@ -19,6 +19,8 @@ if __name__ == "__main__":
     traj = []
     current_time = 0.0
     traj.append([current_time, pose_squat])
+    current_time += 0.5
+    traj.append([current_time, pose_squat])
 
     while current_time < args.traj_time:
         current_time += args.control_dt
@@ -26,9 +28,12 @@ if __name__ == "__main__":
 
         traj.append([current_time, ratio * pose_stand + (1-ratio) * pose_squat])
 
+    current_time += 0.5
+    traj.append([current_time, pose_stand])
+
     one_traj['control_dt'] = args.control_dt
     one_traj['keyframes'] = traj
-    one_traj['total_time'] = args.traj_time
+    one_traj['total_time'] = args.traj_time + 1
     one_traj['fix_root'] = False
 
     fname = 'sysidpath_' + str(args.control_dt) + '_' + str(args.traj_time) + '_standup.pkl'
