@@ -48,6 +48,8 @@ class DarwinPlain:
         self.sub_step_velocities = []
 
         self.MU_DIMS[self.NEURAL_MOTOR] = np.sum([np.prod(d.shape) for d in self.simenv.env.NN_motor_parameters])
+        self.MU_LOW_BOUNDS[self.NEURAL_MOTOR] = [-1] * self.MU_DIMS[self.NEURAL_MOTOR]
+        self.MU_UP_BOUNDS[self.NEURAL_MOTOR] = [1] * self.MU_DIMS[self.NEURAL_MOTOR]
 
     def render(self):
         self.simenv.render()

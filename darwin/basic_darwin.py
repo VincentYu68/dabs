@@ -91,7 +91,7 @@ class BasicDarwin:
         angvel = DEGREE2RAD(np.array(packet.g))
         if euler[0] > np.pi:
             euler[0] -= 2 * np.pi
-        gyro_data.append(np.array([-euler[1], euler[2], -euler[0],   angvel[1], -angvel[0], angvel[2]]))
+        gyro_data.append(np.array([-euler[1], euler[2],   angvel[1], -angvel[0]]))
         return np.mean(gyro_data, axis=0)
 
 

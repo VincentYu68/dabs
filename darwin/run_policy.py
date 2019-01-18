@@ -9,7 +9,7 @@ import os, errno
 
 if __name__ == "__main__":
     #filename = 'sqstsq_nolimvel_UP4d.pkl'
-    filename = 'step_policies/02action_fwd_noin_up5d.pkl'
+    filename = 'step_policies/02action_fwd_gyroinxy_up5d.pkl'
 
     savename = 'ground'+filename.split('.')[0]
 
@@ -21,14 +21,6 @@ if __name__ == "__main__":
 
     direct_walk = False
 
-    savename += '_walk' if walk_motion else ''
-    savename += '_singlefoot' if singlefoot_motion else ''
-    savename += '_crawl' if crawl_motion else ''
-    savename += '_lift' if lift_motion else ''
-    savename += '_step_motion' if step_motion else ''
-
-    savename += '_direct_walk' if direct_walk else ''
-
     obs_app = [0.3, 0.5, 0.8, 0.0, 0.2]#[0.05945156, 0.73512937, 0.76391359, 0.41831418]
 
     control_timestep = 0.05  # time interval between control signals
@@ -37,9 +29,17 @@ if __name__ == "__main__":
 
     delta_action = 0.2
 
-    bno055_input = False
+    bno055_input = True
     gyro_input = 0
     gyro_accum_input = False
+
+    savename += '_walk' if walk_motion else ''
+    savename += '_singlefoot' if singlefoot_motion else ''
+    savename += '_crawl' if crawl_motion else ''
+    savename += '_lift' if lift_motion else ''
+    savename += '_step_motion' if step_motion else ''
+
+    savename += '_direct_walk' if direct_walk else ''
 
 
     pose_squat_val = np.array([2509, 2297, 1714, 1508, 1816, 2376,

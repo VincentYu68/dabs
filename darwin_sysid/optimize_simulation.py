@@ -12,13 +12,14 @@ import cma, os, sys, joblib
 from mpi4py import MPI
 
 class SysIDOptimizer:
-    def __init__(self, env, data_dir, velocity_weight = 1.0, regularization = 0.001, specific_data = '.', save_app='',
+    def __init__(self, env, data_dir, velocity_weight = 1.0, regularization = 0.001, specific_data = '.', save_dict='', save_name='',
                  minibatch = 0, init_guess = None, random_subset = None):
         self.data_dir = data_dir
-        self.save_app = save_app
+        self.save_dict = save_dict
+        self.save_name = save_name
         self.velocity_weight = velocity_weight
         self.regularization = regularization
-        self.all_trajs = [joblib.load(data_dir + file) for file in os.listdir(data_dir) if '.pkl' in file and specific_data in file]
+        self.all_trajs = [joblib.load(data_dir + file) for file in os.listdir(data_dir) if '.pkl' in file and 'path' in file and specific_data in file]
 
         self.darwinenv = env
 
@@ -211,10 +212,10 @@ if __name__ == "__main__":
     darwinenv.reset()
 
     group_run_result = {}
-    group_run_result['variations'] = darwinenv.VARIATIONS[darwinenv.ACTIVE_MUS]
+    group_run_result['variations'] = [darwinenv.VARIATIONS[i] for i in darwinenv.ACTIVE_MUS]
 
     all_savename = 'all_vel0_pid'
-    sysid_optimizer = SysIDOptimizer(darwinenv, data_dir, velocity_weight=0.0, specific_data='.', save_app=all_savename,
+    sysid_optimizer = SysIDOptimizer(darwinenv, data_dir, velocity_weight=0.0, specific_data='.', save_dict=all_savename, save_name = 'all',
                                      minibatch=0)
     result_all = sysid_optimizer.optimize(maxiter=500)
     group_run_result['all_sol'] = result_all

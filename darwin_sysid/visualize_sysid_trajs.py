@@ -13,20 +13,22 @@ import cma, os, sys, joblib
 
 if __name__ == "__main__":
     data_dir = 'data/sysid_data/generic_motion_test/'
-    specific_data = 'all_vel0_nn_pdratio_vellim_0'
+    specific_data = 'all_vel0_nn_hid5'
     all_trajs = [joblib.load(data_dir + file) for file in os.listdir(data_dir) if
-                      '.pkl' in file]
+                      '.pkl' in file and 'path' in file]
 
     darwinenv = DarwinPlain()
     darwinenv.toggle_fix_root(True)
     darwinenv.reset()
 
-    opt_result = np.loadtxt('data/sysid_data/generic_motion/opt_result'+specific_data+'.txt')
+    #opt_result = np.loadtxt('data/sysid_data/generic_motion/opt_result'+specific_data+'.txt')
+    opt_result = joblib.load('data/sysid_data/generic_motion/' + specific_data + '.pkl')['all_sol']
     print('Use mu of: ', opt_result[1])
 
     #darwinenv.set_mu(np.array([0.03216347, 0.34971422, 0.50214142, 0.94386206, 0.47390177,
     #   0.12861344, 0.96039561, 0.56407919, 0.72965827, 0.84092037,
     #   0.07445393, 0.98530918, 0.07949251]))
+    #opt_result[0][0:5] += 0.3
     darwinenv.set_mu(opt_result[0])
 
 
@@ -74,7 +76,9 @@ if __name__ == "__main__":
         traj['pose_data'] = sim_poses
         traj['vel_data'] = sim_vels
 
-        plt.figure()
+        print((total_positional_error) / total_step + 0.001 * np.sum(opt_result[0] ** 2))
+
+        '''plt.figure()
         actions = np.array(actions)
         sim_poses = np.array(sim_poses)
         hw_pose_data = np.array(hw_pose_data)
@@ -87,16 +91,17 @@ if __name__ == "__main__":
         plt.legend()
 
         plt.figure()
-        plt.plot(actions[:, 5], label='sim action')
-        plt.plot(sim_poses[:, 5], label='sim pose')
-        plt.plot(hw_pose_data[:, 5], label='hw pose')
+        plt.plot(actions[:, 13], label='sim action')
+        plt.plot(sim_poses[:, 13], label='sim pose')
+        plt.plot(hw_pose_data[:, 13], label='hw pose')
         plt.title(str(i) + '_13')
         plt.legend()
-        plt.show()
+        plt.show()'''
 
         #allfiles = [data_dir.replace('generic', 'synthetic') + file for file in os.listdir(data_dir) if
         # '.pkl' in file]
         #joblib.dump(traj, allfiles[i], compress=True)
+
 
 
     loss = (total_positional_error) / total_step + 0.001 * np.sum(opt_result[0] ** 2)

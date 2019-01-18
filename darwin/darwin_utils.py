@@ -129,7 +129,7 @@ def make_mirror_perm_indices(imu_input_step, accum_imu_input, include_accelerome
     if gyro_in:
         beginid = len(obs_perm_base)
         obs_perm_base = np.concatenate(
-            [obs_perm_base, [-beginid, beginid + 1, -beginid - 2, -beginid - 3, beginid + 4, -beginid - 5]])
+            [obs_perm_base, [-beginid, beginid + 1, -beginid - 2, beginid + 3]])
 
     if UP_dim > 0:
         obs_perm_base = np.concatenate([obs_perm_base, np.arange(len(obs_perm_base), len(obs_perm_base) + UP_dim)])
