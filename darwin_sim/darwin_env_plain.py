@@ -213,7 +213,7 @@ class DarwinPlain:
     ####################################
     ##### parameters for system id #####
     ####################################
-    VARIATIONS = 'KP KD KC KP_RATIO KD_RATIO NEURAL_MOTOR VEL_LIM GROUP_JOINT_DAMPING JOINT_DAMPING JOINT_FRICTION TORQUE_LIM'.split(' ')
+    VARIATIONS = 'KP KD KC KP_RATIO KD_RATIO NEURAL_MOTOR VEL_LIM GROUP_JOINT_DAMPING JOINT_DAMPING JOINT_FRICTION TORQUE_LIM COM_OFFSET'.split(' ')
     KP, KD, KC, KP_RATIO, KD_RATIO, NEURAL_MOTOR, VEL_LIM, GROUP_JOINT_DAMPING, JOINT_DAMPING, JOINT_FRICTION, TORQUE_LIM, COM_OFFSET = list(range(12))
     MU_DIMS = np.array([5, 5, 5, 5, 5, 27, 1, 5, 1, 1, 1, 1])
     MU_UP_BOUNDS = [[200, 200, 200, 200, 200], [1,1,1,1,1], [10,10,10,10,10], [3.0, 3.0, 3.0, 3.0, 3.0], [3.0, 3.0, 3.0, 3.0, 3.0], [1]*27, [15], [1, 1, 1, 1, 1], [1], [1], [20.0], [0.1]]
