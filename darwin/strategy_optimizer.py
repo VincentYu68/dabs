@@ -58,7 +58,7 @@ class StrategyOptimizer:
 
             time.sleep(5)
             gyro = self.robot.read_bno055_gyro()
-            while np.any(np.abs(gyro[0:2]) > 0.1):
+            while np.any(np.abs(gyro[0:2]-np.array([0, 0.16])) > 0.1): # should be around 0.16 for half squat pose
                 gyro = self.robot.read_bno055_gyro()
 
             prev_motor_pose = np.array(self.robot.read_motor_positions())
