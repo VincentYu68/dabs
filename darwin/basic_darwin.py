@@ -3,7 +3,7 @@ from darwin.darwin_utils import *
 from dynamixel_sdk import *
 import itertools
 from dabs import *
-
+from multiprocessing import Process, Value, Array
 
 PROTOCOL_VERSION = 1
 
@@ -11,6 +11,20 @@ if PROTOCOL_VERSION == 1:
     import motors.p1mx28 as mx28
 else:
     import motors.p2mx28 as mx28
+
+from bno055_usb_stick_py import BnoUsbStick
+
+def read_bno055_gyro(a):
+    bno_usb_stick = BnoUsbStick()
+    bno_usb_stick.activate_streaming()
+
+    while(True):
+        packet = bno_usb_stick.recv_streaming_packet()
+        euler = DEGREE2RAD(np.array(packet.euler))
+        angvel = DEGREE2RAD(np.array(packet.g))
+        a[0:3] = euler
+        a[3:6] = angvel
+
 
 class BasicDarwin:
     def __init__(self, use_bno055 = False):
@@ -76,22 +90,24 @@ class BasicDarwin:
         self.write_motor_delay([0] * 20)
 
         if self.use_bno055:
-            from bno055_usb_stick_py import BnoUsbStick
-            self.bno_usb_stick = BnoUsbStick()
-            self.bno_usb_stick.activate_streaming()
+            self.bno055_cache = Array('f', range(6))
+
+            self.p = Process(target=read_bno055_gyro, args=(self.bno055_cache))
+            self.p.start()
 
     def disconnect(self):
         self.port_handler.closePort()
+        self.p.terminate()
 
     def read_bno055_gyro(self):
         gyro_data = []
 
-        packet = self.bno_usb_stick.recv_streaming_packet()
-        euler = DEGREE2RAD(np.array(packet.euler))
-        angvel = DEGREE2RAD(np.array(packet.g))
+        gyro = DEGREE2RAD(np.array(self.bno055_cache[:]))
+        euler = gyro[0:3]
+        angvel = gyro[3:]
         if euler[0] > np.pi:
             euler[0] -= 2 * np.pi
-        gyro_data.append(np.array([-euler[1], euler[2],   angvel[1], -angvel[0]]))
+        gyro_data.append(np.array([-euler[1], euler[2], angvel[1], -angvel[0]]))
         return np.mean(gyro_data, axis=0)
 
 
