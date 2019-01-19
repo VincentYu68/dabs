@@ -23,11 +23,14 @@ if __name__ == "__main__":
 
     UP_dim = 5
 
+    bno055_input = True
     gyro_input = 0
     gyro_accum_input = False
     timestep = 0.05
     if direct_walk:
         timestep = 0.03
+
+    delta_action = 0.2
 
     pose_squat_val = np.array([2509, 2297, 1714, 1508, 1816, 2376,
                                2047, 2171,
@@ -85,14 +88,14 @@ if __name__ == "__main__":
 
     if not direct_walk:
         policy = NP_Policy(interp_sch, 'data/'+filename, discrete_action=True,
-                       action_bins=np.array([11] * 20), delta_angle_scale=0.3, action_filter_size=5)
+                       action_bins=np.array([11] * 20), delta_angle_scale=delta_action, action_filter_size=5)
     else:
-        obs_perm, act_perm = make_mirror_perm_indices(gyro_input, gyro_accum_input, False, UP_dim)
+        obs_perm, act_perm = make_mirror_perm_indices(gyro_input, gyro_accum_input, False, UP_dim, bno055_input)
         policy = NP_Policy(None, 'data/' + filename, discrete_action=True,
                            action_bins=np.array([11] * 20), delta_angle_scale=0.0, action_filter_size=5,
                            obs_perm=obs_perm, act_perm=act_perm)
 
-    darwin = BasicDarwin()
+    darwin = BasicDarwin(use_bno055=True)
 
     darwin.connect()
 
@@ -105,7 +108,7 @@ if __name__ == "__main__":
     except OSError as e:
         if e.errno != errno.EEXIST:
             raise
-    optimizer = StrategyOptimizer(darwin, policy, UP_dim, timestep, 1, 'data/socma/'+filename.split('.')[0])
+    optimizer = StrategyOptimizer(darwin, policy, UP_dim, timestep, 1, 'data/socma/'+filename.split('.')[0], bno055_input)
 
     optimizer.optimize()
 

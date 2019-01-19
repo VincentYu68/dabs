@@ -5,13 +5,14 @@ import time
 import os, errno
 
 class StrategyOptimizer:
-    def __init__(self, robot, policy, strategy_dim, timestep, eval_num = 2, save_dir = None):
+    def __init__(self, robot, policy, strategy_dim, timestep, eval_num = 2, save_dir = None, bno055_input = False):
         self.robot = robot
         self.policy = policy
         self.strategy_dim = strategy_dim
         self.timestep = timestep
         self.eval_num = eval_num
         self.rollout_num = 0
+        self.bno055_input = bno055_input
 
         self.all_samples = []
         self.all_fitness = []
@@ -61,24 +62,33 @@ class StrategyOptimizer:
             current_step = 0
             initial_time = time.monotonic()
             prev_time = time.monotonic()
-            while current_step < 200:
+            max_step = 200
+            if self.policy.interp_sch is not None:
+                max_step = int(self.policy.interp_sch[-1][0] / self.timestep)
+            while current_step < max_step:
                 if time.monotonic() - prev_time >= self.timestep:  # control every 50 ms
                     # tdif = time.monotonic() - prev_time
                     prev_time = time.monotonic() - ((time.monotonic() - prev_time) - self.timestep)
                     motor_pose = np.array(self.robot.read_motor_positions())
                     obs_input = VAL2RADIAN(np.concatenate([HW2SIM_INDEX(prev_motor_pose), HW2SIM_INDEX(motor_pose)]))
                     ct = time.monotonic() - initial_time
-                    act = self.policy.act(np.concatenate([obs_input, app]), ct)
+                    gyro = self.robot.read_bno055_gyro()
+                    if self.bno055_input:
+                        obs_input = np.concatenate([obs_input, gyro])
+                    obs_input = np.concatenate([obs_input, app])
+                    act = self.policy.act(obs_input, ct)
                     self.robot.write_motor_goal(RADIAN2VAL(SIM2HW_INDEX(act)))
 
                     prev_motor_pose = np.copy(motor_pose)
 
                     current_step += 1
+                    if np.any(np.abs(gyro[0:2]) > 1.2): # early terminate
+                        break
 
             valid = False
             while not valid:
                 try:
-                    rollout_rew = float(input("Input the estimated reward for this rollout"))
+                    rollout_rew = float(input("Rollout terminated after " + str(current_step) + " steps.\nInput the estimated reward for this rollout: "))
                     valid = True
                 except ValueError:
                     print('invalid reward')
