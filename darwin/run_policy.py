@@ -10,7 +10,7 @@ import os, errno
 if __name__ == "__main__":
     #filename = 'sqstsq_nolimvel_UP4d.pkl'
     folder = 'step_policies/'
-    filename = '02action_fwd_gyroin_up5d.pkl'
+    filename = '02action_fwd_gyroinxy_up5d.pkl'
 
     savename = 'ground'+filename.split('.')[0]
 
