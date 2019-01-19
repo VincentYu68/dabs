@@ -83,6 +83,7 @@ class StrategyOptimizer:
 
                     current_step += 1
                     if np.any(np.abs(gyro[0:2]) > 1.2): # early terminate
+                        print('Gyro: ', gyro[0:2])
                         break
 
             valid = False

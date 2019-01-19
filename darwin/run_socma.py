@@ -12,7 +12,7 @@ from darwin.strategy_optimizer import *
 
 if __name__ == "__main__":
     folder = 'walk_policies/'
-    filename = 'fwd_gyroinxy_up5d.pkl'
+    filename = 'bwd_gyroinxy_up5d.pkl'
 
     walk_motion = False
     singlefoot_motion = False
