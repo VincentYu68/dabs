@@ -57,6 +57,9 @@ class StrategyOptimizer:
             self.robot.write_motor_goal(RADIAN2VAL(SIM2HW_INDEX(self.policy.get_initial_state())))
 
             time.sleep(5)
+            gyro = self.robot.read_bno055_gyro()
+            while np.any(np.abs(gyro[0:2]) > 0.1):
+                gyro = self.robot.read_bno055_gyro()
 
             prev_motor_pose = np.array(self.robot.read_motor_positions())
             current_step = 0
