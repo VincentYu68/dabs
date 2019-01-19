@@ -52,8 +52,6 @@ class DarwinPlain:
         self.MU_UP_BOUNDS[self.NEURAL_MOTOR] = [1] * self.MU_DIMS[self.NEURAL_MOTOR]
 
     def render(self):
-        c = self.robot.bodynodes[-1].to_world(self.robot.bodynodes[-1].local_com() + np.array([0.004, 0, 0]))
-        self.dart_world.skeletons[2].q = np.array([0, 0, 0, c[0], c[1], c[2]])
         self.simenv.render()
 
     def set_pose(self, pose):

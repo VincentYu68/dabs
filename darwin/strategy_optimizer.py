@@ -56,10 +56,13 @@ class StrategyOptimizer:
 
             self.robot.write_motor_goal(RADIAN2VAL(SIM2HW_INDEX(self.policy.get_initial_state())))
 
-            time.sleep(5)
+            time.sleep(2)
             gyro = self.robot.read_bno055_gyro()
             while np.any(np.abs(gyro[0:2]-np.array([0, 0.16])) > 0.1): # should be around 0.16 for half squat pose
                 gyro = self.robot.read_bno055_gyro()
+                print(gyro)
+            print('Gyro initial state good, start in 4 second ...')
+            time.sleep(4)
 
             prev_motor_pose = np.array(self.robot.read_motor_positions())
             current_step = 0
@@ -85,10 +88,10 @@ class StrategyOptimizer:
                     prev_motor_pose = np.copy(motor_pose)
 
                     current_step += 1
-                    if np.any(np.abs(gyro[0:2]) > 1.2): # early terminate
+                    if np.any(np.abs(gyro[0:2]-np.array([0, 0.16])) > 1.0): # early terminate
                         print('Gyro: ', gyro[0:2])
                         break
-
+            self.robot.write_motor_goal(RADIAN2VAL(SIM2HW_INDEX(self.policy.get_initial_state())))
             valid = False
             while not valid:
                 try:

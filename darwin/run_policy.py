@@ -19,8 +19,9 @@ if __name__ == "__main__":
     crawl_motion = False
     lift_motion = False
     step_motion = False
+    shake_motion = True
 
-    direct_walk = True
+    direct_walk = False
 
     obs_app = [0.9, 0.05, 0.9, 0.0, 0.2]#[0.05945156, 0.73512937, 0.76391359, 0.41831418]
 
@@ -29,6 +30,10 @@ if __name__ == "__main__":
         control_timestep = 0.03
 
     delta_action = 0.2
+
+    if shake_motion:
+        delta_action = 0.0
+        savename = 'ground_shake'
 
     bno055_input = True
     gyro_input = 0
@@ -62,13 +67,15 @@ if __name__ == "__main__":
                            [7.0, pose_squat],
                            ]
 
-    if walk_motion or crawl_motion or lift_motion or step_motion:
+    if walk_motion or crawl_motion or lift_motion or step_motion or shake_motion:
         if walk_motion:
             rig_keyframe = np.loadtxt('data/rig_data/rig_keyframe.txt')
         elif lift_motion:
             rig_keyframe = np.loadtxt('data/rig_data/rig_keyframe_lift.txt')
         elif step_motion:
             rig_keyframe = np.loadtxt('data/rig_data/rig_keyframe_step.txt')
+        elif shake_motion:
+            rig_keyframe = np.loadtxt('data/rig_data/rig_keyframe_shakelr.txt')
         else:
             rig_keyframe = np.loadtxt('data/rig_data/rig_keyframe_crawl.txt')
         interp_sch = [[0.0, 0.5*(pose_squat+pose_stand)]]
@@ -79,14 +86,14 @@ if __name__ == "__main__":
                 interp_time += 0.03
         interp_sch.append([interp_time, rig_keyframe[0]])
 
-        if lift_motion:
-            interp_sch = [[0.0, rig_keyframe[0]],
-                          [1.0, rig_keyframe[0]],
-                               [2.0, rig_keyframe[1]],
-                               [3.0, rig_keyframe[2]],
-                               [4.0, rig_keyframe[3]],
-                               [5.0, rig_keyframe[4]],
-                               ]
+        if shake_motion:
+            interp_sch = [[0.0, rig_keyframe[0]]]
+            interp_time = 0.4
+            for i in range(1):
+                for k in range(0, len(rig_keyframe)):
+                    interp_sch.append([interp_time, rig_keyframe[k]])
+                    interp_time += 0.4
+            interp_sch.append([interp_time, rig_keyframe[0]])
 
     if singlefoot_motion:
         rig_keyframe = np.loadtxt('data/rig_data/rig_keyframe2.txt')

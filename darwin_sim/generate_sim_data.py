@@ -24,13 +24,18 @@ if __name__ == "__main__":
     singlefoot_motion = False
     crawl_motion = False
     lift_motion = False
-    step_motion = True
+    step_motion = False
+    shake_motion = True
 
     direct_walk = False
 
     obs_app = [0.9, 0.05, 0.9, 0.0, 0.2]
 
     gyro_input = True
+
+    delta_action = 0.4
+    if shake_motion:
+        delta_action = 0.0
 
     control_timestep = 0.05  # time interval between control signals
     if direct_walk:
@@ -52,15 +57,18 @@ if __name__ == "__main__":
                   [2.0, rig_keyframe[1]],
                   [6.0, rig_keyframe[1]]]'''
 
-    if walk_motion or crawl_motion or lift_motion or step_motion:
+    if walk_motion or crawl_motion or lift_motion or step_motion or shake_motion:
         if walk_motion:
             rig_keyframe = np.loadtxt('data/rig_data/rig_keyframe.txt')
         elif lift_motion:
             rig_keyframe = np.loadtxt('data/rig_data/rig_keyframe_lift.txt')
         elif step_motion:
             rig_keyframe = np.loadtxt('data/rig_data/rig_keyframe_step.txt')
+        elif shake_motion:
+            rig_keyframe = np.loadtxt('data/rig_data/rig_keyframe_shakelr.txt')
         else:
             rig_keyframe = np.loadtxt('data/rig_data/rig_keyframe_crawl.txt')
+
         interp_sch = [[0.0, 0.5*(pose_stand + pose_squat)]]
         interp_time = 0.2
         for i in range(1):
@@ -69,13 +77,14 @@ if __name__ == "__main__":
                 interp_time += 0.03
         interp_sch.append([interp_time, rig_keyframe[0]])
 
-        if lift_motion:
-            interp_sch = [[0.0, rig_keyframe[0]],
-                               [1.0, rig_keyframe[1]],
-                               [2.0, rig_keyframe[2]],
-                               [3.0, rig_keyframe[3]],
-                               [4.0, rig_keyframe[4]],
-                               ]
+        if shake_motion:
+            interp_sch = [[0.0, rig_keyframe[0]]]
+            interp_time = 0.4
+            for i in range(1):
+                for k in range(0, len(rig_keyframe)):
+                    interp_sch.append([interp_time, rig_keyframe[k]])
+                    interp_time += 0.4
+            interp_sch.append([interp_time, rig_keyframe[0]])
 
     if singlefoot_motion:
         rig_keyframe = np.loadtxt('data/rig_data/rig_keyframe2.txt')
@@ -88,7 +97,7 @@ if __name__ == "__main__":
 
     if not direct_walk:
         policy = NP_Policy(interp_sch, policy_path, discrete_action=True,
-                       action_bins=np.array([11] * 20), delta_angle_scale=0.4, action_filter_size=5)
+                       action_bins=np.array([11] * 20), delta_angle_scale=delta_action, action_filter_size=5)
     else:
         obs_perm, act_perm = make_mirror_perm_indices(0, False, False, len(obs_app), gyro_input)
         policy = NP_Policy(None, policy_path, discrete_action=True,
@@ -100,7 +109,10 @@ if __name__ == "__main__":
 
     darwinenv = DarwinPlain()
     darwinenv.toggle_fix_root(fixed_root)
-    darwinenv.simenv.env.param_manager.set_simulator_parameters(obs_app)
+    #darwinenv.simenv.env.param_manager.set_simulator_parameters(obs_app)
+
+    if shake_motion:
+        darwinenv.set_root_dof(darwinenv.get_root_dof() + np.array([0, -0.1, 0, 0, 0, -0.075]))
 
     opt_result = joblib.load('data/sysid_data/generic_motion/' + 'all_vel0_nn_hid5' + '.pkl')['all_sol']
     #darwinenv.set_mu(opt_result[0])

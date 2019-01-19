@@ -170,12 +170,11 @@ class SysIDOptimizer:
 
         pop_size = es.popsize
         sol_id_to_evaluate = []
-        num_per_thread = int(np.ceil(pop_size / self.total_threads))
-        for i in range(num_per_thread):
-            sol_id = self.thread_id * num_per_thread + i
-            if sol_id >= pop_size:
-                break
-            sol_id_to_evaluate.append(sol_id)
+        cur_id = 0
+        while cur_id < pop_size:
+            if cur_id % (self.total_threads) == self.thread_id:
+                sol_id_to_evaluate.append(cur_id)
+            cur_id += 1
         print('Thread ' + str(self.thread_id) + ' evaluates: ' + str(sol_id_to_evaluate))
 
         iter_num = 0

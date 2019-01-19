@@ -22,12 +22,8 @@ def read_bno055_gyro_child(a):
         packet = bno_usb_stick.recv_streaming_packet()
         euler = DEGREE2RAD(np.array(packet.euler))
         angvel = DEGREE2RAD(np.array(packet.g))
-        a[0] = euler[0]
-        a[1] = euler[1]
-        a[2] = euler[2]
-        a[3] = angvel[0]
-        a[4] = angvel[1]
-        a[5] = angvel[2]
+        a[0:3] = euler
+        a[3:] = angvel
 
 
 class BasicDarwin:
@@ -96,7 +92,7 @@ class BasicDarwin:
         if self.use_bno055:
             self.bno055_cache = Array('f', range(6))
 
-            self.p = Process(target=read_bno055_gyro_child, args=(self.bno055_cache))
+            self.p = Process(target=read_bno055_gyro_child, args=(self.bno055_cache, ))
             self.p.start()
 
     def disconnect(self):
@@ -106,7 +102,7 @@ class BasicDarwin:
     def read_bno055_gyro(self):
         gyro_data = []
 
-        gyro = DEGREE2RAD(np.array(self.bno055_cache[:]))
+        gyro = np.array(self.bno055_cache[:])
         euler = gyro[0:3]
         angvel = gyro[3:]
         if euler[0] > np.pi:
