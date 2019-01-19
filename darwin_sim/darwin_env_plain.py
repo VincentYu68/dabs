@@ -214,12 +214,12 @@ class DarwinPlain:
     ##### parameters for system id #####
     ####################################
     VARIATIONS = 'KP KD KC KP_RATIO KD_RATIO NEURAL_MOTOR VEL_LIM GROUP_JOINT_DAMPING JOINT_DAMPING JOINT_FRICTION TORQUE_LIM'.split(' ')
-    KP, KD, KC, KP_RATIO, KD_RATIO, NEURAL_MOTOR, VEL_LIM, GROUP_JOINT_DAMPING, JOINT_DAMPING, JOINT_FRICTION, TORQUE_LIM = list(range(11))
-    MU_DIMS = np.array([5, 5, 5, 5, 5, 27, 1, 5, 1, 1, 1])
-    MU_UP_BOUNDS = [[200, 200, 200, 200, 200], [1,1,1,1,1], [10,10,10,10,10], [3.0, 3.0, 3.0, 3.0, 3.0], [3.0, 3.0, 3.0, 3.0, 3.0], [1]*27, [15], [1, 1, 1, 1, 1], [1], [1], [20.0]]
-    MU_LOW_BOUNDS = [[0, 0, 0, 0, 0], [0, 0, 0, 0, 0], [0, 0, 0, 0, 0], [0, 0, 0, 0, 0], [0, 0, 0, 0, 0], [-1]*27, [2.0], [0, 0, 0, 0, 0], [0], [0], [3.0]]
-    ACTIVE_MUS = [KP_RATIO, KD_RATIO, NEURAL_MOTOR, VEL_LIM, JOINT_DAMPING, TORQUE_LIM]
-    #ACTIVE_MUS = [KP, KD, KC, VEL_LIM, GROUP_JOINT_DAMPING, TORQUE_LIM]
+    KP, KD, KC, KP_RATIO, KD_RATIO, NEURAL_MOTOR, VEL_LIM, GROUP_JOINT_DAMPING, JOINT_DAMPING, JOINT_FRICTION, TORQUE_LIM, COM_OFFSET = list(range(12))
+    MU_DIMS = np.array([5, 5, 5, 5, 5, 27, 1, 5, 1, 1, 1, 1])
+    MU_UP_BOUNDS = [[200, 200, 200, 200, 200], [1,1,1,1,1], [10,10,10,10,10], [3.0, 3.0, 3.0, 3.0, 3.0], [3.0, 3.0, 3.0, 3.0, 3.0], [1]*27, [15], [1, 1, 1, 1, 1], [1], [1], [20.0], [0.1]]
+    MU_LOW_BOUNDS = [[0, 0, 0, 0, 0], [0, 0, 0, 0, 0], [0, 0, 0, 0, 0], [0, 0, 0, 0, 0], [0, 0, 0, 0, 0], [-1]*27, [2.0], [0, 0, 0, 0, 0], [0], [0], [3.0], [-0.1]]
+    #ACTIVE_MUS = [KP_RATIO, KD_RATIO, NEURAL_MOTOR, VEL_LIM, JOINT_DAMPING, TORQUE_LIM, COM_OFFSET]
+    ACTIVE_MUS = [KP, KD, KC, VEL_LIM, GROUP_JOINT_DAMPING, TORQUE_LIM, COM_OFFSET]
     MU_UNSCALED = None # unscaled version of mu
 
     def set_mu(self, x):
@@ -356,6 +356,12 @@ class DarwinPlain:
         if self.TORQUE_LIM in self.ACTIVE_MUS:
             self.simenv.env.torqueLimits = self.MU_UNSCALED[current_id]
             current_id += self.MU_DIMS[self.TORQUE_LIM]
+
+        if self.COM_OFFSET in self.ACTIVE_MUS:
+            init_com = np.copy(self.simenv.env.initial_local_coms[1])
+            init_com[0] += self.MU_UNSCALED[current_id]
+            self.simenv.env.robot_skeleton.bodynodes[1].set_local_com(init_com)
+            current_id += self.MU_DIMS[self.COM_OFFSET]
 
 
 

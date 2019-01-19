@@ -15,7 +15,7 @@ if __name__ == "__main__":
     data_dir = 'data/sysid_data/generic_motion/'
     specific_data = 'all_vel0_nn_hid5'
     all_trajs = [joblib.load(data_dir + file) for file in os.listdir(data_dir) if
-                      '.pkl' in file and 'path' in file and 'standup' in file]
+                      '.pkl' in file and 'path' in file]# and 'standup' in file]
 
     darwinenv = DarwinPlain()
     darwinenv.toggle_fix_root(True)
