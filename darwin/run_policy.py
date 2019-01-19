@@ -9,8 +9,8 @@ import os, errno
 
 if __name__ == "__main__":
     #filename = 'sqstsq_nolimvel_UP4d.pkl'
-    folder = 'step_policies/'
-    filename = '02action_fwd_gyroinxy_up5d.pkl'
+    folder = 'walk_policies/'
+    filename = 'fwd_gyroinxy_up5d.pkl'
 
     savename = 'ground'+filename.split('.')[0]
 
@@ -18,9 +18,9 @@ if __name__ == "__main__":
     singlefoot_motion = False
     crawl_motion = False
     lift_motion = False
-    step_motion = True
+    step_motion = False
 
-    direct_walk = False
+    direct_walk = True
 
     obs_app = [0.9, 0.05, 0.9, 0.0, 0.2]#[0.05945156, 0.73512937, 0.76391359, 0.41831418]
 

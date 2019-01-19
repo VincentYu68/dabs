@@ -89,13 +89,13 @@ class SysIDOptimizer:
                 self.darwinenv.step(act)
                 sim_poses.append(pose)
                 step += 1
+                if not fix_root:
+                    # penalize offset in x direction for now, in general should use imu reading
+                    total_positional_error += (np.clip(np.abs(darwinenv.robot.C[0]), 0.1, 100) - 0.1) * 20
             max_step = np.min([len(sim_poses), len(hw_pose_data)])
             total_step += max_step
             total_positional_error += np.clip(np.sum(
                 np.abs(np.array(hw_pose_data)[1:max_step] - np.array(sim_poses)[1:max_step])), 0, 1000)
-            if not fix_root:
-                # penalize offset in x direction for now, in general should use imu reading
-                total_positional_error += (np.clip(np.abs(darwinenv.robot.C[0]), 0.1, 100) - 0.1) * 10
             total_velocity_error += 0
         #print('total step: ', total_step)
         loss = (total_positional_error + total_velocity_error * self.velocity_weight) / total_step + \

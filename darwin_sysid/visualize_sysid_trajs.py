@@ -13,7 +13,7 @@ import cma, os, sys, joblib
 
 if __name__ == "__main__":
     data_dir = 'data/sysid_data/generic_motion/'
-    specific_data = 'all_vel0_nn_hid5'
+    specific_data = 'all_vel0_pid_standup'
     all_trajs = [joblib.load(data_dir + file) for file in os.listdir(data_dir) if
                       '.pkl' in file and 'path' in file]# and 'standup' in file]
 
@@ -61,7 +61,6 @@ if __name__ == "__main__":
         sim_poses = [darwinenv.get_motor_pose()]
         sim_vels = [darwinenv.get_motor_velocity()]
 
-
         while darwinenv.time <= traj_time + 0.004:
             act = keyframes[0][1]
             for kf in keyframes:
@@ -76,12 +75,17 @@ if __name__ == "__main__":
             step += 1
             time.sleep(0.1)
 
+            if not fix_root:
+                # penalize offset in x direction for now, in general should use imu reading
+                total_positional_error += (np.clip(np.abs(darwinenv.robot.C[0]), 0.1, 100) - 0.1) * 20
+
         max_step = np.min([len(sim_poses), len(hw_pose_data)])
         total_step += max_step
         total_positional_error += np.sum(
             np.abs(np.array(hw_pose_data)[1:max_step] - np.array(sim_poses)[1:max_step]))
         total_velocity_error += np.sum(
             np.abs(np.array(hw_vel_data)[1:max_step] - np.array(sim_vels)[1:max_step]))
+
 
         traj['pose_data'] = sim_poses
         traj['vel_data'] = sim_vels
