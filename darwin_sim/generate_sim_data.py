@@ -14,11 +14,11 @@ from darwin.np_policy import *
 import time
 
 if __name__ == "__main__":
-    policy_path = 'data/step_policies/02action_fwd_gyroinxy_up5d.pkl'
+    policy_path = 'data/step_policies/04action_fwd_gyroinxy_up5d.pkl'
     #policy_path = 'data/walk_up5d_02stride_fixgain_squatinit_gyroin.pkl'
     fixed_root = False
     action_path = 'data/hw_data/squat_stand.txt'
-    run_policy = False
+    run_policy = True
 
     walk_motion = False
     singlefoot_motion = False
@@ -28,7 +28,7 @@ if __name__ == "__main__":
 
     direct_walk = False
 
-    obs_app = [0.9, 0.1, 0.9, 0.9, 0.2]
+    obs_app = [0.9, 0.05, 0.9, 0.0, 0.2]
 
     gyro_input = True
 
@@ -88,7 +88,7 @@ if __name__ == "__main__":
 
     if not direct_walk:
         policy = NP_Policy(interp_sch, policy_path, discrete_action=True,
-                       action_bins=np.array([11] * 20), delta_angle_scale=0.2, action_filter_size=5)
+                       action_bins=np.array([11] * 20), delta_angle_scale=0.4, action_filter_size=5)
     else:
         obs_perm, act_perm = make_mirror_perm_indices(0, False, False, len(obs_app), gyro_input)
         policy = NP_Policy(None, policy_path, discrete_action=True,

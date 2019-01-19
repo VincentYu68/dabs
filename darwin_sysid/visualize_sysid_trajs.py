@@ -12,10 +12,10 @@ import cma, os, sys, joblib
 
 
 if __name__ == "__main__":
-    data_dir = 'data/sysid_data/generic_motion_test/'
+    data_dir = 'data/sysid_data/generic_motion/'
     specific_data = 'all_vel0_nn_hid5'
     all_trajs = [joblib.load(data_dir + file) for file in os.listdir(data_dir) if
-                      '.pkl' in file and 'path' in file]
+                      '.pkl' in file and 'path' in file and 'standup' in file]
 
     darwinenv = DarwinPlain()
     darwinenv.toggle_fix_root(True)
@@ -29,7 +29,7 @@ if __name__ == "__main__":
     #   0.12861344, 0.96039561, 0.56407919, 0.72965827, 0.84092037,
     #   0.07445393, 0.98530918, 0.07949251]))
     #opt_result[0][0:5] += 0.3
-    darwinenv.set_mu(opt_result[0])
+    #darwinenv.set_mu(opt_result[0])
 
 
     total_positional_error = 0
@@ -44,8 +44,18 @@ if __name__ == "__main__":
         hw_vel_data = traj['vel_data']
         darwinenv.set_control_timestep(control_dt)
 
+        fix_root = True
+        if 'fix_root' in traj:
+            if not traj['fix_root']:
+                fix_root = False
+
+        darwinenv.toggle_fix_root(fix_root)
+
         darwinenv.reset()
         darwinenv.set_pose(keyframes[0][1])
+        if not fix_root:
+            darwinenv.set_root_dof(darwinenv.get_root_dof() + np.array([0, 0, 0, 0, 0, -0.075]))
+
         step = 0
         actions = []
         sim_poses = [darwinenv.get_motor_pose()]

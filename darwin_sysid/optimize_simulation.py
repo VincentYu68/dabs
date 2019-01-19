@@ -65,8 +65,18 @@ class SysIDOptimizer:
             hw_vel_data = traj['vel_data']
             self.darwinenv.set_control_timestep(control_dt)
 
+            fix_root = True
+            if 'fix_root' in traj:
+                if not traj['fix_root']:
+                    fix_root = False
+
+            self.darwinenv.toggle_fix_root(fix_root)
+
             self.darwinenv.reset()
+            if not fix_root:
+                self.darwinenv.set_root_dof(self.darwinenv.get_root_dof() + np.array([0, 0, 0, 0, 0, -0.075]))
             self.darwinenv.set_pose(keyframes[0][1])
+
             sim_poses = [self.darwinenv.get_motor_pose()]
             sim_vels = [self.darwinenv.get_motor_velocity()]
             step = 0
@@ -76,20 +86,17 @@ class SysIDOptimizer:
                     if self.darwinenv.time >= kf[0] - 0.00001:
                         act = kf[1]
                 pose = self.darwinenv.get_motor_pose()
-                vel = self.darwinenv.get_closest_motor_velocity(hw_vel_data[step+1], 'l1', np.arange(5))
                 self.darwinenv.step(act)
                 sim_poses.append(pose)
-                sim_vels.append(vel)
                 step += 1
             max_step = np.min([len(sim_poses), len(hw_pose_data)])
             total_step += max_step
-            #total_positional_error += np.sum(np.square(np.array(hw_pose_data)[1:max_step] - np.array(sim_poses)[1:max_step]))
-            #total_velocity_error += np.sum(
-            #    np.square(np.array(hw_vel_data)[1:max_step] - np.array(sim_vels)[1:max_step]))
             total_positional_error += np.clip(np.sum(
                 np.abs(np.array(hw_pose_data)[1:max_step] - np.array(sim_poses)[1:max_step])), 0, 1000)
-            total_velocity_error += np.clip(np.sum(
-                np.abs(np.array(hw_vel_data)[1:max_step] - np.array(sim_vels)[1:max_step])), 0, 1000)
+            if not fix_root:
+                # penalize offset in x direction for now, in general should use imu reading
+                total_positional_error += (np.clip(np.abs(darwinenv.robot.C[0]), 0.1, 100) - 0.1) * 10
+            total_velocity_error += 0
         #print('total step: ', total_step)
         loss = (total_positional_error + total_velocity_error * self.velocity_weight) / total_step + \
                 self.regularization * np.sum(x**2)
