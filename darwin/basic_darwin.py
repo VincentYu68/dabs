@@ -14,7 +14,7 @@ else:
 
 from bno055_usb_stick_py import BnoUsbStick
 
-def read_bno055_gyro(a):
+def read_bno055_gyro_child(a):
     bno_usb_stick = BnoUsbStick()
     bno_usb_stick.activate_streaming()
 
@@ -22,8 +22,12 @@ def read_bno055_gyro(a):
         packet = bno_usb_stick.recv_streaming_packet()
         euler = DEGREE2RAD(np.array(packet.euler))
         angvel = DEGREE2RAD(np.array(packet.g))
-        a[0:3] = euler
-        a[3:6] = angvel
+        a[0] = euler[0]
+        a[1] = euler[1]
+        a[2] = euler[2]
+        a[3] = angvel[0]
+        a[4] = angvel[1]
+        a[5] = angvel[2]
 
 
 class BasicDarwin:
@@ -92,7 +96,7 @@ class BasicDarwin:
         if self.use_bno055:
             self.bno055_cache = Array('f', range(6))
 
-            self.p = Process(target=read_bno055_gyro, args=(self.bno055_cache))
+            self.p = Process(target=read_bno055_gyro_child, args=(self.bno055_cache))
             self.p.start()
 
     def disconnect(self):
