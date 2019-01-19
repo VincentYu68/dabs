@@ -72,7 +72,7 @@ if __name__ == "__main__":
         else:
             rig_keyframe = np.loadtxt('data/rig_data/rig_keyframe_crawl.txt')
         interp_sch = [[0.0, 0.5*(pose_squat+pose_stand)]]
-        interp_time = 0.03
+        interp_time = 0.2
         for i in range(1):
             for k in range(0, len(rig_keyframe)):
                 interp_sch.append([interp_time, rig_keyframe[k]])
