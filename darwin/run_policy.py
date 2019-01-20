@@ -18,8 +18,8 @@ if __name__ == "__main__":
     singlefoot_motion = False
     crawl_motion = False
     lift_motion = False
-    step_motion = False
-    shake_motion = True
+    step_motion = True
+    shake_motion = False
 
     direct_walk = False
 
