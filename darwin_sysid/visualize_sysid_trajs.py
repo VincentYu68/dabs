@@ -13,9 +13,9 @@ import cma, os, sys, joblib
 
 if __name__ == "__main__":
     data_dir = 'data/sysid_data/generic_motion/'
-    specific_data = 'all_vel0_pid_standup'
+    specific_data = 'all_vel0_nn_standup'
     all_trajs = [joblib.load(data_dir + file) for file in os.listdir(data_dir) if
-                      '.pkl' in file and 'path' in file]# and 'standup' in file]
+                      '.pkl' in file and 'path' in file and 'standup' in file]
 
     darwinenv = DarwinPlain()
     darwinenv.toggle_fix_root(True)
@@ -29,7 +29,7 @@ if __name__ == "__main__":
     #   0.12861344, 0.96039561, 0.56407919, 0.72965827, 0.84092037,
     #   0.07445393, 0.98530918, 0.07949251]))
     #opt_result[0][0:5] += 0.3
-    #darwinenv.set_mu(opt_result[0])
+    darwinenv.set_mu(opt_result[0])
 
 
     total_positional_error = 0
@@ -77,8 +77,9 @@ if __name__ == "__main__":
 
             if not fix_root:
                 # penalize offset in x direction for now, in general should use imu reading
-                total_positional_error += (np.clip(np.abs(darwinenv.robot.C[0]), 0.1, 100) - 0.1) * 20
-
+                total_positional_error += (np.clip(np.abs(darwinenv.robot.C[0]), 0.06, 100) - 0.06) * 20
+        if not fix_root and darwinenv.check_collision(['MP_ANKLE2_L', 'MP_ANKLE2_R']):
+            total_positional_error += 10
         max_step = np.min([len(sim_poses), len(hw_pose_data)])
         total_step += max_step
         total_positional_error += np.sum(

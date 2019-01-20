@@ -91,7 +91,9 @@ class SysIDOptimizer:
                 step += 1
                 if not fix_root:
                     # penalize offset in x direction for now, in general should use imu reading
-                    total_positional_error += (np.clip(np.abs(darwinenv.robot.C[0]), 0.1, 100) - 0.1) * 20
+                    total_positional_error += (np.clip(np.abs(darwinenv.robot.C[0]), 0.06, 100) - 0.06) * 20
+            if not fix_root and self.darwinenv.check_collision(['MP_ANKLE2_L', 'MP_ANKLE2_R']):
+                total_positional_error += 10
             max_step = np.min([len(sim_poses), len(hw_pose_data)])
             total_step += max_step
             total_positional_error += np.clip(np.sum(

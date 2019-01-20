@@ -194,6 +194,8 @@ if __name__ == "__main__":
     else:
         savename = 'ground_' + savename
     #savename = 'sim_saved_obs_walk.txt'
+    if shake_motion:
+        savename = 'ground_shake'
 
     if run_policy:
         savename += policy_path.split('/')[-1].split('.')[0]
