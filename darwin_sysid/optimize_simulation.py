@@ -222,7 +222,7 @@ if __name__ == "__main__":
     group_run_result = {}
     group_run_result['variations'] = [darwinenv.VARIATIONS[i] for i in darwinenv.ACTIVE_MUS]
 
-    all_savename = 'all_vel0_pid_standup_new'
+    all_savename = 'all_vel0_pid_standup_new2'
     sysid_optimizer = SysIDOptimizer(darwinenv, data_dir, velocity_weight=0.0, specific_data='.', save_dict=all_savename, save_name = 'all',
                                      minibatch=0)
 

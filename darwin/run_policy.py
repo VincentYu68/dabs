@@ -10,7 +10,7 @@ import os, errno
 if __name__ == "__main__":
     #filename = 'sqstsq_nolimvel_UP4d.pkl'
     folder = 'step_policies/'
-    filename = '02action_fwd_gyroinxy_up5d.pkl'
+    filename = '02action_fwd_oriinxy_up5d.pkl'
 
     savename = 'ground'+filename.split('.')[0]
 
@@ -36,6 +36,7 @@ if __name__ == "__main__":
         savename = 'ground_shake'
 
     bno055_input = True
+    bno055_angvel_input = False
     gyro_input = 0
     gyro_accum_input = False
 
@@ -159,6 +160,8 @@ if __name__ == "__main__":
             #    obs_input = np.concatenate([obs_input, cur_orientation])
             if bno055_input:
                 gyro = darwin.read_bno055_gyro()
+                if bno055_angvel_input:
+                    gyro[3:] = 0.0
                 obs_input = np.concatenate([obs_input, gyro])
                 all_gyros.append(gyro)
 
