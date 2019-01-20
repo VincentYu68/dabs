@@ -211,13 +211,13 @@ class DarwinPlain:
     ####################################
     ##### parameters for system id #####
     ####################################
-    VARIATIONS = 'KP KD KC KP_RATIO KD_RATIO NEURAL_MOTOR VEL_LIM GROUP_JOINT_DAMPING JOINT_DAMPING JOINT_FRICTION TORQUE_LIM COM_OFFSET'.split(' ')
-    KP, KD, KC, KP_RATIO, KD_RATIO, NEURAL_MOTOR, VEL_LIM, GROUP_JOINT_DAMPING, JOINT_DAMPING, JOINT_FRICTION, TORQUE_LIM, COM_OFFSET = list(range(12))
-    MU_DIMS = np.array([5, 5, 5, 5, 5, 27, 1, 5, 1, 1, 1, 2])
-    MU_UP_BOUNDS = [[200, 200, 200, 200, 200], [1,1,1,1,1], [10,10,10,10,10], [3.0, 3.0, 3.0, 3.0, 3.0], [3.0, 3.0, 3.0, 3.0, 3.0], [1]*27, [15], [1, 1, 1, 1, 1], [1], [1], [20.0], [0.1, 0.05]]
-    MU_LOW_BOUNDS = [[0, 0, 0, 0, 0], [0, 0, 0, 0, 0], [0, 0, 0, 0, 0], [0, 0, 0, 0, 0], [0, 0, 0, 0, 0], [-1]*27, [2.0], [0, 0, 0, 0, 0], [0], [0], [3.0], [-0.1, -0.05]]
-    ACTIVE_MUS = [KP_RATIO, KD_RATIO, NEURAL_MOTOR, VEL_LIM, JOINT_DAMPING, TORQUE_LIM, COM_OFFSET]
-    #ACTIVE_MUS = [KP, KD, KC, VEL_LIM, GROUP_JOINT_DAMPING, TORQUE_LIM, COM_OFFSET]
+    VARIATIONS = 'KP KD KC KP_RATIO KD_RATIO NEURAL_MOTOR VEL_LIM GROUP_JOINT_DAMPING JOINT_DAMPING JOINT_FRICTION TORQUE_LIM COM_OFFSET GROUND_FRICTION'.split(' ')
+    KP, KD, KC, KP_RATIO, KD_RATIO, NEURAL_MOTOR, VEL_LIM, GROUP_JOINT_DAMPING, JOINT_DAMPING, JOINT_FRICTION, TORQUE_LIM, COM_OFFSET, GROUND_FRICTION = list(range(13))
+    MU_DIMS = np.array([5, 5, 5, 5, 5, 27, 1, 5, 1, 1, 1, 2, 1])
+    MU_UP_BOUNDS = [[200, 200, 200, 200, 200], [1,1,1,1,1], [10,10,10,10,10], [3.0, 3.0, 3.0, 3.0, 3.0], [3.0, 3.0, 3.0, 3.0, 3.0], [1]*27, [15], [1, 1, 1, 1, 1], [1], [1], [20.0], [0.1, 0.05], [3.0]]
+    MU_LOW_BOUNDS = [[0, 0, 0, 0, 0], [0, 0, 0, 0, 0], [0, 0, 0, 0, 0], [0, 0, 0, 0, 0], [0, 0, 0, 0, 0], [-1]*27, [2.0], [0, 0, 0, 0, 0], [0], [0], [3.0], [-0.1, -0.05], [0.0]]
+    #ACTIVE_MUS = [KP_RATIO, KD_RATIO, NEURAL_MOTOR, VEL_LIM, JOINT_DAMPING, TORQUE_LIM, COM_OFFSET, GROUND_FRICTION]
+    ACTIVE_MUS = [KP, KD, KC, VEL_LIM, GROUP_JOINT_DAMPING, TORQUE_LIM, COM_OFFSET, GROUND_FRICTION]
     MU_UNSCALED = None # unscaled version of mu
 
     def set_mu(self, x):
@@ -362,6 +362,11 @@ class DarwinPlain:
             self.simenv.env.robot_skeleton.bodynodes[1].set_local_com(init_com)
             current_id += self.MU_DIMS[self.COM_OFFSET]
 
+        if self.GROUND_FRICTION in self.ACTIVE_MUS:
+            self.simenv.env.dart_world.skeletons[0].bodynodes[0].set_friction_coeff(self.MU_UNSCALED[current_id])
+            for bn in self.simenv.env.robot_skeleton.bodynodes:
+                bn.set_friction_coeff(self.MU_UNSCALED[current_id])
+            current_id += self.MU_DIMS[self.GROUND_FRICTION]
 
 
 

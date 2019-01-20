@@ -13,7 +13,7 @@ import cma, os, sys, joblib
 
 if __name__ == "__main__":
     data_dir = 'data/sysid_data/generic_motion/'
-    specific_data = 'all_vel0_nn_standup'
+    specific_data = 'all_vel0_pid_standup_new'
     all_trajs = [joblib.load(data_dir + file) for file in os.listdir(data_dir) if
                       '.pkl' in file and 'path' in file and 'standup' in file]
 
@@ -24,6 +24,7 @@ if __name__ == "__main__":
     #opt_result = np.loadtxt('data/sysid_data/generic_motion/opt_result'+specific_data+'.txt')
     opt_result = joblib.load('data/sysid_data/generic_motion/' + specific_data + '.pkl')['all_sol']
     print('Use mu of: ', opt_result[1])
+    print(repr(opt_result[0]))
 
     #darwinenv.set_mu(np.array([0.03216347, 0.34971422, 0.50214142, 0.94386206, 0.47390177,
     #   0.12861344, 0.96039561, 0.56407919, 0.72965827, 0.84092037,

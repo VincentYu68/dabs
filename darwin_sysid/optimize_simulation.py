@@ -187,15 +187,15 @@ class SysIDOptimizer:
             solutions = es.ask()
             solutions = MPI.COMM_WORLD.bcast(solutions, root=0)
             # evaluate fitness for each sample, spread out to multiple threads
-            evaluated_fitness = {str(self.thread_id): []}
+            evaluated_fitness = {}
             for sol_id in sol_id_to_evaluate:
                 eval = self.fitness(solutions[sol_id], iter_num%num_segs)
-                evaluated_fitness[str(self.thread_id)].append(eval)
+                evaluated_fitness[str(sol_id)] = eval
 
             all_evaluated_fitness = {k: v for d in MPI.COMM_WORLD.allgather(evaluated_fitness) for k, v in d.items()}
             merged_evaluated_fitness = []
-            for i in range(self.total_threads):
-                merged_evaluated_fitness += all_evaluated_fitness[str(i)]
+            for i in range(len(solutions)):
+                merged_evaluated_fitness.append(all_evaluated_fitness[str(i)])
 
             es.tell(solutions, merged_evaluated_fitness)
             es.logger.add()  # write data to disc to be plotted
@@ -222,22 +222,13 @@ if __name__ == "__main__":
     group_run_result = {}
     group_run_result['variations'] = [darwinenv.VARIATIONS[i] for i in darwinenv.ACTIVE_MUS]
 
-    all_savename = 'all_vel0_pid_standup'
+    all_savename = 'all_vel0_pid_standup_new'
     sysid_optimizer = SysIDOptimizer(darwinenv, data_dir, velocity_weight=0.0, specific_data='.', save_dict=all_savename, save_name = 'all',
                                      minibatch=0)
+
     result_all = sysid_optimizer.optimize(maxiter=500)
     group_run_result['all_sol'] = result_all
     group_run_result['all_lc'] = sysid_optimizer.value_history
-
-    for i in range(0):
-        savename = '1o3subset_vel0_pid_warmstartall_' + str(i)
-        sysid_optimizer = SysIDOptimizer(darwinenv, data_dir, velocity_weight=0.0, specific_data='.', save_app=savename,
-                                         minibatch=0,
-                                         init_guess=result_all[0], random_subset=0.1)
-        result = sysid_optimizer.optimize(maxiter=100)
-
-        group_run_result['subset_'+str(i)+'_sol'] = result
-        group_run_result['subset_'+str(i)+'_lc'] = sysid_optimizer.value_history
 
     joblib.dump(group_run_result, data_dir+all_savename+'.pkl', compress=True)
 
